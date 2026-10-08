@@ -1,5 +1,10 @@
+# Env
+.env
+
 # URGENT! DO NOT SEND CREDENTIALS TO GITHUB!
 /credentials/**
+
+# DO NOT SEND COMPILED FILES
 /cbots/**/bin/
 /cbots/**/obj/
 /cbots/**/*.algo
