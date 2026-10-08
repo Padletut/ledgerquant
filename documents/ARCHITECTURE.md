@@ -2,7 +2,7 @@
 
 **Date:** 08.10.2026
 
-**Version:** 2.6.0
+**Version:** 2.7.0
 
 **Status:** Target architecture; implementation is not yet present in this repository
 
@@ -11,7 +11,7 @@
 LedgerQuant is an auditable, configurable platform for research, decision support and controlled execution of CFD trading strategies. A Next.js/TypeScript console lets operators inspect the system and manage agents, research, portfolios, accounts and deployments through supported workflows. Every trading decision must retain the exact configuration and information that produced it.
 
 - **Explicit ownership:** agent, portfolio, account, market data, decision and execution concepts have distinct owners and contracts.
-- **Single source of truth (SSOT):** versioned configuration and audit history live in the registry and ledger; immutable source artifacts have authoritative references there. Current broker positions, balances and fills come from the broker and are reconciled into the ledger. Search indexes and cached views are rebuildable projections.
+- **Single source of truth (SSOT):** versioned configuration and audit history live in the registry and ledger; immutable source artifacts have authoritative references there. Committed tick chunks in durable archive storage, indexed by PostgreSQL manifests, are the historical market-data record. Current broker positions, balances and fills come from the broker and are reconciled into the ledger. Redis streams, search indexes and cached views are bounded runtime projections.
 - **Reusable behavior:** common lifecycle, validation, persistence and transport behavior is shared through cohesive components. Agent-specific decision logic uses a defined capability interface.
 - **Immutable history:** published configuration versions, decision inputs, inference outputs and execution events are never silently rewritten. Changes create new versions or events.
 - **Execution safety:** agents propose actions; an account-scoped execution boundary independently enforces broker and capital constraints. The initial boundary is the broker-side execution cBot.
@@ -24,26 +24,28 @@ Configuration provides adaptability within a supported contract. A new agent usi
 ## 2. Logical architecture
 
 ```text
-Broker market feed → Market-data cBot → ingestion adapter → observations
-                                                          │
-Control API → versioned registry → scheduler               │
-                                      │                   │
-                                      ▼                   ▼
-                            decision workers ← PIT context
-                         agents · RAG · memory · replay
-                                      │ candidate decision
-                                      ▼
-                         execution coordinator
-                       reservations · account routing
-                                      │ authenticated command
-                                      ▼
-                            execution cBot → Broker
-                         risk checks · reconciliation
+Broker feed → Market-data cBot → authenticated ingestion → recoverable ingress journal
+                                                       └→ Redis Streams (recent events)
+                                                            ├→ decision dispatch → workers
+                                                            └→ archive writer → tick chunks
+                                                                          └→ PostgreSQL manifests
 
-PostgreSQL: registry, observations, evidence, ledger, outbox and projections
+Control API → versioned registry → scheduler → decision workers ← PIT context
+                                                 agents · RAG · memory · replay
+                                                               │ candidate decision
+                                                               ▼
+                                                  execution coordinator
+                                                reservations · account routing
+                                                               │ authenticated command
+                                                               ▼
+                                                    execution cBot → Broker
+                                                risk checks · reconciliation
+
+PostgreSQL: registry, archive manifests, evidence, ledger, outbox and projections
+Durable archive: immutable tick chunks; Redis: bounded low-latency transport and feed state
 ```
 
-The boxes are logical responsibilities, not a requirement for one service per box. The initial deployment may use one control API process, separate workers and two broker-side cBots. The API is one logical, versioned surface and may have multiple stateless replicas. There is no API instance or endpoint set per agent. Workers and cBot connections scale independently, with execution work partitioned by account where ordering or capital safety requires it. The market-data and execution cBots have separate protocols and release lifecycles.
+The boxes are logical responsibilities, not a requirement for one service per box. The initial deployment may use one control API process, separate workers, Redis, an archive writer and two broker-side cBots. The API is one logical, versioned surface and may have multiple stateless replicas. There is no API instance or endpoint set per agent. Workers and cBot connections scale independently, with execution work partitioned by account where ordering or capital safety requires it. The market-data and execution cBots have separate protocols and release lifecycles.
 
 The control plane manages definitions and deployment intent. The data plane ingests observations and builds point-in-time context. The decision plane runs configured agents. The execution plane owns order authorization, dispatch and reconciliation. A research plane reads permitted snapshots and proposes hypotheses; an independent evaluator writes measured evidence, and promotion remains a controlled registry transition. The research plane has no direct path to the broker. A component accesses another component's state through its contract; it does not bypass ownership with ad hoc cross-module database writes.
 
@@ -58,7 +60,7 @@ The control plane manages definitions and deployment intent. The data plane inge
 | `deployment` | Stable `deployment_id`; immutable `deployment_version` and `epoch_id` | Deployment registry. Binds an agent version to a portfolio version, account allocation, schedule, mode and limits. |
 | `broker_feed` | Stable `feed_id`; versioned source and symbol mapping contracts | Market-data owner. Binds a cBot or other broker-data adapter to venue, environment and permitted instruments. |
 | `model_profile` | Stable `model_profile_id`; immutable version | Model registry. Binds provider endpoint, model identity, capability snapshot and inference policy. |
-| `observation` | Immutable source artifact identity | Market-data owner. Carries source, timing, canonicalization and provenance. |
+| `observation` | Immutable source artifact identity | Market-data owner. Carries source, timing, canonicalization and provenance; high-volume tick payloads reside in committed archive chunks. |
 | `retrieval_snapshot` | Immutable corpus, index and retriever version IDs | Knowledge owner. Identifies the searchable projection used to build context. |
 | `episode` | Immutable `episode_id`; summaries have separate versions | Memory owner. Records an eligible, time-scoped experience derived from an audited run. |
 | `hypothesis` | Stable `hypothesis_id`; frozen contract version before validation | Research registry. Identifies a Loop A improvement or Loop B payoff discovery and its parent. |
@@ -149,17 +151,29 @@ Transport uses TLS, scoped and revocable credentials, rotation, rate limits and 
 
 ### 4.2 Market-data cBot ingestion contract
 
-The separate market-data cBot reads broker market events and publishes versioned observations to an authenticated ingestion adapter. Its envelope includes protocol version, message ID, feed ID and send time. The payload covers instrument identity, broker symbol, quote/bar/event type, bid/ask or other applicable values, broker event timestamp, cBot observation timestamp, source sequence, cBot build version and symbol-map version. If the broker supplies no sequence, the cBot emits a boot/session ID and monotonic local sequence; repeated equal prices are not deduplicated solely by content hash. The ingestion adapter records its receive and commit times, validates units and schema, and assigns canonical observation IDs. A feed is registered with an explicit source contract before it can supply Executor context.
+The separate market-data cBot reads broker market events and publishes versioned observations to an authenticated ingestion adapter, which admits them to the market stream. Its envelope includes protocol version, message ID, feed ID and send time. The payload covers instrument identity, broker symbol, quote/bar/event type, bid/ask or other applicable values, broker event timestamp, cBot observation timestamp, source sequence, cBot build version and symbol-map version. If the broker supplies no sequence, the cBot emits a boot/session ID and monotonic local sequence; repeated equal prices are not deduplicated solely by content hash. The ingestion adapter records its receive and journal-commit times, validates units and schema, and assigns canonical observation IDs. A feed is registered with an explicit source contract before it can supply Executor context. The cBot uses the ingestion contract rather than holding general Redis credentials.
 
 The market-data cBot has no order command handler, execution credentials or route to the execution coordinator. It is deployed and monitored independently from the execution cBot. Authentication scopes allow publishing observations only for its registered feed. Where the broker platform cannot provide physically separate privileges, the code and inbound protocol still expose no trading operation; contract tests verify this boundary.
 
 The stream tolerates reconnects, duplicate messages and out-of-order delivery. Sequence gaps, clock skew, stale feeds and dropped events are observable states. Backpressure uses bounded buffering and an explicit gap/recovery record; it must not silently label a delayed quote as current. A required stale feed prevents new decisions that depend on it, while the execution cBot continues broker-side position protection. Live executable quote and account checks remain with the execution cBot, because the ingested data may be delayed.
 
-### 4.3 Adapting the existing execution cBot
+### 4.3 Redis stream and durable tick archive
+
+Redis Streams carry recent canonical market events to independent consumer groups. Physical keys include environment, feed ID and canonical instrument ID, for example `market:live:<feed_id>:EURUSD`; a bare `market:EURUSD` cannot distinguish broker feeds or environments. The Redis stream ID is a transport cursor, not the observation ID, broker event time or durable archive offset. A decision-dispatch group schedules eligible workers without PostgreSQL polling; a separate archive-writer group receives the same events. Consumers acknowledge only after their own durable work is complete, reclaim abandoned pending messages and deduplicate by canonical event ID. A group distributes work among its members, while separate groups support fan-out. [Redis Streams and consumer groups](https://redis.io/docs/latest/develop/data-types/streams/)
+
+The ingestion adapter first writes each validated canonical event to a bounded, disk-backed ingress journal and acknowledges the cBot only after the journal's declared durability boundary. It then publishes to Redis. The journal retains an event until the archive checkpoint and required decision-dispatch receipt have committed, allowing replay into Redis after a Redis restart or lost stream entry. The dispatch receipt means the decision work is durably accepted; it does not claim that inference has finished. Redis persistence is enabled for short-term recovery, but its configured fsync policy and failure window are explicit; Redis AOF or replication alone is not the long-term tick archive. If the journal, Redis or writer falls behind its bounded capacity, ingestion applies backpressure; unrecoverable loss creates a typed gap record and required feeds become stale for new decisions. [Redis persistence](https://redis.io/docs/latest/management/persistence/)
+
+The archive writer batches ticks into immutable, compressed chunks partitioned by feed, instrument and time. It writes a chunk to durable disk or object storage, verifies its checksum, then commits a PostgreSQL manifest and archive checkpoint before acknowledging the archive consumer group or releasing journal entries. Retries use stable event IDs and idempotent chunk identity; a crash between object write and manifest commit leaves an unreferenced object for cleanup, never a visible partial chunk. A manifest records storage URI, content hash, schema/canonicalizer versions, feed and instrument IDs, event-time and `available_at` bounds, count, source-sequence bounds and gaps. The archive retains per-tick bid/ask, source identity, event time, `available_at` and provenance. PostgreSQL stores manifests, coverage, gaps and query metadata rather than every tick row.
+
+Redis retention has explicit age and memory targets, but trimming may advance only past committed archive checkpoints and the required consumer-group acknowledgements. Redis memory pressure must backpressure ingestion rather than evict unarchived stream entries. A default length-based trim can remove entries still referenced by a group's pending list, so trimming cannot be the archival commit mechanism. Archive lag, pending entries, journal occupancy, memory pressure and oldest retained stream ID are monitored together. Redis feed-state and recent-value caches are rebuildable from committed data plus new observations; a rebuilt cache is marked stale until a fresh source observation arrives. [Redis `XTRIM` behavior](https://redis.io/docs/latest/commands/xtrim/)
+
+Historical tick queries use the archive-query contract: resolve requested feed, canonical instrument and UTC interval against PostgreSQL manifests, read matching immutable chunks, and return bid/ask ticks in a stable order with source, schema and coverage/gap metadata. Queries are paginated or streamed with resource limits; they never scan Redis as the five-year history store. A request for EURUSD ticks in March 2023 reports the archived coverage and any missing intervals instead of silently treating a partial result as complete. An archive interval is queryable only after its manifest commits; `archived_at` is distinct from the decision-time `available_at`.
+
+### 4.4 Adapting the existing execution cBot
 
 The execution cBot is planned to be brought from another project and adapted to LedgerQuant's account-scoped command, acknowledgement, risk and reconciliation contracts. It is not yet code in this repository. Integration starts by identifying its existing order and position-management behavior, then mapping those behaviors to the versioned wire contract and LedgerQuant IDs. Preserve broker-side protective behavior during adaptation; any changed safety rule requires a specific test and review. The imported cBot must reject unknown protocol versions, stale epochs, duplicate signals and commands for another account. Its broker events are mapped to immutable execution events without assuming that a local acknowledgement proves a broker fill.
 
-### 4.4 Broker adapter ports and capability gates
+### 4.5 Broker adapter ports and capability gates
 
 Broker connectivity is split into typed ports for market data, account state and execution. An adapter may implement one or several ports. The target adapter families are broker APIs, cBots, MT4, MT5 and NinjaTrader; each is a distinct integration with its own deployment and protocol constraints. The cBots are the initial adapters. A platform name in the registry does not imply that all operations are implemented or safe for live use.
 
@@ -173,7 +187,7 @@ Model providers and broker adapters are different extension points. Changing a m
 
 Each external artifact is normalized by a source-specific, versioned canonicalizer before its content hash is calculated. Preserve the original payload or an immutable reference where legally and operationally possible. Canonicalization records what was normalized; it cannot discard fields merely because they appear irrelevant.
 
-An observation records `source_id`, `source_type`, `source_event_time`, `observed_at`, `received_at`, `ingested_at`, `available_at`, `canonicalizer_version`, `content_sha256` and `raw_artifact_reference`. Broker-feed observations also record feed ID, cBot version, symbol-map version and source sequence/message ID. The source contract defines `available_at`, which controls point-in-time visibility. For a broker cBot feed, it cannot precede validated durable ingestion: a broker timestamp or cBot clock does not make delayed data available earlier. Replay at time `T` may read only records whose declared `available_at ≤ T` and whose source revisions were visible then. Clock skew and transport delay are measured separately.
+An observation records `source_id`, `source_type`, `source_event_time`, `observed_at`, `received_at`, `ingested_at`, `available_at`, `canonicalizer_version`, `content_sha256` and `raw_artifact_reference`. Broker-feed observations also record feed ID, cBot version, symbol-map version and source sequence/message ID. For archived ticks, the immutable chunk retains per-tick fields while its manifest holds the reference and indexed bounds; a PostgreSQL row per tick is not required. The source contract defines `available_at`, which controls point-in-time visibility. For a broker cBot feed, `ingested_at` is the durable journal commit and `available_at` cannot precede it: a broker timestamp or cBot clock does not make delayed data available earlier. `archived_at` records the later manifest commit and does not rewrite `available_at`. Replay at time `T` may read only records whose declared `available_at ≤ T` and whose source revisions were visible then. Clock skew and transport delay are measured separately.
 
 An inference fingerprint binds the visible context, canonicalization version, agent and portfolio versions, retrieval and memory policy versions, selected artifact and episode IDs, named model/provider bindings and step plan, prompt or typed question-set and decision-policy versions, tools, output schema and inference parameters. Recorded-output replay returns the persisted result for that exact contract. Fresh-inference replay invokes the pinned model steps again and stores distinct invocation events; probabilistic inference may differ. Replay results state the mode and the source-availability contract.
 
@@ -283,7 +297,7 @@ Evaluation reports show the number of related trials, all preregistered windows,
 
 ## 7. Persistence and consistency
 
-PostgreSQL is the initial durable store. Time-series partitioning and a vector index are optional adapters selected by measured need. The schema is divided by domain ownership; no generic JSON document table replaces typed identities, constraints and relationships. JSON fields are permitted for versioned, schema-validated capability payloads where the shape is genuinely extensible.
+PostgreSQL is the transactional durable store for registries, ledger, evidence, delivery state and archive metadata. Immutable tick chunks live in durable archive storage; the ingress journal is a bounded recovery buffer and Redis is a bounded runtime transport and cache. Time-series partitioning for lower-volume relational observations and a vector index are optional adapters selected by measured need. The schema is divided by domain ownership; no generic JSON document table replaces typed identities, constraints and relationships. JSON fields are permitted for versioned, schema-validated capability payloads where the shape is genuinely extensible.
 
 ```text
 registry:    agent_definitions, agent_versions, prompt_versions,
@@ -294,7 +308,9 @@ registry:    agent_definitions, agent_versions, prompt_versions,
              retrieval_policies, memory_policies, portfolio_profiles,
              portfolio_versions, trading_accounts, portfolio_account_allocations,
              deployments, deployment_epochs, promotion_events
-market:      broker_feeds, source_contracts, observations, artifact_references
+market:      broker_feeds, source_contracts, observations, artifact_references,
+             tick_chunk_manifests, archive_checkpoints, coverage_intervals,
+             gap_events, feed_health_events
 knowledge:   corpora, document_chunks, index_versions,
              retrieval_snapshots, retrieval_events
 memory:      episodes, episode_events, summary_versions, memory_retrieval_events
@@ -310,7 +326,7 @@ delivery:    outbox_messages, inbox_receipts
 
 Foreign keys, uniqueness, effective-interval constraints and explicit state transitions protect referential integrity. Published versions, frozen hypothesis contracts and ledger events are append-only. Mutable projections, schedules and credential references have audit events and concurrency versions. Migrations are reviewed with the domain change that requires them; schema and API contract versions are independent. Backfills preserve original event times and distinguish derived records from source observations.
 
-The outbox guarantees that a committed state transition has a durable delivery intent. Consumers keep inbox receipts and process messages idempotently. The system does not assume exactly-once network delivery. Search indexes, memory summaries and read models may lag their source records; each exposes its source version and projection time. Operational queries that affect capital use current, reconciled account state rather than a stale dashboard projection.
+The PostgreSQL outbox guarantees that a committed control or execution state transition has a durable delivery intent; it is not the per-tick market-data bus. Market ingestion uses the journal-to-Redis path and archive checkpoint described in §4.3. Consumers keep receipts and process messages idempotently. The system does not assume exactly-once network delivery. Search indexes, memory summaries and read models may lag their source records; each exposes its source version and projection time. Operational queries that affect capital use current, reconciled account state rather than a stale dashboard projection.
 
 ## 8. Model provider architecture
 
@@ -332,7 +348,7 @@ Jev's supported input is text or text-bearing structured state; the integration 
 
 ## 9. API and distribution strategy
 
-Expose one logical `/v1` control API for registry commands, lifecycle transitions and queries. Group routes by domain: `agents`, `model-providers`, `portfolio-profiles`, `trading-accounts`, `broker-connections`, `allocations`, `broker-feeds`, `deployments`, `knowledge`, `memory`, `hypotheses`, `evidence`, `evaluations`, `optimization` and `execution`. Writes require scoped authorization, validation, an idempotency key where retries matter, and optimistic concurrency for updates. Responses include stable IDs, version IDs and lifecycle status. Runtime status streams may use WebSocket or server-sent events; broker ingestion and execution transports are separate internal contracts.
+Expose one logical `/v1` control API for registry commands, lifecycle transitions and queries. Group routes by domain: `agents`, `model-providers`, `portfolio-profiles`, `trading-accounts`, `broker-connections`, `allocations`, `broker-feeds`, `market-data`, `deployments`, `knowledge`, `memory`, `hypotheses`, `evidence`, `evaluations`, `optimization` and `execution`. The `market-data` read contract serves feed health, archive coverage and bounded historical tick queries from manifests and chunks; it does not expose Redis as a historical query endpoint. Writes require scoped authorization, validation, an idempotency key where retries matter, and optimistic concurrency for updates. Responses include stable IDs, version IDs and lifecycle status. Runtime status streams may use WebSocket or server-sent events; broker ingestion and execution transports are separate internal contracts.
 
 | Resource | Supported control operations | Removal rule |
 | --- | --- | --- |
@@ -351,7 +367,7 @@ The API returns validation errors with field-level reasons and rejects illegal l
 
 The control API can run as stateless replicas behind a load balancer. It does not own long-running inference or keep the only copy of configuration in process memory. Workers consume durable work items and load pinned configuration by version. Partition queues by account for execution ordering and by independent workload for ingestion and inference. Use bounded concurrency, leases, backpressure and dead-letter handling with explicit recovery operations.
 
-Start with a modular control application, dedicated worker processes, PostgreSQL outbox/inbox delivery and the two cBots. Split a module into a separately deployed service only when its ownership and contracts are already stable and an operational requirement justifies the split. A split preserves the same IDs, event schemas and authorization boundaries; it does not create a second source of truth. No broker adapter or agent writes directly into another module's tables.
+Start with a modular control application, dedicated worker processes, PostgreSQL outbox/inbox delivery, Redis market streams, an archive writer and the two cBots. Split a module into a separately deployed service only when its ownership and contracts are already stable and an operational requirement justifies the split. A split preserves the same IDs, event schemas and authorization boundaries; it does not create a second source of truth. No broker adapter or agent writes directly into another module's tables.
 
 ## 10. Operator console (Next.js + TypeScript)
 
@@ -366,7 +382,7 @@ The frontend is a real operational console, not a separate decision engine. Use 
 | **Portfolios** | Profiles, risk policies, allocations and aggregate exposure by profile and account. Show effective versions and breached limits. |
 | **Accounts** | Demo and live accounts, broker connections and capabilities, equity, margin, positions, pending orders and reconciliation. Display adapter identity, last broker observation and unresolved discrepancies. |
 | **Deployments** | Research, shadow, demo and live deployments; epochs, pinned versions and promote, pause or retire workflows. Show approvals and the exact configuration that will become active. |
-| **Market Data** | Feed registration and health, historical coverage, symbol maps, gaps, stale observations and source provenance. Distinguish event time from system availability time. |
+| **Market Data** | Feed registration and health, stream and archive lag, journal occupancy, historical archive coverage, symbol maps, gaps, stale observations and source provenance. Distinguish event time, system availability time and archive commit time. |
 | **Execution** | Signals, risk and broker rejections, fills, latency and execution cBot or other adapter status. Link each event to account, deployment, decision and reconciliation state. |
 
 Navigation and detail pages use stable IDs and cross-links so an operator can trace an alert to its feed, decision, signal, broker event and deployed versions. Global filters include environment, account, portfolio, agent, broker adapter, instrument and time window. Live, demo, shadow and research modes are visually distinct on every action and result. Prices, units, currencies, time zones and data age are explicit. Missing data renders an honest empty, stale or unavailable state rather than a fabricated zero or example row.
@@ -393,7 +409,7 @@ src/ledgerquant/
   portfolios/                 # profile policy and account allocations
   accounts/                   # account registry and broker-state contracts
   deployments/                # epochs, scheduling, activation
-  market_data/                # sources, canonicalization, PIT queries
+  market_data/                # sources, canonicalization, PIT queries, archive contracts
   knowledge/                  # RAG corpora, indexes, retrieval, citations
   memory/                     # episodes, summaries, selection policy
   decisions/                  # context assembly, inference, replay
@@ -404,6 +420,8 @@ src/ledgerquant/
   integrations/
     model_providers/          # OpenAI, Claude, Jev and local runtime adapters
     broker/                   # API, cBot, MT4, MT5, NinjaTrader adapters
+    market_transport/         # Redis Streams and ingress-journal adapters
+    market_archive/           # durable chunk storage and archive-query adapters
   messaging/                  # outbox, inbox and delivery adapters
   persistence/                # database setup and module repository adapters
   security/                   # identity, authorization and secret references
@@ -428,6 +446,8 @@ apps/web/
 cbots/
   LedgerQuant.Execution/      # adapted C# execution cBot
   LedgerQuant.MarketData/     # broker market-data publishing cBot
+deploy/
+  compose.yaml                # versioned Docker Compose / Portainer deployment definition
 migrations/                   # ordered database migrations
 tests/
   unit/                       # domain rules
@@ -449,24 +469,35 @@ Names and paths follow the concepts they implement. Avoid duplicate models for t
 - **Replay checks:** point-in-time visibility, version identity, recorded-output replay and explicit fresh-inference lineage.
 - **RAG and memory checks:** source authorization, retrieval provenance, stale or missing evidence, prompt-injection isolation, episode eligibility and no future-outcome leakage.
 - **Broker-feed checks:** source and symbol identity, event/receive/availability times, duplicate and reordered events, reconnect gaps, backpressure and stale-feed handling; verify the market-data cBot has no execution path.
+- **Market archive checks:** Redis loss and journal replay, duplicate consumer delivery, writer crash between chunk write and manifest commit, checkpoint and trim ordering, checksum failures, bounded backpressure, historical query ordering and coverage/gap reporting.
 - **Execution cBot checks:** account routing, duplicate and expired commands, independent risk rejection, broker acknowledgement versus fill, protective positions and reconnect reconciliation.
 - **Provider checks:** schema and tool capability conformance, typed-question/answer validation for Jev, model-version pinning, multi-step binding validation, refusal and error normalization, local artifact pinning, secret isolation and no unapproved live fallback.
 - **Broker-adapter checks:** platform-specific symbol/volume mapping, account ownership, order lifecycle, protective orders, reconnect and reconciliation before live eligibility.
 - **Frontend checks:** typed API contract, permission and mode visibility, promotion review, stale/empty/error states, stream-gap recovery and no secrets or fabricated metrics in browser output.
 - **Evaluation checks:** frozen holdout access, suite versioning, baseline comparability, regression gates and experiment reproducibility.
 - **Discovery checks:** contract freeze before validation, immutable trial lineage, derived metric ownership, multiple-testing accounting, pair/time breadth and enforced status transitions.
-- **Operational checks:** structured reason codes, trace/correlation IDs, queue lag, stale broker observations, reconciliation gaps and fail-closed entry behavior.
+- **Operational checks:** structured reason codes, trace/correlation IDs, queue and stream lag, journal capacity, archive lag, stale broker observations, reconciliation gaps, container readiness, restore verification and fail-closed entry behavior.
 
 Failures are typed and distinguish `NO_SIGNAL` from inference failure, risk rejection from transport failure, and acknowledgement from fill. Required reason codes include source unavailable/stale/schema invalid, context incomplete, inference failed/schema invalid, signal expired, transport unavailable, execution rejected, broker rejected and reconciliation required.
 
-## 13. Implementation sequence
+## 13. Container deployment (Docker Compose / Portainer)
+
+The target deployment uses a versioned Docker Compose definition that can run through `docker compose` or as a Git-backed Portainer stack on a Docker Standalone endpoint. This is a Compose deployment model, not a Docker Swarm deployment. The Compose file and its pinned image versions are reviewed with application changes; Portainer reads the same repository definition rather than becoming a separate configuration source. Configuration values are environment-specific, while service topology and required health contracts stay versioned. [Docker Compose production guidance](https://docs.docker.com/compose/how-tos/production/) · [Portainer stacks from Git](https://docs.portainer.io/user/docker/stacks/add)
+
+The stack groups deployable processes by actual responsibility: control API, Next.js console, schedulers and decision workers, authenticated market ingestion, archive writer, execution coordinator, PostgreSQL and Redis. A local archive service is included only when the chosen durable object-storage backend needs one; an external object store is another adapter behind the same archive contract. The two cBots run on their supported cTrader/broker hosts and connect through authenticated ingestion and execution contracts; they are not presumed to be Linux containers or co-located with the stack. Agents, model profiles, portfolio profiles and accounts are versioned registry data, not individual Compose services.
+
+PostgreSQL data, Redis persistence, ingress-journal files and any local tick archive use explicit persistent storage. Archive chunks, manifests, journal checkpoints and configuration backups have a coordinated backup and restore procedure; restoring PostgreSQL without its referenced chunks is incomplete. Redis is recoverable transport and cache, so restart recovery replays retained journal entries, reconciles archive checkpoints and dispatch receipts, and marks feed state stale until a new observation arrives. Health checks distinguish a running container from a ready service; startup dependencies wait for required readiness, while workers also retry and recover if a dependency fails later. [Compose startup and health checks](https://docs.docker.com/compose/how-tos/startup-order)
+
+Only necessary ingress endpoints are published. Internal services use isolated networks and scoped credentials; broker, database, Redis, storage and model-provider credentials use secret references or mounted secrets, never committed values or browser-visible configuration. Service images are pinned to immutable releases, and schema migration, rollback and restore procedures are versioned with deployments. The initial Compose/Portainer shape is a single-host operational unit; it does not promise host-level high availability. Any move to multi-host operation requires an explicit storage, fencing, failover and recovery design. [Compose secrets](https://docs.docker.com/compose/how-tos/use-secrets)
+
+## 14. Implementation sequence
 
 1. Establish domain IDs, typed API/wire contracts, migrations, provider and broker ports, and registries for agents, model profiles, portfolios, accounts, feeds, allocations and deployments.
 2. Build the Next.js/TypeScript console shell with authentication, typed API client and the first real overview/account/feed status flows as their read models become available.
 3. Bring in the existing execution cBot and adapt its account routing, idempotency, risk checks, event reporting and reconciliation to the new contracts.
-4. Build the separate market-data cBot and ingestion path with source identity, symbol mapping, canonical observations, feed-health reporting and point-in-time visibility.
+4. Build the separate market-data cBot and authenticated ingestion path with source identity, symbol mapping, canonical observations, a durable ingress journal, Redis consumer groups, immutable tick chunks, archive manifests, feed-health reporting and point-in-time visibility.
 5. Complete one vertical path with a conformance-tested model provider: broker observation, pinned agent and model-profile versions, validated decision, account reservation, durable dispatch, execution cBot response and broker reconciliation. Show that path and its failures in the console.
-6. Make that path restart-safe with outbox/inbox idempotency, account serialization, feed-gap recovery, broker-state recovery and contract tests.
+6. Make that path restart-safe with outbox/inbox idempotency, account serialization, journal and stream replay, archive checkpoint recovery, feed-gap recovery, broker-state recovery and contract tests. Define and validate the Compose/Portainer deployment, health checks and backup/restore procedure when the deployable services and storage contracts exist.
 7. Add recorded-output replay and versioned evaluation suites; deliver Agents, Evaluations, Deployments and Execution screens against real query and command contracts.
 8. Add source-backed RAG and episodic memory with point-in-time replay checks, then Research, Portfolios and Market Data screens as their contracts are complete.
 9. Add the structured hypothesis/evidence registry and independent temporal, cost and breadth evaluations before automating research proposals.
