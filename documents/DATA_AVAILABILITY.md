@@ -72,6 +72,8 @@ cTrader describes the figures as percentages of accounts expecting a rise or fal
 
 To use this signal, LedgerQuant must start recording observations as updates arrive, including `observed_at`, `ingested_at`, `available_at`, symbol, source and validity status. Today's percentage cannot reconstruct observations from before collection began. Evaluations requiring this feature must start with the first reliable recorded observation unless a separate archive is documented.
 
+The capture bootstrap in [CAPTURE.md](CAPTURE.md) was deployed locally on 8 October 2026, but its PostgreSQL table contained **zero broker observations** at verification time. The cBot has built successfully but has not been started in cTrader Desktop. Therefore no prospective sentiment history has been confirmed yet; the first real observation must be verified after Desktop startup.
+
 ### News data and news-derived sentiment
 
 Raw news and event records are source evidence. Examples include central-bank statements, CPI releases, geopolitical event records and news articles. Their existence, wording, revisions and decision-time availability are measured independently of any sentiment field or later interpretation. An article's publication timestamp alone does not establish when LedgerQuant or a provider first had access to it. A vendor may return a source item and computed sentiment in one response; LedgerQuant still treats them as separate records with separate provenance and availability.

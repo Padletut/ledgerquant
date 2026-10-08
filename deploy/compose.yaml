@@ -1,0 +1,87 @@
+name: ledgerquant-capture
+
+services:
+  postgres:
+    image: postgres:17.6-alpine@sha256:ef257d85f76e48da1c64832459b59fcaba1a4dac97bf5d7450c77753542eee94
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ledgerquant
+      POSTGRES_USER: ledgerquant
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+    secrets:
+      - postgres_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ledgerquant -d ledgerquant"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  migrate:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.capture
+    command: ["alembic", "upgrade", "head"]
+    restart: "no"
+    user: "${LEDGERQUANT_SECRET_UID:-1000}:${LEDGERQUANT_SECRET_GID:-1000}"
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    tmpfs:
+      - /tmp
+    environment: &database_environment
+      DB_HOST: postgres
+      DB_NAME: ledgerquant
+      DB_USER: ledgerquant
+      DB_PASSWORD_FILE: /run/secrets/postgres_password
+    secrets:
+      - postgres_password
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  capture:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.capture
+    restart: unless-stopped
+    user: "${LEDGERQUANT_SECRET_UID:-1000}:${LEDGERQUANT_SECRET_GID:-1000}"
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    tmpfs:
+      - /tmp
+    secrets:
+      - postgres_password
+      - collector_token
+    environment:
+      <<: *database_environment
+      COLLECTOR_TOKEN_FILE: /run/secrets/collector_token
+    ports:
+      - "127.0.0.1:${LEDGERQUANT_INGEST_PORT:-18080}:8080"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/healthz', timeout=2)"
+      interval: 10s
+      timeout: 3s
+      retries: 6
+
+secrets:
+  postgres_password:
+    file: ${LEDGERQUANT_POSTGRES_PASSWORD_FILE:-../credentials/postgres.pwd}
+  collector_token:
+    file: ${LEDGERQUANT_COLLECTOR_TOKEN_FILE:-../credentials/collector-token.txt}
+
+volumes:
+  postgres_data:

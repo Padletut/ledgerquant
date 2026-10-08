@@ -2,9 +2,9 @@
 
 **Date:** 08.10.2026
 
-**Version:** 2.7.2
+**Version:** 2.7.3
 
-**Status:** Target architecture; only the read-only market-data history probe is implemented so far
+**Status:** Target architecture; implemented bootstrap comprises the read-only history probe and the isolated live-capture stack described in Section 4.2.1
 
 ## 1. Purpose and design rules
 
@@ -156,6 +156,16 @@ The separate market-data cBot reads broker market events and publishes versioned
 The market-data cBot has no order command handler, execution credentials or route to the execution coordinator. It is deployed and monitored independently from the execution cBot. Authentication scopes allow publishing observations only for its registered feed. Where the broker platform cannot provide physically separate privileges, the code and inbound protocol still expose no trading operation; contract tests verify this boundary.
 
 The stream tolerates reconnects, duplicate messages and out-of-order delivery. Sequence gaps, clock skew, stale feeds and dropped events are observable states. Backpressure uses bounded buffering and an explicit gap/recovery record; it must not silently label a delayed quote as current. A required stale feed prevents new decisions that depend on it, while the execution cBot continues broker-side position protection. Live executable quote and account checks remain with the execution cBot, because the ingested data may be delayed.
+
+#### 4.2.1 Implemented live-capture bootstrap
+
+The separate `cbots/LedgerQuant.LiveCapture/` project captures the current `Symbol.Sentiment` snapshot and subsequent update events in cTrader Desktop/.NET 6. Optional live bid/ask ticks are disabled by default. This is an observation-only cBot with no order methods or execution credential. It has not yet been run against a live Desktop session; a successful build does not prove source updates or host connectivity. cTrader's sentiment API has no historical backfill and is unavailable in CLI and Cloud, so collection starts only after an operator installs and starts the cBot on the intended account and symbol. [cTrader symbol sentiment](https://help.ctrader.com/ctrader-algo/guides/symbol-sentiment/)
+
+Each cBot instance has a unique feed ID bound to source, broker, demo/live environment, account and symbol. It assigns a new session ID and monotonically increasing sequence per start. The local append-only NDJSON journal is flushed before a record is sent; an acknowledgement cursor advances only after the ingest API confirms a committed batch. Restart and duplicate delivery therefore preserve original message IDs. An unreadable or full journal, mismatched source identity or permanent ingest rejection stops capture visibly. The journal is never silently trimmed; backup and capacity management are operational duties. The cBot uses a bearer credential for the ingest endpoint, with loopback HTTP allowed for a colocated Desktop client and HTTPS required for a remote endpoint.
+
+`src/ledgerquant/capture/` implements a small authenticated batch API. PostgreSQL `market.capture_observations` is an append-only raw-capture store with unique message IDs and `(feed_id, session_id, sequence)` identity, payload hashes, immutable feed bindings and mutation-rejecting triggers. A successful API response is sent only after the database transaction commits. Tick source event time and local observed time remain separate; sentiment has an observed time but no invented source event time. Server receive and ingest times are recorded independently. A zero sentiment percentage is marked `ZERO_AMBIGUOUS`, because zero can mean unavailable source data. The bootstrap's `available_at` is assigned during the insert transaction, before commit; it is an ingest-time estimate, **not an exact durable-visibility timestamp for historical decision replay**. Before any captured record enters Executor context or a strict point-in-time evaluation, a later canonicalization stage must derive a conservative post-commit availability bound and preserve this raw timestamp.
+
+This bootstrap writes optional ticks as PostgreSQL rows to start collection early. It has no Redis stream, archive writer, immutable tick chunks, control API, feed-health service or execution path. It is deliberately a small capture store, not the target historical market-data architecture in Section 4.3. Capacity, backups, restore tests, feed gaps, clock quality and a migration into the durable archive are required before it becomes the long-term tick history or an Executor feed. The operating procedure is in [CAPTURE.md](CAPTURE.md).
 
 ### 4.3 Redis stream and durable tick archive
 
@@ -395,12 +405,13 @@ Read models support pagination, filtering and stable sorting. Live updates carry
 
 ## 11. Repository and module layout
 
-The following is the **target layout**, not a claim about files already implemented:
+The following is the **target layout**, not a claim about files already implemented. The implemented bootstrap currently occupies `src/ledgerquant/capture/`, `cbots/LedgerQuant.LiveCapture/`, `deploy/compose.yaml` and `migrations/`:
 
 ```text
 documents/
   ARCHITECTURE.md
   DATA_AVAILABILITY.md
+  CAPTURE.md                  # live-capture bootstrap runbook
   decisions/                  # architecture decisions and migrations of intent
 contracts/                    # OpenAPI, events and broker wire schemas
 src/ledgerquant/
@@ -447,9 +458,10 @@ apps/web/
   src/lib/streams/             # event cursor and reconnect handling
 cbots/
   LedgerQuant.Execution/      # adapted C# execution cBot
-  LedgerQuant.MarketData/     # read-only history probe; market-data publisher planned
+  LedgerQuant.MarketData/      # read-only history probe; market-data publisher planned
+  LedgerQuant.LiveCapture/     # current sentiment and optional live tick capture
 deploy/
-  compose.yaml                # versioned Docker Compose / Portainer deployment definition
+  compose.yaml                # current bootstrap; full stack remains a target
 migrations/                   # ordered database migrations
 tests/
   unit/                       # domain rules
@@ -484,6 +496,8 @@ Failures are typed and distinguish `NO_SIGNAL` from inference failure, risk reje
 
 ## 13. Container deployment (Docker Compose / Portainer)
 
+The implemented `deploy/compose.yaml` currently runs only PostgreSQL, an Alembic migration job and the authenticated capture API. It is a capture bootstrap, not the full target stack below. The API binds to host loopback by default at port 18080; remote cTrader Desktop needs an authenticated HTTPS ingress configured separately. PostgreSQL uses a named volume, while the cBot journal lives in cTrader's local Algo file storage. Secret files are kept outside Git and outside the Docker build context. The capture service and migration run with the UID/GID that owns those files. See [CAPTURE.md](CAPTURE.md) for startup, Portainer secret-file paths, monitoring and backup.
+
 The target deployment uses a versioned Docker Compose definition that can run through `docker compose` or as a Git-backed Portainer stack on a Docker Standalone endpoint. This is a Compose deployment model, not a Docker Swarm deployment. The Compose file and its pinned image versions are reviewed with application changes; Portainer reads the same repository definition rather than becoming a separate configuration source. Configuration values are environment-specific, while service topology and required health contracts stay versioned. [Docker Compose production guidance](https://docs.docker.com/compose/how-tos/production/) · [Portainer stacks from Git](https://docs.portainer.io/user/docker/stacks/add)
 
 The stack groups deployable processes by actual responsibility: control API, Next.js console, schedulers and decision workers, authenticated market ingestion, archive writer, execution coordinator, PostgreSQL and Redis. A local archive service is included only when the chosen durable object-storage backend needs one; an external object store is another adapter behind the same archive contract. The two cBots run on their supported cTrader/broker hosts and connect through authenticated ingestion and execution contracts; they are not presumed to be Linux containers or co-located with the stack. Agents, model profiles, portfolio profiles and accounts are versioned registry data, not individual Compose services.
@@ -493,6 +507,8 @@ PostgreSQL data, Redis persistence, ingress-journal files and any local tick arc
 Only necessary ingress endpoints are published. Internal services use isolated networks and scoped credentials; broker, database, Redis, storage and model-provider credentials use secret references or mounted secrets, never committed values or browser-visible configuration. Service images are pinned to immutable releases, and schema migration, rollback and restore procedures are versioned with deployments. The initial Compose/Portainer shape is a single-host operational unit; it does not promise host-level high availability. Any move to multi-host operation requires an explicit storage, fencing, failover and recovery design. [Compose secrets](https://docs.docker.com/compose/how-tos/use-secrets)
 
 ## 14. Implementation sequence
+
+The live-capture bootstrap is an early data-preservation step ahead of this sequence. It must not be mistaken for completion of the target market ingestion and archive work in item 4.
 
 1. Establish domain IDs, typed API/wire contracts, migrations, provider and broker ports, and registries for agents, model profiles, portfolios, accounts, feeds, allocations and deployments.
 2. Build the Next.js/TypeScript console shell with authentication, typed API client and the first real overview/account/feed status flows as their read models become available.

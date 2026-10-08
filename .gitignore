@@ -1,5 +1,8 @@
 # Env
 .env
+.venv/
+.pytest_cache/
+__pycache__/
 
 # URGENT! DO NOT SEND CREDENTIALS TO GITHUB!
 /credentials/**
@@ -8,3 +11,5 @@
 /cbots/**/bin/
 /cbots/**/obj/
 /cbots/**/*.algo
+/tests/dotnet/**/bin/
+/tests/dotnet/**/obj/

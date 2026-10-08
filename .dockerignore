@@ -1,0 +1,9 @@
+*
+!alembic.ini
+!requirements.txt
+!src
+!src/**
+!migrations
+!migrations/**
+!deploy
+!deploy/Dockerfile.capture
