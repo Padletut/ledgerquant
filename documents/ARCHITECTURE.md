@@ -2,7 +2,7 @@
 
 **Date:** 08.10.2026
 
-**Version:** 2.4.0
+**Version:** 2.5.0
 
 **Status:** Target architecture; implementation is not yet present in this repository
 
@@ -192,7 +192,7 @@ Each domain builds searchable, versioned projections from approved source artifa
 
 High-frequency broker quotes, ticks and bars from the market-data cBot are primarily structured time-series observations queried by instrument and time. They do not need to become vector documents. Market knowledge RAG may retrieve associated broker notices or event metadata, while structured market queries supply prices and feed-health facts under the same point-in-time rules.
 
-An agent version pins a retrieval policy: domain, allowed corpora and source types, account/portfolio scope, index and embedding versions, retriever/ranker version, point-in-time filters, freshness limits, relevance threshold and context budget. Market retrieval applies authorization and `available_at` filtering **before** ranking. Research retrieval also records the information cutoff used for each study. Hybrid lexical/vector retrieval is permitted behind one typed interface; changing the search implementation must preserve the retrieval contract and create a new version where results can differ.
+An agent version pins a retrieval policy: domain, allowed corpora and source types, account/portfolio scope, index and embedding versions, retriever/ranker version, point-in-time filters, freshness limits, relevance threshold and context budget. Market retrieval applies authorization and `available_at` filtering **before** ranking. Research retrieval also records the information cutoff used for each study. Hybrid lexical/vector retrieval is permitted behind one typed interface; changing the search implementation must preserve the retrieval contract and create a new version where results can differ. The same filtered, versioned context may supply a typed decision model; the retrieval rules do not depend on whether the consumer generates text.
 
 Each decision or research run records the query hash, retrieval domain and snapshot, selected chunk IDs and order, content hashes, scores, source citations, filters and exact assembled context hash. Recorded-output replay uses this captured context; a new retrieval is a separate run. Mandatory market evidence that is absent, stale or outside scope produces `CONTEXT_INCOMPLETE` or `SOURCE_STALE`, never invented context. Retrieved text is untrusted data: it cannot change system instructions, call tools, redefine success metrics or override execution policy. Source and account access rules apply before content reaches the model.
 
@@ -208,7 +208,7 @@ Memory may inform a decision but cannot activate an agent, modify risk limits or
 
 An evaluation suite fixes dataset and source snapshots, temporal splits, expected labels where available, scoring rules, baseline, minimum gates and evaluation code version. Development data is separate from a frozen holdout. Walk-forward windows and prospective shadow runs are used for trading behavior; repeated prompt changes are not tuned against the holdout. A changed suite or threshold creates a new suite version rather than rewriting an old result; it cannot reclassify a failed frozen hypothesis without a new child hypothesis and untouched validation evidence.
 
-Evaluate the complete decision contract, including retrieval, memory, prompt, model and policy versions. Gates cover retrieval relevance and evidence coverage, citation faithfulness, temporal leakage, schema validity, justified abstention, unsafe actions, capital-limit violations, latency and cost. Trading metrics use the same market window and execution assumptions for candidate and baseline, report sample sizes and uncertainty, and keep simulated outcomes distinct from broker-observed outcomes. A passing offline score does not authorize live trading.
+Evaluate the complete decision contract, including retrieval, memory, prompt or typed-question contract, model and policy versions. Gates cover retrieval relevance and evidence coverage, citation faithfulness where applicable, temporal leakage, schema validity, justified abstention, unsafe actions, capital-limit violations, latency and cost. Typed decision models are also measured for class/score accuracy, probability calibration, coverage at each abstention threshold and stability across instruments and time windows. Trading metrics use the same market window and execution assumptions for candidate and baseline, report sample sizes and uncertainty, and keep simulated outcomes distinct from broker-observed outcomes. A passing offline score does not authorize live trading.
 
 Every run stores candidate and baseline IDs, suite version, case IDs, inputs, outputs, metric definitions, failures and reproducibility metadata. Research promotion decisions cite both the evaluation run and its structured evidence record, plus any accepted exceptions. Evals are also regression gates for adapter, index, model and memory-policy changes, not only prompt changes. After activation, ongoing evaluation watches data quality, behavior and risk drift; a breached hard gate pauses new entries or rolls back through the deployment workflow.
 
@@ -313,13 +313,21 @@ The outbox guarantees that a committed state transition has a durable delivery i
 
 ## 8. Model provider architecture
 
-Agents use a typed model-provider port; provider SDKs and HTTP formats stay inside adapters. The initial target adapters are OpenAI, Claude, Ollama, LM Studio and a local `llama.cpp` server. Llama is a model family rather than a transport: Llama-family models are selected through a verified local runtime such as Ollama, LM Studio or `llama.cpp`. Additional providers use the same registration and conformance process.
+Agents use typed model-provider ports; provider SDKs and HTTP formats stay inside adapters. The initial target adapters are OpenAI, Claude, TypeSafe Jev, Ollama, LM Studio and a local `llama.cpp` server. Llama is a model family rather than a transport: Llama-family models are selected through a verified local runtime such as Ollama, LM Studio or `llama.cpp`. Additional providers use the same registration and conformance process.
 
-A versioned model profile fixes provider instance, endpoint identity, model ID and revision or local artifact digest, inference parameters, credential reference, allowed tools, output schema and resource limits. The provider capability snapshot records supported structured output, tool calls, streaming, embeddings, context limits and usage reporting. Text generation and embeddings are separate ports; a generation model is not assumed to supply embeddings. A published agent version binds one exact model-profile version and the deployment validates every required capability before activation.
+A versioned model profile fixes model kind, provider instance, endpoint identity, model ID and revision or local artifact digest, inference parameters, credential reference, allowed tools, output contract and resource limits. The provider capability snapshot records supported text generation, typed decisions, structured output, tool calls, streaming, embeddings, context limits and usage reporting. Text generation, typed decisions and embeddings are separate ports; a model is not assumed to support a capability merely because another model from the same provider does. A published agent version binds one exact model-profile version and the deployment validates every required capability before activation.
 
 The adapter normalizes completed output, refusal or incomplete result, tool requests, usage, latency, provider request ID and error type. The domain validates the normalized result against the agent schema regardless of provider claims. OpenAI-compatible local endpoints are treated as transport options, not proof of identical tools, schema enforcement or token accounting. Each endpoint and model combination must pass conformance tests for the capabilities it advertises. Provider outages, rate limits and malformed output remain distinct failure reasons.
 
-Cloud credentials live in the secret store; local endpoints are explicitly registered and access-controlled. Operators choose which data classes may leave the local system for each provider. Neither browser code nor agent configuration contains raw API keys. A live deployment never silently switches provider or model after a failure: fallback requires a preapproved versioned policy and evaluation evidence, and every invocation records the provider, model revision, profile version and effective prompt/context fingerprint. Local model upgrades or changed weights create a new model-profile version.
+Cloud credentials live in the secret store; local endpoints are explicitly registered and access-controlled. Operators choose which data classes may leave the local system for each provider. Neither browser code nor agent configuration contains raw API keys. A live deployment never silently switches provider or model after a failure: fallback requires a preapproved versioned policy and evaluation evidence, and every invocation records the provider, model revision, profile version and effective prompt or question/context fingerprint. Local model upgrades or changed weights create a new model-profile version.
+
+### 8.1 TypeSafe Jev typed decisions
+
+Jev is a typed decision model, not a text-generation or embedding model. Its adapter implements the typed-decision port with a point-in-time `state` and a versioned set of atomic questions: `Choice` selects from declared options, `Score` evaluates a declared ordered rubric, and `Noul` returns a probability for a yes/no proposition. `Choice` and `Score` also return probability distributions and a provider-defined confidence measure; `Noul` has no separate confidence field. The adapter validates question IDs, criteria, response types and probability ranges, then returns normalized judgments without inventing a text response or treating a schema-valid answer as a correct one. [TypeSafe: primitives](https://docs.typesafe.ai/primitives), [TypeSafe: confidence](https://docs.typesafe.ai/confidence)
+
+An agent version freezes the question text, option labels or score rubric, state assembly contract, model-profile version and deterministic decision policy. The policy combines judgments, applies calibrated thresholds and defines abstention or escalation when evidence is missing or uncertainty is high. A Jev result may classify market context, route work or contribute a bounded input to an Executor, Critic or Research agent; it cannot directly authorize an order, change a payoff contract or promote a hypothesis. Account risk checks and independent evaluation remain authoritative. Changing a question, rubric, threshold or model creates a new version and requires comparison against the existing baseline. Store the exact state/context fingerprint, question-set version, model version returned by the provider, typed answers, distributions, policy result and timing in inference lineage. Live deployments pin a versioned model ID rather than a moving alias. [TypeSafe: System One](https://docs.typesafe.ai/concepts/system-one), [TypeSafe: models](https://docs.typesafe.ai/models)
+
+Jev's supported input is text or text-bearing structured state; the integration must not claim image, audio, video, tool-use or free-form generation capabilities. Before activation, run provider conformance and domain evaluations on representative point-in-time cases, including ambiguous inputs, changed option wording, missing context, class imbalance and instrument or regime shifts. Evaluate the resulting trading decisions and abstention behavior, not only the model's advertised confidence. [TypeSafe: System One](https://docs.typesafe.ai/concepts/system-one)
 
 ## 9. API and distribution strategy
 
@@ -373,12 +381,13 @@ The following is the **target layout**, not a claim about files already implemen
 ```text
 documents/
   ARCHITECTURE.md
+  DATA_AVAILABILITY.md
   decisions/                  # architecture decisions and migrations of intent
 contracts/                    # OpenAPI, events and broker wire schemas
 src/ledgerquant/
   api/                        # HTTP/stream adapters, request/response schemas
   agents/                     # definitions, capabilities, runner, validation
-  models/                     # model profiles, provider and embedding ports
+  models/                     # model profiles, generation, decision and embedding ports
   brokers/                    # adapter ports, capabilities and connection registry
   portfolios/                 # profile policy and account allocations
   accounts/                   # account registry and broker-state contracts
@@ -392,7 +401,7 @@ src/ledgerquant/
   research/                   # hypotheses, payoff discovery, evidence registry
   execution/                  # signals, reservations, dispatch, reconciliation
   integrations/
-    llm/                      # OpenAI, Claude and local runtime adapters
+    model_providers/          # OpenAI, Claude, Jev and local runtime adapters
     broker/                   # API, cBot, MT4, MT5, NinjaTrader adapters
   messaging/                  # outbox, inbox and delivery adapters
   persistence/                # database setup and module repository adapters
@@ -440,7 +449,7 @@ Names and paths follow the concepts they implement. Avoid duplicate models for t
 - **RAG and memory checks:** source authorization, retrieval provenance, stale or missing evidence, prompt-injection isolation, episode eligibility and no future-outcome leakage.
 - **Broker-feed checks:** source and symbol identity, event/receive/availability times, duplicate and reordered events, reconnect gaps, backpressure and stale-feed handling; verify the market-data cBot has no execution path.
 - **Execution cBot checks:** account routing, duplicate and expired commands, independent risk rejection, broker acknowledgement versus fill, protective positions and reconnect reconciliation.
-- **Provider checks:** schema and tool capability conformance, refusal and error normalization, local artifact pinning, secret isolation and no unapproved live fallback.
+- **Provider checks:** schema and tool capability conformance, typed-question/answer validation for Jev, model-version pinning, refusal and error normalization, local artifact pinning, secret isolation and no unapproved live fallback.
 - **Broker-adapter checks:** platform-specific symbol/volume mapping, account ownership, order lifecycle, protective orders, reconnect and reconciliation before live eligibility.
 - **Frontend checks:** typed API contract, permission and mode visibility, promotion review, stale/empty/error states, stream-gap recovery and no secrets or fabricated metrics in browser output.
 - **Evaluation checks:** frozen holdout access, suite versioning, baseline comparability, regression gates and experiment reproducibility.
@@ -461,7 +470,7 @@ Failures are typed and distinguish `NO_SIGNAL` from inference failure, risk reje
 8. Add source-backed RAG and episodic memory with point-in-time replay checks, then Research, Portfolios and Market Data screens as their contracts are complete.
 9. Add the structured hypothesis/evidence registry and independent temporal, cost and breadth evaluations before automating research proposals.
 10. Add shadow mode, prospective evaluation and controlled promotion; introduce Loop A Critic/optimizer candidates and Loop B Discovery candidates only after these gates work.
-11. Complete the remaining conformance-tested OpenAI, Claude, Ollama, LM Studio and local Llama-runtime adapters, plus broker API, MT4, MT5 and NinjaTrader integrations as each reaches its required capability gate.
+11. Complete the remaining conformance-tested OpenAI, Claude, TypeSafe Jev, Ollama, LM Studio and local Llama-runtime adapters, plus broker API, MT4, MT5 and NinjaTrader integrations as each reaches its required capability gate.
 12. Scale the API, frontend and workers independently when measured load or isolation needs require it.
 
 The first release does not need every possible agent capability or a separate service for every module. It does need complete lifecycle and identity handling for each object it exposes. Future adaptability comes from stable contracts, versioned composition and safe deployment transitions, rather than from unbounded configuration or a growing collection of special cases.
