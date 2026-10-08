@@ -2,7 +2,7 @@
 
 **Date:** 08.10.2026
 
-**Version:** 2.5.0
+**Version:** 2.6.0
 
 **Status:** Target architecture; implementation is not yet present in this repository
 
@@ -51,7 +51,7 @@ The control plane manages definitions and deployment intent. The data plane inge
 
 | Entity | Identity and versioning | Owner and purpose |
 | --- | --- | --- |
-| `agent_definition` | Stable `agent_id`; immutable `agent_version` | Agent registry. Defines a supported role/capability, input policy, output schema, model and instruction references. |
+| `agent_definition` | Stable `agent_id`; immutable `agent_version` | Agent registry. Defines a supported role/capability, input policy, output schema, named model bindings and prompt or typed-question references. |
 | `portfolio_profile` | Stable `portfolio_id`; immutable `portfolio_version` | Portfolio registry. Defines investment universe, allocation and risk policy. |
 | `trading_account` | Stable `account_id`; operational changes have audit events | Account registry. Identifies broker, adapter, environment, external account key, capabilities and credential reference. |
 | `portfolio_account_allocation` | Versioned portfolio/account binding | Portfolio registry. Reserves a capital/risk slice and effective interval. |
@@ -73,7 +73,7 @@ The broker is authoritative for actual orders, fills, positions, balances and ma
 
 ### 3.1 Agent definitions and lifecycle
 
-An agent definition contains a stable ID, role, capability identifier, input/context contract, output schema, model/provider contract when applicable, instruction or artifact references, allowed tools, resource limits and evaluation policy. A version is immutable after publication. The same runner executes any version that satisfies a registered capability interface and validated schema.
+An agent definition contains a stable ID, role, capability identifier, input/context contract, output schema, named model/provider bindings when applicable, prompt or typed-question and decision-policy references, allowed tools, resource limits and evaluation policy. A version is immutable after publication. The same runner executes any version that satisfies a registered capability interface and validated schema.
 
 ```text
 DRAFT → VALIDATED → CANDIDATE → APPROVED → ACTIVE → PAUSED → RETIRED
@@ -104,7 +104,7 @@ Account states are `DRAFT`, `VERIFIED`, `ACTIVE`, `SUSPENDED` and `RETIRED`. Ver
 
 ### 3.4 Deployments and safe reconfiguration
 
-A deployment binds a published agent version, portfolio version, allocation, account, execution mode (`RESEARCH`, `SHADOW`, `DEMO` or `LIVE`) and schedule. Activation creates an immutable epoch with a content hash of all effective configuration, including prompt, retrieval, memory and model references. Multiple deployments can run concurrently; each result is attributed to its deployment and epoch. A new version becomes effective only at a declared epoch boundary. The scheduler receives a registry change event and periodically reconciles its state against the registry so a missed notification cannot leave it permanently stale.
+A deployment binds a published agent version, portfolio version, allocation, account, execution mode (`RESEARCH`, `SHADOW`, `DEMO` or `LIVE`) and schedule. Activation creates an immutable epoch with a content hash of all effective configuration, including prompt or question-set, decision-policy, retrieval, memory and model-binding references. Multiple deployments can run concurrently; each result is attributed to its deployment and epoch. A new version becomes effective only at a declared epoch boundary. The scheduler receives a registry change event and periodically reconciles its state against the registry so a missed notification cannot leave it permanently stale.
 
 Before activation, validate schema compatibility, account capability, market permissions, allocation capacity, risk limits, credential availability, retrieval and memory policies, and required approvals. Version transitions are atomic at the deployment level. In-flight evaluations complete under their original epoch; new work uses the new epoch. Conflicting simultaneous changes use optimistic concurrency and return a conflict rather than silently overwriting another operator's edit.
 
@@ -133,7 +133,7 @@ Observation → PIT context (RAG + eligible episodes)
                  Reconciliation events
 ```
 
-Decision events record input observation IDs, retrieved artifact and episode IDs, assembled context hash, agent and portfolio versions, allocation and account IDs, epoch, model and instruction versions, output schema, result, timestamps and reason codes. A candidate action becomes executable only after policy checks, account capacity reservation and durable dispatch intent succeed.
+Decision events record input observation IDs, retrieved artifact and episode IDs, agent and portfolio versions, allocation and account IDs, epoch, model-binding and prompt or question-set/decision-policy versions, output schema, result, timestamps and reason codes. Each model invocation records an immutable reference to its exact assembled input, content hash, model and step identity, output and timing; this also preserves lineage when a capability composes several models. A candidate action becomes executable only after policy checks, account capacity reservation and durable dispatch intent succeed.
 
 The signal workflow is `CREATED → AUTHORIZED → DISPATCHED → ACKNOWLEDGED → BROKER_ACCEPTED → PARTIALLY_FILLED/FILLED → RECONCILED`, with explicit `REJECTED`, `EXPIRED`, `CANCELLED` and `UNKNOWN_PENDING_RECONCILIATION` paths. Transitions are appended as events; a current-status projection may be updated for queries. A timeout leaves uncertain broker state to reconcile before retrying an order. Every command uses a stable `signal_id` and an idempotency key. Retries must not create a second broker order.
 
@@ -175,7 +175,7 @@ Each external artifact is normalized by a source-specific, versioned canonicaliz
 
 An observation records `source_id`, `source_type`, `source_event_time`, `observed_at`, `received_at`, `ingested_at`, `available_at`, `canonicalizer_version`, `content_sha256` and `raw_artifact_reference`. Broker-feed observations also record feed ID, cBot version, symbol-map version and source sequence/message ID. The source contract defines `available_at`, which controls point-in-time visibility. For a broker cBot feed, it cannot precede validated durable ingestion: a broker timestamp or cBot clock does not make delayed data available earlier. Replay at time `T` may read only records whose declared `available_at ≤ T` and whose source revisions were visible then. Clock skew and transport delay are measured separately.
 
-An inference fingerprint binds the visible context, canonicalization version, agent and portfolio versions, retrieval and memory policy versions, selected artifact and episode IDs, model/provider, instructions, tools, output schema and inference parameters. Recorded-output replay returns the persisted result for that exact contract. Fresh-inference replay invokes the model again and stores a distinct event; probabilistic inference may differ. Replay results state the mode and the source-availability contract.
+An inference fingerprint binds the visible context, canonicalization version, agent and portfolio versions, retrieval and memory policy versions, selected artifact and episode IDs, named model/provider bindings and step plan, prompt or typed question-set and decision-policy versions, tools, output schema and inference parameters. Recorded-output replay returns the persisted result for that exact contract. Fresh-inference replay invokes the pinned model steps again and stores distinct invocation events; probabilistic inference may differ. Replay results state the mode and the source-availability contract.
 
 Point-in-time filtering alone does not eliminate survivorship bias, missing historical observations, changed providers or execution-model differences. Evaluation reports identify these limits and keep research, shadow, demo and live results separate.
 
@@ -206,17 +206,17 @@ Memory may inform a decision but cannot activate an agent, modify risk limits or
 
 ### 5.3 Versioned evaluations
 
-An evaluation suite fixes dataset and source snapshots, temporal splits, expected labels where available, scoring rules, baseline, minimum gates and evaluation code version. Development data is separate from a frozen holdout. Walk-forward windows and prospective shadow runs are used for trading behavior; repeated prompt changes are not tuned against the holdout. A changed suite or threshold creates a new suite version rather than rewriting an old result; it cannot reclassify a failed frozen hypothesis without a new child hypothesis and untouched validation evidence.
+An evaluation suite fixes dataset and source snapshots, temporal splits, expected labels where available, scoring rules, baseline, minimum gates and evaluation code version. Development data is separate from a frozen holdout. Walk-forward windows and prospective shadow runs are used for trading behavior; repeated prompt, question-set or policy changes are not tuned against the holdout. A changed suite or threshold creates a new suite version rather than rewriting an old result; it cannot reclassify a failed frozen hypothesis without a new child hypothesis and untouched validation evidence.
 
 Evaluate the complete decision contract, including retrieval, memory, prompt or typed-question contract, model and policy versions. Gates cover retrieval relevance and evidence coverage, citation faithfulness where applicable, temporal leakage, schema validity, justified abstention, unsafe actions, capital-limit violations, latency and cost. Typed decision models are also measured for class/score accuracy, probability calibration, coverage at each abstention threshold and stability across instruments and time windows. Trading metrics use the same market window and execution assumptions for candidate and baseline, report sample sizes and uncertainty, and keep simulated outcomes distinct from broker-observed outcomes. A passing offline score does not authorize live trading.
 
-Every run stores candidate and baseline IDs, suite version, case IDs, inputs, outputs, metric definitions, failures and reproducibility metadata. Research promotion decisions cite both the evaluation run and its structured evidence record, plus any accepted exceptions. Evals are also regression gates for adapter, index, model and memory-policy changes, not only prompt changes. After activation, ongoing evaluation watches data quality, behavior and risk drift; a breached hard gate pauses new entries or rolls back through the deployment workflow.
+Every run stores candidate and baseline IDs, suite version, case IDs, inputs, outputs, metric definitions, failures and reproducibility metadata. Research promotion decisions cite both the evaluation run and its structured evidence record, plus any accepted exceptions. Evals are also regression gates for adapter, index, model, question-set, decision-policy and memory-policy changes. After activation, ongoing evaluation watches data quality, behavior and risk drift; a breached hard gate pauses new entries or rolls back through the deployment workflow.
 
-### 5.4 Prompt optimization and promotion
+### 5.4 Instruction and question optimization and promotion
 
-Prompts are immutable, versioned artifacts referenced by agent versions. An optimizer or Critic may propose prompt candidates using only its permitted development evidence and a bounded experiment budget. Each experiment links to a Loop A hypothesis and research trial; it records the proposal method, parent prompt, candidate hash, retrieval/memory/model configuration and evaluation suite. The independent evaluator writes measured results to the evidence registry. Candidates are compared with the active baseline under the same conditions; changing multiple components is either isolated in separate experiments or identified as a combined change.
+Prompts and typed question sets are immutable, versioned artifacts referenced by agent versions. A typed question set includes question IDs, text, option descriptions or score rubric and its answer schema; the deterministic policy that combines answers has its own immutable version. An optimizer or Critic may propose prompt, question-set or policy candidates using only its permitted development evidence and a bounded experiment budget. Each experiment links to a Loop A hypothesis and research trial; it records the proposal method, parent artifact, candidate hash, retrieval/memory/model configuration and evaluation suite. The independent evaluator writes measured results to the evidence registry. Candidates are compared with the active baseline under the same conditions; changing multiple components is either isolated in separate experiments or identified as a combined change.
 
-The optimizer cannot read the frozen holdout while generating candidates, promote its own result, change account policy or edit active versions. Candidate selection passes contract checks, temporal evaluation, stress cases and prospective shadow evidence before explicit approval. Activation creates a new deployment epoch; rollback selects a prior approved version and records a new epoch. Prompt text alone is never treated as the complete unit of optimization because retrieved context, memory and model behavior also affect the result.
+The optimizer cannot read the frozen holdout while generating candidates, promote its own result, change account policy or edit active versions. Candidate selection passes contract checks, temporal evaluation, stress cases and prospective shadow evidence before explicit approval. Activation creates a new deployment epoch; rollback selects a prior approved version and records a new epoch. Prompt or question text alone is never treated as the complete unit of optimization because retrieved context, memory, model behavior and decision policy also affect the result. A change to the target decision or payoff contract belongs to Loop B, regardless of whether it is expressed as a prompt, question or policy edit.
 
 ## 6. Two self-improvement loops and structured evidence
 
@@ -224,7 +224,7 @@ The research system has two explicit loops. Both create hypotheses and evidence;
 
 | Loop | Research question | Contract boundary |
 | --- | --- | --- |
-| **A — improve an existing decision system** | Can a prompt, model, feature, retrieval, memory or decision-rule change improve the current Executor? | The decision target and payoff contract stay fixed. Compare a candidate with the current baseline under the same evaluation and cost assumptions. |
+| **A — improve an existing decision system** | Can a prompt, typed question set, model, feature, retrieval, memory or decision-rule change improve the current Executor? | The decision target and payoff contract stay fixed. Compare a candidate with the current baseline under the same evaluation and cost assumptions. |
 | **B — discover a new payoff contract** | Is there another decision and payoff for which observable information has stable economic value? | Register new decision, feature, payoff and cost contracts before validation. A changed payoff is a new hypothesis, even if it reuses an existing agent. |
 
 The common research path is `PROPOSE → FREEZE CONTRACT → DEVELOP → INDEPENDENT TEMPORAL VALIDATION → COST/STRESS VALIDATION → PROSPECTIVE SHADOW → APPROVAL`. A Critic or Discovery agent can submit candidates and inspect permitted evidence, but the evaluation service computes outcomes and the promotion authority controls status. Loop B may produce a new agent capability, portfolio policy or execution mode; such changes follow the normal code and risk review before deployment.
@@ -287,6 +287,7 @@ PostgreSQL is the initial durable store. Time-series partitioning and a vector i
 
 ```text
 registry:    agent_definitions, agent_versions, prompt_versions,
+             question_set_versions, decision_policy_versions,
              model_providers, model_profiles, model_profile_versions,
              provider_capability_snapshots,
              broker_connections, broker_capability_snapshots,
@@ -315,7 +316,7 @@ The outbox guarantees that a committed state transition has a durable delivery i
 
 Agents use typed model-provider ports; provider SDKs and HTTP formats stay inside adapters. The initial target adapters are OpenAI, Claude, TypeSafe Jev, Ollama, LM Studio and a local `llama.cpp` server. Llama is a model family rather than a transport: Llama-family models are selected through a verified local runtime such as Ollama, LM Studio or `llama.cpp`. Additional providers use the same registration and conformance process.
 
-A versioned model profile fixes model kind, provider instance, endpoint identity, model ID and revision or local artifact digest, inference parameters, credential reference, allowed tools, output contract and resource limits. The provider capability snapshot records supported text generation, typed decisions, structured output, tool calls, streaming, embeddings, context limits and usage reporting. Text generation, typed decisions and embeddings are separate ports; a model is not assumed to support a capability merely because another model from the same provider does. A published agent version binds one exact model-profile version and the deployment validates every required capability before activation.
+A versioned model profile fixes model kind, provider instance, endpoint identity, model ID and revision or local artifact digest, inference parameters, credential reference, allowed tools, output contract and resource limits. The provider capability snapshot records supported text generation, typed decisions, structured output, tool calls, streaming, embeddings, context limits and usage reporting. Text generation, typed decisions and embeddings are separate ports; a model is not assumed to support a capability merely because another model from the same provider does. A published agent version binds one or more exact model-profile versions by named step, according to its registered capability contract. The step order, input mapping, output mapping and any approved fallback bindings are versioned; every bound profile is validated before activation. Runtime model selection outside those bindings is forbidden.
 
 The adapter normalizes completed output, refusal or incomplete result, tool requests, usage, latency, provider request ID and error type. The domain validates the normalized result against the agent schema regardless of provider claims. OpenAI-compatible local endpoints are treated as transport options, not proof of identical tools, schema enforcement or token accounting. Each endpoint and model combination must pass conformance tests for the capabilities it advertises. Provider outages, rate limits and malformed output remain distinct failure reasons.
 
@@ -323,9 +324,9 @@ Cloud credentials live in the secret store; local endpoints are explicitly regis
 
 ### 8.1 TypeSafe Jev typed decisions
 
-Jev is a typed decision model, not a text-generation or embedding model. Its adapter implements the typed-decision port with a point-in-time `state` and a versioned set of atomic questions: `Choice` selects from declared options, `Score` evaluates a declared ordered rubric, and `Noul` returns a probability for a yes/no proposition. `Choice` and `Score` also return probability distributions and a provider-defined confidence measure; `Noul` has no separate confidence field. The adapter validates question IDs, criteria, response types and probability ranges, then returns normalized judgments without inventing a text response or treating a schema-valid answer as a correct one. [TypeSafe: primitives](https://docs.typesafe.ai/primitives), [TypeSafe: confidence](https://docs.typesafe.ai/confidence)
+Jev is a typed decision model, not a text-generation or embedding model. Its adapter implements the typed-decision port with a point-in-time `state` and a versioned set of atomic questions: `Choice` selects from declared options, `Score` evaluates a declared ordered rubric, and `Noul` returns a probability for a yes/no proposition. A `Choice` question whose alternatives may be incomplete includes an explicit `none` or `abstain` option; that answer cannot become a trading action. `Choice` and `Score` also return probability distributions and a provider-defined confidence measure; `Noul` has no separate confidence field. The adapter validates question IDs, criteria, response types and probability ranges, then returns normalized judgments without inventing a text response or treating a schema-valid answer as a correct one. [TypeSafe: primitives](https://docs.typesafe.ai/primitives), [TypeSafe: Choice](https://docs.typesafe.ai/primitives/choice), [TypeSafe: confidence](https://docs.typesafe.ai/confidence)
 
-An agent version freezes the question text, option labels or score rubric, state assembly contract, model-profile version and deterministic decision policy. The policy combines judgments, applies calibrated thresholds and defines abstention or escalation when evidence is missing or uncertainty is high. A Jev result may classify market context, route work or contribute a bounded input to an Executor, Critic or Research agent; it cannot directly authorize an order, change a payoff contract or promote a hypothesis. Account risk checks and independent evaluation remain authoritative. Changing a question, rubric, threshold or model creates a new version and requires comparison against the existing baseline. Store the exact state/context fingerprint, question-set version, model version returned by the provider, typed answers, distributions, policy result and timing in inference lineage. Live deployments pin a versioned model ID rather than a moving alias. [TypeSafe: System One](https://docs.typesafe.ai/concepts/system-one), [TypeSafe: models](https://docs.typesafe.ai/models)
+An agent version freezes the question text, option labels or score rubric, state assembly contract, model-profile binding and deterministic decision policy. The policy combines judgments, applies thresholds validated on domain data and defines abstention or escalation when evidence is missing or uncertainty is high. A Jev result may classify market context, route work or contribute a bounded input to an Executor, Critic or Research agent; it cannot directly authorize an order, change a payoff contract or promote a hypothesis. Account risk checks and independent evaluation remain authoritative. Changing a question, rubric, threshold or model creates a new version and requires comparison against the existing baseline. Store the exact canonical `state` payload or a durable, access-controlled immutable artifact reference, its content hash and assembly version, the question-set and policy versions, the model version returned by the provider, typed answers, distributions, policy result and timing in inference lineage. The deterministic policy maps a result to the registered agent output schema, including `NO_SIGNAL` or failure where applicable. Live deployments pin a versioned model ID rather than a moving alias. [TypeSafe: System One](https://docs.typesafe.ai/concepts/system-one), [TypeSafe: models](https://docs.typesafe.ai/models)
 
 Jev's supported input is text or text-bearing structured state; the integration must not claim image, audio, video, tool-use or free-form generation capabilities. Before activation, run provider conformance and domain evaluations on representative point-in-time cases, including ambiguous inputs, changed option wording, missing context, class imbalance and instrument or regime shifts. Evaluate the resulting trading decisions and abstention behavior, not only the model's advertised confidence. [TypeSafe: System One](https://docs.typesafe.ai/concepts/system-one)
 
@@ -343,7 +344,7 @@ Expose one logical `/v1` control API for registry commands, lifecycle transition
 | Allocations | Create, revise capital slice or effective interval, deactivate | Release reservations and preserve prior binding versions. |
 | Deployments | Create, validate, activate epoch, pause, switch version, retire | Stop scheduling, reconcile pending work and retain epochs. |
 | Knowledge and memory policies | Register corpus, index and policy versions; inspect retrieval and episodes | Retire projections or policies while preserving referenced source and decision lineage. |
-| Evaluation and optimization | Publish suites, run evaluations, propose and review prompt candidates | Keep immutable experiment and promotion history. |
+| Evaluation and optimization | Publish suites, run evaluations, propose and review prompt, question-set and decision-policy candidates | Keep immutable experiment and promotion history. |
 | Hypotheses and evidence | Register/freeze contracts, query trials and evidence, request independent evaluation, review status | Preserve failed trials and contracts; corrections create new records or child hypotheses. |
 
 The API returns validation errors with field-level reasons and rejects illegal lifecycle transitions. Authorization scopes separate research proposals, evaluation-result writes, live activation, account administration and risk approval. Research agents have no write access to computed evidence or status gates. A live deployment change records the actor, approval, effective epoch and configuration hash. Bulk operations use the same per-resource invariants and report individual outcomes; they cannot bypass safety checks.
@@ -359,7 +360,7 @@ The frontend is a real operational console, not a separate decision engine. Use 
 | Area | Required views and actions |
 | --- | --- |
 | **Overview** | System health, active deployments, account equity and exposure, recent decisions, alerts and reconciliation backlog. Each card shows source and freshness. |
-| **Agents** | Executor, Critic and Research/Discovery agents; versions, instructions, provider/model profiles, allowed tools, confidence calibration, lifecycle and promotion evidence. Register and verify model endpoints; create and compare drafts without changing active epochs. |
+| **Agents** | Executor, Critic and Research/Discovery agents; versions, prompts or typed question sets, decision policies, named provider/model bindings, allowed tools, confidence calibration, lifecycle and promotion evidence. Register and verify model endpoints; create and compare drafts without changing active epochs. |
 | **Research** | Hypotheses, experiments, candidates, temporal validation, pair and period breadth, cost stress, rejected and null results. Show frozen contracts, parent lineage, trial family and typed failure reasons. |
 | **Evaluations** | Agent-version comparisons, payoff, drawdown and tails, calibration, temporal transport and prospective evidence. Show baseline, sample size, uncertainty, cost assumptions and mode beside each result. |
 | **Portfolios** | Profiles, risk policies, allocations and aggregate exposure by profile and account. Show effective versions and breached limits. |
@@ -397,7 +398,7 @@ src/ledgerquant/
   memory/                     # episodes, summaries, selection policy
   decisions/                  # context assembly, inference, replay
   evaluations/                # suites, cases, metrics, comparisons
-  optimization/               # prompt candidates and experiment workflow
+  optimization/               # prompt, question and policy candidates; experiments
   research/                   # hypotheses, payoff discovery, evidence registry
   execution/                  # signals, reservations, dispatch, reconciliation
   integrations/
@@ -449,7 +450,7 @@ Names and paths follow the concepts they implement. Avoid duplicate models for t
 - **RAG and memory checks:** source authorization, retrieval provenance, stale or missing evidence, prompt-injection isolation, episode eligibility and no future-outcome leakage.
 - **Broker-feed checks:** source and symbol identity, event/receive/availability times, duplicate and reordered events, reconnect gaps, backpressure and stale-feed handling; verify the market-data cBot has no execution path.
 - **Execution cBot checks:** account routing, duplicate and expired commands, independent risk rejection, broker acknowledgement versus fill, protective positions and reconnect reconciliation.
-- **Provider checks:** schema and tool capability conformance, typed-question/answer validation for Jev, model-version pinning, refusal and error normalization, local artifact pinning, secret isolation and no unapproved live fallback.
+- **Provider checks:** schema and tool capability conformance, typed-question/answer validation for Jev, model-version pinning, multi-step binding validation, refusal and error normalization, local artifact pinning, secret isolation and no unapproved live fallback.
 - **Broker-adapter checks:** platform-specific symbol/volume mapping, account ownership, order lifecycle, protective orders, reconnect and reconciliation before live eligibility.
 - **Frontend checks:** typed API contract, permission and mode visibility, promotion review, stale/empty/error states, stream-gap recovery and no secrets or fabricated metrics in browser output.
 - **Evaluation checks:** frozen holdout access, suite versioning, baseline comparability, regression gates and experiment reproducibility.
@@ -469,7 +470,7 @@ Failures are typed and distinguish `NO_SIGNAL` from inference failure, risk reje
 7. Add recorded-output replay and versioned evaluation suites; deliver Agents, Evaluations, Deployments and Execution screens against real query and command contracts.
 8. Add source-backed RAG and episodic memory with point-in-time replay checks, then Research, Portfolios and Market Data screens as their contracts are complete.
 9. Add the structured hypothesis/evidence registry and independent temporal, cost and breadth evaluations before automating research proposals.
-10. Add shadow mode, prospective evaluation and controlled promotion; introduce Loop A Critic/optimizer candidates and Loop B Discovery candidates only after these gates work.
+10. Add shadow mode, prospective evaluation and controlled promotion; introduce Loop A prompt, question-set and policy candidates and Loop B Discovery candidates only after these gates work.
 11. Complete the remaining conformance-tested OpenAI, Claude, TypeSafe Jev, Ollama, LM Studio and local Llama-runtime adapters, plus broker API, MT4, MT5 and NinjaTrader integrations as each reaches its required capability gate.
 12. Scale the API, frontend and workers independently when measured load or isolation needs require it.
 
