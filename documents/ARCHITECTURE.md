@@ -2,9 +2,9 @@
 
 **Date:** 08.10.2026
 
-**Version:** 2.7.0
+**Version:** 2.7.2
 
-**Status:** Target architecture; implementation is not yet present in this repository
+**Status:** Target architecture; only the read-only market-data history probe is implemented so far
 
 ## 1. Purpose and design rules
 
@@ -151,7 +151,7 @@ Transport uses TLS, scoped and revocable credentials, rotation, rate limits and 
 
 ### 4.2 Market-data cBot ingestion contract
 
-The separate market-data cBot reads broker market events and publishes versioned observations to an authenticated ingestion adapter, which admits them to the market stream. Its envelope includes protocol version, message ID, feed ID and send time. The payload covers instrument identity, broker symbol, quote/bar/event type, bid/ask or other applicable values, broker event timestamp, cBot observation timestamp, source sequence, cBot build version and symbol-map version. If the broker supplies no sequence, the cBot emits a boot/session ID and monotonic local sequence; repeated equal prices are not deduplicated solely by content hash. The ingestion adapter records its receive and journal-commit times, validates units and schema, and assigns canonical observation IDs. A feed is registered with an explicit source contract before it can supply Executor context. The cBot uses the ingestion contract rather than holding general Redis credentials.
+The separate market-data cBot reads broker market events and publishes versioned observations to an authenticated ingestion adapter, which admits them to the market stream. Its envelope includes protocol version, message ID, feed ID and send time. The payload covers instrument identity, broker symbol, quote/bar/event type, bid/ask or other applicable values, broker event timestamp, cBot observation timestamp, source sequence, cBot build version and symbol-map version. If the broker supplies no sequence, the cBot emits a boot/session ID and monotonic local sequence; repeated equal prices are not deduplicated solely by content hash. The ingestion adapter records its receive and journal-commit times, validates units and schema, and assigns canonical observation IDs. A feed is registered with an explicit source contract before it can supply Executor context. The cBot uses the ingestion contract rather than holding general Redis credentials. The current `cbots/LedgerQuant.MarketData/` project contains a read-only `TickHistoryProbe` for measuring broker history; the publishing contract remains a target. Its initial results are in [DATA_AVAILABILITY.md](DATA_AVAILABILITY.md).
 
 The market-data cBot has no order command handler, execution credentials or route to the execution coordinator. It is deployed and monitored independently from the execution cBot. Authentication scopes allow publishing observations only for its registered feed. Where the broker platform cannot provide physically separate privileges, the code and inbound protocol still expose no trading operation; contract tests verify this boundary.
 
@@ -187,6 +187,8 @@ Model providers and broker adapters are different extension points. Changing a m
 
 Each external artifact is normalized by a source-specific, versioned canonicalizer before its content hash is calculated. Preserve the original payload or an immutable reference where legally and operationally possible. Canonicalization records what was normalized; it cannot discard fields merely because they appear irrelevant.
 
+A central-bank statement, economic release, geopolitical event record or news article is a raw source artifact. It is decision-time source evidence with its own source identity, content or immutable reference, publication and first-seen times where available, revision lineage and `available_at`. Ingestion does not turn it into a sentiment score. This source evidence is distinct from an `evidence_record` in the research registry, which stores measured hypothesis and evaluation results.
+
 An observation records `source_id`, `source_type`, `source_event_time`, `observed_at`, `received_at`, `ingested_at`, `available_at`, `canonicalizer_version`, `content_sha256` and `raw_artifact_reference`. Broker-feed observations also record feed ID, cBot version, symbol-map version and source sequence/message ID. For archived ticks, the immutable chunk retains per-tick fields while its manifest holds the reference and indexed bounds; a PostgreSQL row per tick is not required. The source contract defines `available_at`, which controls point-in-time visibility. For a broker cBot feed, `ingested_at` is the durable journal commit and `available_at` cannot precede it: a broker timestamp or cBot clock does not make delayed data available earlier. `archived_at` records the later manifest commit and does not rewrite `available_at`. Replay at time `T` may read only records whose declared `available_at ≤ T` and whose source revisions were visible then. Clock skew and transport delay are measured separately.
 
 An inference fingerprint binds the visible context, canonicalization version, agent and portfolio versions, retrieval and memory policy versions, selected artifact and episode IDs, named model/provider bindings and step plan, prompt or typed question-set and decision-policy versions, tools, output schema and inference parameters. Recorded-output replay returns the persisted result for that exact contract. Fresh-inference replay invokes the pinned model steps again and stores distinct invocation events; probabilistic inference may differ. Replay results state the mode and the source-availability contract.
@@ -199,7 +201,7 @@ Retrieval has two separate logical domains with distinct corpora, policies, inde
 
 | Domain | Consumer | Permitted content and authority |
 | --- | --- | --- |
-| **Market knowledge RAG** | Executor at decision time | News, macro releases, central-bank communication, broker observations and event metadata available at that instant. The source artifact and its `available_at` govern visibility. |
+| **Market knowledge RAG** | Executor at decision time | Raw news and event source evidence, macro releases, central-bank communication, broker observations and event metadata available at that instant. The source artifact and its `available_at` govern visibility; retrieval does not relabel a source artifact as sentiment. |
 | **Research knowledge RAG** | Critic/Research and Discovery | Research literature, methods, approved analyses and narrative reports for idea generation and explanation. Retrieved prose is background material; structured evaluation results come from the evidence registry. |
 
 Each domain builds searchable, versioned projections from approved source artifacts. Each document and chunk retains its source reference, content hash, source event time when defined, `available_at`, canonicalizer and chunker versions. Embeddings, lexical indexes and ranking scores are derived data; the source artifact remains authoritative. Reindexing creates a new index version and does not rewrite earlier retrieval records. Research material is not automatically eligible for Executor context; moving content between domains requires source review, policy approval and a new version.
@@ -445,7 +447,7 @@ apps/web/
   src/lib/streams/             # event cursor and reconnect handling
 cbots/
   LedgerQuant.Execution/      # adapted C# execution cBot
-  LedgerQuant.MarketData/     # broker market-data publishing cBot
+  LedgerQuant.MarketData/     # read-only history probe; market-data publisher planned
 deploy/
   compose.yaml                # versioned Docker Compose / Portainer deployment definition
 migrations/                   # ordered database migrations

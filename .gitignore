@@ -1,2 +1,5 @@
 # URGENT! DO NOT SEND CREDENTIALS TO GITHUB!
 /credentials/**
+/cbots/**/bin/
+/cbots/**/obj/
+/cbots/**/*.algo

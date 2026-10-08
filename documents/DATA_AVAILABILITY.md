@@ -2,15 +2,16 @@
 
 **Reviewed:** 08 October 2026
 
-**Status:** Documentation review. Actual coverage for the IC Markets account and potential news providers has not been measured.
+**Status:** Initial IC Markets tick probe completed for two symbols and two accounts. Full historical coverage and news-provider coverage remain unmeasured.
 
 ## Summary
 
 | Dataset | Confirmed historical depth | What remains to be verified |
 | --- | --- | --- |
-| IC Markets ticks via cBot | **Unknown for the specific account.** cTrader Algo provides `GetServerFirstTime()` and methods to load tick history, but documents no universal IC Markets start date. | Measure coverage by account type, server and symbol; confirm that ticks near the reported start date can actually be retrieved. |
+| IC Markets ticks via cBot | **January 2020 confirmed in server-tick backtests** for EURUSD and GBPUSD on one IC Markets EU demo account and one live account. `GetServerFirstTime()` reported older dates, but direct `LoadMoreHistory()` was only tested with two bounded batches and did not reach 2020. | Measure monthly continuity, other symbols and asset classes, exact server identity, earliest retrievable tick through each access method, and bulk-export feasibility. |
 | cTrader sentiment | **No history through the documented Algo API.** The data is available only in real time. | Whether a separate provider offers a licensed archive. A locally recorded history starts when collection begins. |
-| News and news sentiment | **Provider-dependent.** GDELT documents news-derived metadata and sentiment datasets beginning in 2013 and 2015. Alpha Vantage offers historical news sentiment but does not state a universal earliest date in its API documentation. | Provider selection, coverage for relevant instruments, access, timestamps, revisions and usage rights. |
+| Raw news and events | **Provider-dependent.** GDELT documents news-derived metadata beginning in 2013 and 2015; it is not a licensed full-text news archive. No raw-news provider is selected. | Availability of original statements, releases or articles, event coverage, first-seen times, revisions and usage rights. |
+| News-derived sentiment | **Provider-dependent.** GDELT and Alpha Vantage expose sentiment data, but no selected provider has verified account-level coverage for LedgerQuant. | Historical depth, model or method, source linkage, calculation time and decision-time eligibility. |
 
 Three different questions matter: **what a source has stored**, **what our account and agreement allow us to retrieve**, and **when the information was actually available for a decision**. The presence of an old article or tick in an archive does not answer all three.
 
@@ -21,6 +22,23 @@ cTrader Algo documents that `MarketData.GetTicks(symbolName)` returns a `Ticks` 
 On 9 June 2022, IC Markets Australia announced that historical data before 2020 would no longer be available on clients' trading accounts from 10 June 2022 and directed clients needing older data to support. This notice **does not establish** the earliest cTrader tick available today: it does not specify current coverage by cTrader server, instrument or account type. Treat it as a question for the relevant IC Markets entity, not as a fixed date in LedgerQuant. [IC Markets: historical data notice](https://www.icmarkets.com.au/blog/notice-regarding-client-historical-data/)
 
 cTrader backtesting can use “tick data from server.” This establishes that server ticks can be used for backtesting, but does not say how far back a running cBot can retrieve them or how complete the series is. [cTrader: backtesting](https://help.ctrader.com/ctrader-algo/how-tos/cbots/backtest-a-cbot/)
+
+### Initial account measurement: 8 October 2026
+
+The read-only `TickHistoryProbe` lives in `cbots/LedgerQuant.MarketData/`. It was built with `cTrader.Automate` 1.0.21 and run in the official cTrader CLI Docker image, version 5.6.8.0 (`ghcr.io/spotware/ctrader-console@sha256:a0f0c22d5bbe31db8de6e91b6caad9b8061b52d9133426aa6242848469c208e9`). The image ran the built .NET 6 algo successfully. cTrader CLI used `backtest`, `--data-mode=ticks`, `--period=h1`, and UTC arguments `--start="06/01/2020 00:00" --end="07/01/2020 00:00"`. The actual observed ticks covered both 6 and 7 January, so the table uses observed timestamps rather than inferring an exclusive end from the CLI argument. No CSV or external tick source was supplied. [cTrader CLI: tick data mode](https://help.ctrader.com/ctrader-cli/cbots/)
+
+| IC Markets EU account | Symbol | `GetServerFirstTime()` reported | First / last tick observed in backtest (UTC) | Ticks | Invalid bid/ask | Reversed timestamps |
+| --- | --- | --- | --- | ---: | ---: | ---: |
+| Demo, ending 4853 | EURUSD | 2014-01-19 | 2020-01-06 00:00:00.470 / 2020-01-07 23:59:53.628 | 66,796 | 0 | 0 |
+| Live, ending 2334 | EURUSD | 2019-07-08 | 2020-01-06 00:00:00.470 / 2020-01-07 23:59:53.629 | 66,648 | 0 | 0 |
+| Demo, ending 4853 | GBPUSD | 2014-01-19 | 2020-01-06 00:00:00.549 / 2020-01-07 23:59:41.589 | 145,019 | 0 | 0 |
+| Live, ending 2334 | GBPUSD | 2019-07-08 | 2020-01-06 00:00:00.548 / 2020-01-07 23:59:41.589 | 145,057 | 0 | 0 |
+
+The probe observed zero duplicate timestamps in these four short runs. The largest observed gap was under 248 seconds for EURUSD and under 131 seconds for GBPUSD; these are weekday-window measurements, not a coverage certificate. Demo and live tick counts differ, so they remain distinct datasets. The CLI account listing identified the broker entity and demo/live mode but did not expose a server name; the server identity is still an open provenance field. The cBot made no trading API calls and the CLI reported zero trades.
+
+A separate direct `run` on the demo EURUSD account exercised `MarketData.GetTicks()`, `GetServerFirstTime()` and two calls to `LoadMoreHistory()`. They added 34,241 ticks in total; the earliest loaded tick was 2026-10-07 22:52:25.629 UTC. The probe stopped at its configured two-batch limit with `RESOURCE_LIMIT`. This confirms that direct history loading works, but **does not establish that a running cBot can page directly back to 2020 within acceptable time or memory**. The reported 2014/2019 server-first dates are not a substitute for retrieved ticks at those dates. [cTrader Algo: Ticks](https://help.ctrader.com/ctrader-algo/references/MarketData/Ticks/Ticks/)
+
+**Current finding:** the tested IC Markets EU demo and live accounts can supply server ticks for EURUSD and GBPUSD in the sampled January 2020 window through cTrader CLI backtesting. The result supports a 2020 research start for those tested windows; it does not prove complete 2020–2026 coverage, direct cBot bulk retrieval, or availability on other accounts or symbols. These runs measured ticks but did not export a research-ready raw tick archive.
 
 ### Measure coverage on the actual account
 
@@ -55,6 +73,8 @@ To use this signal, LedgerQuant must start recording observations as updates arr
 
 ### News data and news-derived sentiment
 
+Raw news and event records are source evidence. Examples include central-bank statements, CPI releases, geopolitical event records and news articles. Their existence, wording, revisions and decision-time availability are measured independently of any sentiment field or later interpretation. An article's publication timestamp alone does not establish when LedgerQuant or a provider first had access to it.
+
 cTrader's example of reading news in a cBot retrieves it from an **external** NewsData API over the network. The example does not document a built-in cTrader news archive from which LedgerQuant can retrieve history. [cTrader Algo: network access](https://help.ctrader.com/ctrader-algo/how-tos/all-algos/use-network-access/)
 
 | Source or category | Documented history | Important limitation for LedgerQuant |
@@ -72,9 +92,9 @@ For each candidate provider and relevant market, retrieve monthly counts and sam
 
 ## Implications for the research plan
 
-1. **Measure IC Markets first.** Produce a coverage report per account, server and symbol before using broker ticks to define development and validation windows. Retain raw data, test time, source and gap report as auditable provenance.
+1. **Extend the IC Markets measurement.** January 2020 server ticks are confirmed for the tested EURUSD and GBPUSD account/symbol combinations. Measure monthly coverage, server identity, additional symbols, gaps and direct extraction limits before defining development and validation windows. Retain raw data, test time, source and gap report as auditable provenance.
 2. **Distinguish datasets in evaluation.** External historical ticks may support research if broker history is short, but record the source change and validate costs and execution separately against IC Markets observations.
 3. **Start prospective collection early.** Recording broker ticks, news and cTrader sentiment now builds a future point-in-time dataset. Do not use cTrader sentiment in historical tests until a real historical series exists.
 4. **Select a news provider after measuring coverage.** Fix the source, rights, timestamps and revision handling before news or sentiment influences decisions or evaluations. Keep retrospectively calculated sentiment separate from signals that were actually available in real time.
 
-**Open finding:** The specific earliest IC Markets tick and earliest usable news or sentiment observation can only be established after an account probe and selection or testing of a news source.
+**Open finding:** The earliest retrievable IC Markets tick for each access method, complete year-by-year coverage, and the earliest usable news or sentiment observation still require further measurement.
