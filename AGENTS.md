@@ -166,6 +166,11 @@ Define success before measuring it.
 
 A development winner is not a validated strategy.
 
+Judge a decision using only the information and constraints available when it
+was made. Keep ex-ante decision/process quality, broker execution quality and
+later economic outcome as separate assessments. A loss alone does not make the
+decision or execution defective; a profit does not excuse a policy violation.
+
 Research reports must distinguish, where applicable:
 
 - development performance;
