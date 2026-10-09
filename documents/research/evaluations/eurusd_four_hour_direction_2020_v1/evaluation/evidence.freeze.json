@@ -1,0 +1,6 @@
+{
+  "schema_version": 1,
+  "event_type": "EVALUATION_RECORDED",
+  "hypothesis_id": "eurusd_four_hour_direction_2020_v1",
+  "evidence_sha256": "1570aee7da49d289dc9a80614370eb63eee38732932fc8b769ac52938cb7735e"
+}
