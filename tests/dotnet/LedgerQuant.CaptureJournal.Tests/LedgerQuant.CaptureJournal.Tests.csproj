@@ -10,5 +10,7 @@
   <ItemGroup>
     <Compile Include="../../../cbots/LedgerQuant.LiveCapture/LedgerQuant.LiveCapture/CaptureJournal.cs"
              Link="CaptureJournal.cs" />
+    <Compile Include="../../../cbots/LedgerQuant.LiveCapture/LedgerQuant.LiveCapture/CaptureFeedId.cs"
+             Link="CaptureFeedId.cs" />
   </ItemGroup>
 </Project>

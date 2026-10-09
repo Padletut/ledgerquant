@@ -1,20 +1,28 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json;
 using cAlgo.API;
+using cAlgo.API.Internals;
 
 namespace LedgerQuant.LiveCapture;
 
 [Robot]
 public sealed class LiveCaptureBot : Robot
 {
-    private const string CaptureVersion = "capture-0.1.2";
+    internal const string CaptureVersion = "capture-0.2.0";
     private const int MaximumBatchRecords = 250;
     private const int MaximumBatchBytes = 512_000;
 
-    [Parameter("Feed ID", DefaultValue = "")]
-    public string FeedId { get; set; } = string.Empty;
+    [Parameter("Feed ID prefix", DefaultValue = "")]
+    public string FeedIdPrefix { get; set; } = string.Empty;
+
+    [Parameter("Symbols to capture", DefaultValue = "EURUSD")]
+    public Symbol[] SelectedSymbols { get; set; } = Array.Empty<Symbol>();
+
+    [Parameter("Capture all enabled symbols", DefaultValue = true)]
+    public bool CaptureAllEnabledSymbols { get; set; } = true;
 
     [Parameter("Ingest URL", DefaultValue = "http://127.0.0.1:18080/v1/capture/batches")]
     public string IngestUrl { get; set; } = string.Empty;
@@ -28,25 +36,19 @@ public sealed class LiveCaptureBot : Robot
     [Parameter("Maximum journal MiB", DefaultValue = 8192, MinValue = 1)]
     public int MaximumJournalMiB { get; set; }
 
-    private CaptureJournal? _journal;
-    private Ticks? _ticks;
-    private SymbolSentiment? _sentiment;
+    private readonly List<CaptureFeed> _feeds = new();
     private Uri? _endpoint;
-    private Guid _sessionId;
-    private long _sequence;
+    private int _nextFeedIndex;
     private bool _inFlight;
     private bool _stopping;
     private DateTimeOffset _lastTransportError;
+    private DateTimeOffset _retryAfter;
 
     protected override void OnStart()
     {
         Print("CAPTURE_BOOT version={0}", CaptureVersion);
         try
         {
-            if (FeedId.Length is < 1 or > 100 ||
-                FeedId.Any(character =>
-                    !(character is >= 'A' and <= 'Z' or >= 'a' and <= 'z' or >= '0' and <= '9' or '_' or '-')))
-                throw new ArgumentException("Feed ID must contain only ASCII letters, digits, _ or -");
             if (CollectorToken.Length < 32)
                 throw new ArgumentException("Collector token is missing or too short");
             if (!Uri.TryCreate(IngestUrl, UriKind.Absolute, out _endpoint) ||
@@ -54,33 +56,44 @@ public sealed class LiveCaptureBot : Robot
                  !(_endpoint.Scheme == Uri.UriSchemeHttp &&
                    (_endpoint.Host == "127.0.0.1" || _endpoint.Host == "localhost"))))
                 throw new ArgumentException("Ingest URL must use HTTPS or loopback HTTP");
+            if (MaximumJournalMiB < 1)
+                throw new ArgumentException("Maximum journal MiB must be positive");
 
-            var sourceIdentity = JsonSerializer.Serialize(new
+            var names = CaptureAllEnabledSymbols
+                ? Symbols.Enabled.ToArray()
+                : (SelectedSymbols ?? Array.Empty<Symbol>())
+                    .Select(symbol => symbol?.Name ?? string.Empty).ToArray();
+            if (names.Length == 0 || names.Any(string.IsNullOrWhiteSpace))
+                throw new ArgumentException("Select at least one capture symbol");
+            if (names.Distinct(StringComparer.OrdinalIgnoreCase).Count() != names.Length)
+                throw new ArgumentException("Capture symbols contain duplicates");
+
+            var broker = Account.BrokerName;
+            var environment = Account.IsLive ? "live" : "demo";
+            var accountId = Account.Number.ToString(CultureInfo.InvariantCulture);
+            var feedIds = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var name in names.OrderBy(name => name, StringComparer.Ordinal))
             {
-                source = "ctrader",
-                broker = Account.BrokerName,
-                environment = Account.IsLive ? "live" : "demo",
-                account_id = Account.Number.ToString(CultureInfo.InvariantCulture),
-                symbol = SymbolName,
-            });
-            _journal = new CaptureJournal(FeedId, sourceIdentity,
-                (long)MaximumJournalMiB * 1024 * 1024);
-            _sessionId = Guid.NewGuid();
-            if (CollectTicks)
-            {
-                _ticks = MarketData.GetTicks(SymbolName);
-                _ticks.Tick += OnTicksTick;
+                if (!Symbols.Exists(name))
+                    throw new ArgumentException("Capture symbol is unavailable: " + name);
+                var symbol = Symbols.GetSymbol(name) ??
+                    throw new ArgumentException("Capture symbol could not be loaded: " + name);
+                var feedId = CaptureFeedId.Create(FeedIdPrefix, symbol.Name);
+                if (!feedIds.Add(feedId))
+                    throw new ArgumentException("Capture symbols derive the same Feed ID: " + feedId);
+                _feeds.Add(new CaptureFeed(symbol, feedId, broker, environment, accountId,
+                    (long)MaximumJournalMiB * 1024 * 1024, OnFeedFailure));
             }
 
-            _sentiment = Symbol.Sentiment;
-            _sentiment.Updated += OnSentimentUpdated;
-            RecordSentiment(_sentiment, "startup");
-            if (_stopping)
-                return;
+            foreach (var feed in _feeds)
+            {
+                feed.Start(MarketData, CollectTicks);
+                if (_stopping)
+                    return;
+            }
             Timer.Start(1);
-            Print("CAPTURE_STARTED feed={0} broker={1} environment={2} account={3} symbol={4} ticks={5} pending_bytes={6}",
-                FeedId, Account.BrokerName, Account.IsLive ? "live" : "demo",
-                Account.Number, SymbolName, CollectTicks, _journal.PendingBytes);
+            Print("CAPTURE_STARTED broker={0} environment={1} account={2} symbols={3} ticks={4} pending_bytes={5}",
+                broker, environment, accountId, _feeds.Count, CollectTicks, PendingBytesDescription());
         }
         catch (Exception error)
         {
@@ -89,105 +102,40 @@ public sealed class LiveCaptureBot : Robot
         }
     }
 
-    private void OnTicksTick(TicksTickEventArgs args)
-    {
-        if (args.Ticks.Count == 0)
-        {
-            _stopping = true;
-            Print("CAPTURE_TICK_SOURCE_EMPTY; local journal retained");
-            Stop();
-            return;
-        }
-        var tick = args.Ticks.LastTick;
-        Record(new CaptureObservation
-        {
-            MessageId = Guid.NewGuid(),
-            EventAt = new DateTimeOffset(DateTime.SpecifyKind(tick.Time, DateTimeKind.Utc)),
-            ObservedAt = DateTimeOffset.UtcNow,
-            Bid = tick.Bid,
-            Ask = tick.Ask,
-            Kind = "tick",
-        });
-    }
-
-    private void OnSentimentUpdated(SymbolSentimentUpdatedEventArgs args)
-    {
-        if (args.SymbolName == SymbolName)
-            RecordSentiment(args.Sentiment, "update");
-    }
-
-    private void RecordSentiment(SymbolSentiment sentiment, string trigger)
-    {
-        Record(new CaptureObservation
-        {
-            MessageId = Guid.NewGuid(),
-            ObservedAt = DateTimeOffset.UtcNow,
-            BuyPercentage = sentiment.BuyPercentage,
-            SellPercentage = sentiment.SellPercentage,
-            SentimentTrigger = trigger,
-            Kind = "sentiment",
-        });
-    }
-
-    private void Record(CaptureObservation observation)
-    {
-        if (_stopping || _journal is null)
-            return;
-        try
-        {
-            var complete = new CaptureObservation
-            {
-                MessageId = observation.MessageId,
-                FeedId = FeedId,
-                SessionId = _sessionId,
-                Sequence = ++_sequence,
-                Broker = Account.BrokerName,
-                Environment = Account.IsLive ? "live" : "demo",
-                AccountId = Account.Number.ToString(CultureInfo.InvariantCulture),
-                Symbol = SymbolName,
-                Kind = observation.Kind,
-                EventAt = observation.EventAt,
-                ObservedAt = observation.ObservedAt,
-                Bid = observation.Bid,
-                Ask = observation.Ask,
-                BuyPercentage = observation.BuyPercentage,
-                SellPercentage = observation.SellPercentage,
-                SentimentTrigger = observation.SentimentTrigger,
-                CbotVersion = CaptureVersion,
-            };
-            _journal.Append(JsonSerializer.Serialize(complete));
-        }
-        catch (Exception error)
-        {
-            _stopping = true;
-            Print("CAPTURE_JOURNAL_FAILED type={0} message={1}", error.GetType().Name, error.Message);
-            Stop();
-        }
-    }
-
     protected override void OnTimer()
     {
-        if (_inFlight || _stopping || _journal is null || _endpoint is null)
-            return;
-        JournalBatch batch;
-        try
-        {
-            batch = _journal.ReadBatch(MaximumBatchRecords, MaximumBatchBytes);
-        }
-        catch (Exception error)
-        {
-            _stopping = true;
-            Print("CAPTURE_JOURNAL_READ_FAILED type={0} message={1}", error.GetType().Name, error.Message);
-            Stop();
-            return;
-        }
-        if (batch.Records.Count == 0)
+        if (_inFlight || _stopping || _endpoint is null || DateTimeOffset.UtcNow < _retryAfter)
             return;
 
+        for (var offset = 0; offset < _feeds.Count; offset++)
+        {
+            var index = (_nextFeedIndex + offset) % _feeds.Count;
+            var feed = _feeds[index];
+            JournalBatch batch;
+            try
+            {
+                batch = feed.ReadBatch(MaximumBatchRecords, MaximumBatchBytes);
+            }
+            catch (Exception error)
+            {
+                OnFeedFailure(feed, "CAPTURE_JOURNAL_READ_FAILED", error);
+                return;
+            }
+            if (batch.Records.Count == 0)
+                continue;
+
+            _nextFeedIndex = (index + 1) % _feeds.Count;
+            SendBatch(feed, batch);
+            return;
+        }
+    }
+
+    private void SendBatch(CaptureFeed feed, JournalBatch batch)
+    {
         var sentAt = JsonSerializer.Serialize(DateTimeOffset.UtcNow);
         var body = "{\"protocol_version\":1,\"sent_at\":" + sentAt +
                    ",\"observations\":[" + string.Join(",", batch.Records) + "]}";
-        var request = new HttpRequest(_endpoint)
+        var request = new HttpRequest(_endpoint!)
         {
             Method = cAlgo.API.HttpMethod.Post,
             Body = body,
@@ -199,30 +147,29 @@ public sealed class LiveCaptureBot : Robot
         try
         {
             Http.SendAsync(request, response =>
-                BeginInvokeOnMainThread(() => HandleResponse(response, batch)));
+                BeginInvokeOnMainThread(() => HandleResponse(response, feed, batch)));
         }
         catch (Exception error)
         {
             _inFlight = false;
-            LogTransportFailure(error.GetType().Name);
+            LogTransportFailure(feed, error.GetType().Name);
         }
     }
 
-    private void HandleResponse(HttpResponse response, JournalBatch batch)
+    private void HandleResponse(HttpResponse response, CaptureFeed feed, JournalBatch batch)
     {
-        if (_stopping || _journal is null)
+        if (_stopping)
             return;
         _inFlight = false;
         if (!response.IsSuccessful)
         {
             if (response.StatusCode is 401 or 403 or 409 or 413 or 422)
             {
-                _stopping = true;
-                Print("CAPTURE_REJECTED status={0}; local journal retained", response.StatusCode);
-                Stop();
+                OnFeedFailure(feed, "CAPTURE_REJECTED status=" + response.StatusCode, null);
                 return;
             }
-            LogTransportFailure("HTTP_" + response.StatusCode.ToString(CultureInfo.InvariantCulture));
+            LogTransportFailure(feed,
+                "HTTP_" + response.StatusCode.ToString(CultureInfo.InvariantCulture));
             return;
         }
 
@@ -232,35 +179,57 @@ public sealed class LiveCaptureBot : Robot
             if (!receipt.RootElement.TryGetProperty("committed", out var committed) ||
                 committed.GetInt32() != batch.Records.Count)
                 throw new InvalidOperationException("ingest acknowledgement count does not match the batch");
-            _journal.Acknowledge(batch.EndOffset);
+            feed.Acknowledge(batch.EndOffset);
         }
         catch (Exception error)
         {
-            _stopping = true;
-            Print("CAPTURE_ACK_FAILED type={0} message={1}; local journal retained",
-                error.GetType().Name, error.Message);
-            Stop();
+            OnFeedFailure(feed, "CAPTURE_ACK_FAILED", error);
+            return;
         }
+        OnTimer();
     }
 
-    private void LogTransportFailure(string reason)
+    private void LogTransportFailure(CaptureFeed feed, string reason)
     {
         var now = DateTimeOffset.UtcNow;
+        _retryAfter = now + TimeSpan.FromSeconds(5);
         if (now - _lastTransportError < TimeSpan.FromMinutes(1))
             return;
         _lastTransportError = now;
-        Print("CAPTURE_TRANSPORT_RETRY reason={0} pending_bytes={1}",
-            reason, _journal?.PendingBytes);
+        Print("CAPTURE_TRANSPORT_RETRY feed={0} reason={1} pending_bytes={2}",
+            feed.FeedId, reason, PendingBytesDescription());
+    }
+
+    private void OnFeedFailure(CaptureFeed feed, string reason, Exception? error)
+    {
+        if (_stopping)
+            return;
+        _stopping = true;
+        Print("{0} feed={1} symbol={2} type={3} message={4}; local journals retained",
+            reason, feed.FeedId, feed.SymbolName,
+            error?.GetType().Name ?? "none", error?.Message ?? "none");
+        Stop();
+    }
+
+    private string PendingBytesDescription()
+    {
+        try
+        {
+            return _feeds.Sum(feed => feed.PendingBytes).ToString(CultureInfo.InvariantCulture);
+        }
+        catch (Exception error)
+        {
+            return "unavailable:" + error.GetType().Name;
+        }
     }
 
     protected override void OnStop()
     {
         _stopping = true;
-        if (_sentiment is not null)
-            _sentiment.Updated -= OnSentimentUpdated;
-        if (_ticks is not null)
-            _ticks.Tick -= OnTicksTick;
-        Print("CAPTURE_STOPPED feed={0} pending_bytes={1}", FeedId, _journal?.PendingBytes);
-        _journal?.Dispose();
+        Print("CAPTURE_STOPPED account={0} symbols={1} pending_bytes={2}",
+            Account.Number, _feeds.Count, PendingBytesDescription());
+        foreach (var feed in _feeds)
+            feed.Dispose();
+        _feeds.Clear();
     }
 }

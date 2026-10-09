@@ -6,6 +6,20 @@ Directory.CreateDirectory(temporaryDirectory);
 try
 {
     Directory.SetCurrentDirectory(temporaryDirectory);
+    Assert(CaptureFeedId.Create("icm_live_12345_", "EURUSD") ==
+           "icm_live_12345_eurusd", "existing EURUSD feed ID is preserved");
+    Assert(CaptureFeedId.Create("icm_live_12345_", "US 500") ==
+           "icm_live_12345_us_20500", "non-alphanumeric symbol bytes are escaped");
+    Assert(CaptureFeedId.Create("icm_live_12345_", "US_20500") !=
+           CaptureFeedId.Create("icm_live_12345_", "US 500"),
+           "escaped symbol names do not collide");
+    ExpectArgument(() => CaptureFeedId.Create("", "EURUSD"),
+        "empty prefix rejected");
+    ExpectArgument(() => CaptureFeedId.Create("bad prefix", "EURUSD"),
+        "unsafe prefix rejected");
+    ExpectArgument(() => CaptureFeedId.Create(new string('x', 95), "EURUSD"),
+        "feed ID over protocol limit rejected");
+
     using (var journal = new CaptureJournal("test_feed", "source-one", 1024))
     {
         journal.Append("{\"sequence\":1}");
@@ -15,6 +29,17 @@ try
             "first batch identity");
         journal.Acknowledge(first.EndOffset);
         Assert(journal.PendingBytes > 0, "unacknowledged record retained");
+    }
+
+    using (var eurusd = new CaptureJournal("account_eurusd", "eurusd-source", 1024))
+    using (var gbpusd = new CaptureJournal("account_gbpusd", "gbpusd-source", 1024))
+    {
+        eurusd.Append("{\"symbol\":\"EURUSD\"}");
+        gbpusd.Append("{\"symbol\":\"GBPUSD\"}");
+        var eurusdBatch = eurusd.ReadBatch(10, 1024);
+        eurusd.Acknowledge(eurusdBatch.EndOffset);
+        Assert(eurusd.PendingBytes == 0 && gbpusd.PendingBytes > 0,
+            "acknowledging one feed does not advance another feed");
     }
 
     using (var recovered = new CaptureJournal("test_feed", "source-one", 1024))
@@ -60,4 +85,16 @@ static void Assert(bool condition, string description)
 {
     if (!condition)
         throw new Exception(description);
+}
+
+static void ExpectArgument(Action action, string description)
+{
+    try
+    {
+        action();
+        throw new Exception(description);
+    }
+    catch (ArgumentException)
+    {
+    }
 }

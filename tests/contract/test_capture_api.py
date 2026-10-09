@@ -70,3 +70,22 @@ def test_conflict_has_no_success_acknowledgement():
     store.conflict = True
     response = post(create_app(store, TOKEN), body(), TOKEN)
     assert response.status_code == 409
+
+
+def test_account_collector_sends_distinct_feeds_in_separate_batches():
+    store = Store()
+    app = create_app(store, TOKEN)
+    eurusd = body()
+    gbpusd = body()
+    gbpusd["observations"][0]["feed_id"] = "icm_live_gbpusd"
+    gbpusd["observations"][0]["symbol"] = "GBPUSD"
+    gbpusd["observations"][0]["message_id"] = "3b4e77ed-15cb-4788-9f5c-77506eeea35e"
+
+    assert post(app, eurusd, TOKEN).status_code == 200
+    assert post(app, gbpusd, TOKEN).status_code == 200
+    assert store.calls == 2
+
+    mixed = body()
+    mixed["observations"].append(gbpusd["observations"][0])
+    assert post(app, mixed, TOKEN).status_code == 422
+    assert store.calls == 2
