@@ -2,9 +2,9 @@
 
 **Date:** 09.10.2026
 
-**Version:** 2.8.0
+**Version:** 2.8.1
 
-**Status:** Target architecture; implemented bootstrap comprises the read-only history probe, the bounded historical tick exporter and the isolated live-capture stack described in Section 4.2
+**Status:** Target architecture; implemented bootstrap comprises the read-only history probe, the bounded historical tick exporter and the isolated live-capture stack described in Section 4.2, plus the offline research case audit described in Section 6.1
 
 ## 1. Purpose and design rules
 
@@ -279,6 +279,8 @@ Each hypothesis receives a stable `hypothesis_id`, optional `parent_hypothesis_i
 The policy makes data quality hypothesis-dependent. A fixed-horizon directional question may need a time-bounded predecision price state, source-backed news and a valid outcome observation near settlement, without requiring every intervening tick. A stop/limit-order or short-horizon execution claim needs the path and quote fidelity required by its order and cost contract. Generate the candidate event set by the frozen source and selection rules without looking at later prices. A source gap outside the registered input, entry, path or settlement windows is reported but does not automatically invalidate a case. A gap inside a required window follows the frozen abstention, exclusion or failure rule; no future quote is carried backward or missing return set to zero. Report eligibility counts and missingness by period and instrument so selective loss of difficult events remains visible. Price-direction diagnostics with unresolved execution costs may be reported as predictive evidence, never as net economic payoff or promotion evidence.
 
 Contracts are registered and frozen before the independent evaluator exposes validation outcomes. The proposer cannot edit the payoff definition, metric, threshold, data-sufficiency policy or validation window after seeing those outcomes. Any changed definition becomes a child hypothesis with a new ID and a new untouched validation plan. Related child attempts stay in one research family; exhausted holdout windows cannot be reused as fresh evidence. Loop A preserves the parent's payoff contract; a payoff change is routed to Loop B.
+
+The implemented offline bootstrap in `src/ledgerquant/research/` audits the first frozen EURUSD price-direction diagnostic. It verifies the contract and source hashes, streams the operator-confirmed 2020 cTrader Desktop CSV, validates quote order and fields, generates calendar anchors before assigning source rows, and publishes a decision-input file with midquotes and source references, plus a separate evaluator-facing eligibility file with settlement-presence metadata. Both are hashed and retain every scheduled anchor; neither contains predictions, settlement prices or payoff measurements. The source-visibility assumption remains retrospective. This is a bounded data-sufficiency view, not the independent evaluator, evidence registry or production Research Kernel. Its [plan and measured audit](research/RESEARCH_KERNEL_PLAN.md) describe the exact scope.
 
 ### 6.2 Structured evidence registry
 
