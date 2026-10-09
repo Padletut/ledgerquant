@@ -2,9 +2,9 @@
 
 **Date:** 09.10.2026
 
-**Version:** 2.7.8
+**Version:** 2.7.9
 
-**Status:** Target architecture; implemented bootstrap comprises the read-only history probe and the isolated live-capture stack described in Section 4.2.1
+**Status:** Target architecture; implemented bootstrap comprises the read-only history probe, the bounded historical tick exporter and the isolated live-capture stack described in Section 4.2
 
 ## 1. Purpose and design rules
 
@@ -166,6 +166,12 @@ Each monitored symbol has a unique feed ID bound to source, broker, demo/live en
 `src/ledgerquant/capture/` implements a small authenticated batch API. PostgreSQL `market.capture_observations` is an append-only raw-capture store with unique message IDs and `(feed_id, session_id, sequence)` identity, payload hashes, immutable feed bindings and mutation-rejecting triggers. A successful API response is sent only after the database transaction commits. Tick source event time and local observed time remain separate; sentiment has an observed time but no invented source event time. Server receive and ingest times are recorded independently. A zero sentiment percentage is marked `ZERO_AMBIGUOUS`, because zero can mean unavailable source data. The bootstrap's `available_at` is assigned during the insert transaction, before commit; it is an ingest-time estimate, **not an exact durable-visibility timestamp for historical decision replay**. Before any captured record enters Executor context or a strict point-in-time evaluation, a later canonicalization stage must derive a conservative post-commit availability bound and preserve this raw timestamp.
 
 This bootstrap writes optional ticks as PostgreSQL rows to start collection early. It has no Redis stream, archive writer, immutable tick chunks, control API, feed-health service or execution path. It is deliberately a small capture store, not the target historical market-data architecture in Section 4.3. Capacity, backups, restore tests, feed gaps, clock quality and a migration into the durable archive are required before it becomes the long-term tick history or an Executor feed. The operating procedure is in [CAPTURE.md](operations/CAPTURE.md).
+
+#### 4.2.2 Bounded historical tick export
+
+The separate `cbots/LedgerQuant.TickExport/` cBot exports one declared UTC interval from cTrader CLI server-tick backtesting to a local CSV and JSON manifest. It requires a pre-window tick and an after-window tick as boundary witnesses, limits the interval to seven days and caps row count. It preserves distinct equal-time updates, validates quote fields and ordering, writes a partial file first, then publishes the manifest only after the CSV has been flushed, hashed and moved into place. A failed run leaves no committed manifest. The cBot refuses real-time operation and contains no order calls. Its `FullAccess` setting is used only in the controlled CLI container for a mounted output directory; the Linux CLI does not enforce the desktop sandbox. The broker name is asserted from the CLI account listing when the backtest API leaves `Account.BrokerName` empty, and the manifest records that basis.
+
+This exporter is an acquisition experiment, not the durable archive of Section 4.3. Its manifest marks coverage and quote quality `UNVERIFIED`, leaves historical `available_at` unset and does not invent a cTrader server identity. Local extracts are ignored by Git. The first one-day EURUSD and GBPUSD findings, including a high rate of equal bid/ask quotes for EURUSD, are in [DATA_AVAILABILITY.md](data/DATA_AVAILABILITY.md); the operating procedure is in [TICK_EXPORT.md](data/TICK_EXPORT.md). Broker quote fidelity and contiguous historical coverage remain gates before a research dataset can be frozen.
 
 ### 4.3 Redis stream and durable tick archive
 
@@ -412,6 +418,7 @@ documents/
   ARCHITECTURE.md             # canonical architecture and entry point
   data/
     DATA_AVAILABILITY.md      # source coverage and unresolved questions
+    TICK_EXPORT.md            # bounded historical export procedure
     measurements/             # retained probe logs
   operations/
     CAPTURE.md                # live-capture bootstrap runbook
@@ -464,6 +471,7 @@ apps/web/
 cbots/
   LedgerQuant.Execution/      # adapted C# execution cBot
   LedgerQuant.MarketData/      # read-only history probe; market-data publisher planned
+  LedgerQuant.TickExport/      # bounded historical cTrader tick export
   LedgerQuant.LiveCapture/     # current sentiment and optional live tick capture
 deploy/
   compose.yaml                # current bootstrap; full stack remains a target

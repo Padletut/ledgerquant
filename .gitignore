@@ -13,3 +13,6 @@ __pycache__/
 /cbots/**/*.algo
 /tests/dotnet/**/bin/
 /tests/dotnet/**/obj/
+
+# Local broker-data extracts are retained outside Git.
+/data/
