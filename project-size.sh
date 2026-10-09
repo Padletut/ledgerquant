@@ -123,9 +123,16 @@ count_area() {
 
 TOTAL=0
 
+
 for file in "${TRACKED_FILES[@]}"; do
   [[ -f "$file" ]] || continue
   matches_patterns "$file" || continue
+
+  case "$file" in
+  .claude/skills/*|.codex/skills/*)
+    continue
+    ;;
+  esac
 
   lines=$(wc -l < "$file" 2>/dev/null || printf '0')
   TOTAL=$((TOTAL + lines))
