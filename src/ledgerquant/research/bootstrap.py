@@ -13,7 +13,7 @@ from .registry import append, artifact, now, RegistryError
 from .types import digest
 
 
-def bootstrap(registry, bundle, profile: ModelProfile, policy: CampaignPolicy, campaign_id: str, workflow="discovery"):
+def bootstrap(registry, bundle, profile: ModelProfile, policy: CampaignPolicy, campaign_id: str, workflow="discovery", contract_version=1):
     """Idempotently import originals without rewriting their one-trial counts."""
     with registry.engine.begin() as c:
         for item, attempt, window in zip(bundle["evidence"], bundle["attempts"], bundle["windows"], strict=True):
@@ -35,11 +35,12 @@ def bootstrap(registry, bundle, profile: ModelProfile, policy: CampaignPolicy, c
         append(c, t.snapshots, {"id": snapshot_id, "manifest_id": artifact(c, manifest), "created_at": now()})
         versions = {}
         for role in ("research", "critic"):
-            spec = definition(role, profile, workflow)
+            spec = definition(role, profile, workflow, contract_version)
             versions[role] = digest(spec)
             append(c, t.agent_versions, {"id": versions[role], "role": role, "definition_id": artifact(c, spec), "created_at": now()})
         append(c, t.campaigns, {"id": campaign_id, "policy_id": artifact(c, policy), "created_at": now()})
-    return {"campaign_id": campaign_id, "snapshot_id": snapshot_id, "versions": versions}
+    return {"campaign_id": campaign_id, "snapshot_id": snapshot_id, "versions": versions,
+            "contract_version": contract_version}
 
 
 def invalidate_evidence(registry, evidence_id: str, reason: str, actor: str):

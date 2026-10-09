@@ -20,7 +20,7 @@ class ProcessTransport(Scripted):
             return super().invoke(request)
         self.count += 1
         context = json.loads(request["input"][0]["content"])
-        answer = checklist(context["proposal"], LEGACY_IDS)
+        answer = checklist(context["proposal"], LEGACY_IDS, 2 if "requirement_rules" in context else 1)
         return Generation("COMPLETED", {"fixture": True}, [],
                           (ToolCall("test", "submit_process_assessment", canonical(answer)),), 100, 100)
 
@@ -56,3 +56,17 @@ def test_three_process_arms_are_real_or_explicitly_deterministic(registered):
     corrected = score(suite(), reports)
     assert corrected["integrity"] == "INVALID"
     assert corrected["summary"][0]["task_mean_accuracy"] is None
+
+
+def test_scoped_process_binding_and_schema(registered):
+    registry, _, profile = registered
+    config = bootstrap(registry, load_legacy_bundle(Path(__file__).parents[2]), profile,
+        CampaignPolicy(max_runs=3, max_invocations=6, max_reserved_tokens=200000, max_usd=1),
+        "scoped-process-" + uuid4().hex, "process_review", contract_version=2)
+    frozen = json.loads((Path(__file__).parents[2] / "configs/research/contract_requirements_suite.json").read_text())
+    for task in schedule(frozen)[:3]:
+        provider = ProcessTransport(profile, {})
+        report = ProcessRunner(registry, provider).run(config, uuid4().hex, task)
+        assert report["events"][-1]["kind"] == "PROCESS_RESULT"
+        assert report["events"][-1]["detail"]["answer"]["disposition"] == "REVIEW"
+        assert all('"reference"' not in canonical(i["request"]) for i in report["invocations"])

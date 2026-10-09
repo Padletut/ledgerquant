@@ -13,9 +13,20 @@ class Assessment(Record):
     confidence: float = Field(ge=0, le=1, allow_inf_nan=False)
 
 
-def assessment_schema():
+class AssessmentV2(Assessment):
+    reasons: tuple[Literal["SUPPORTED_CATALOG", "DUPLICATE", "UNSUPPORTED_CONTRACT", "UNKNOWN_EVIDENCE",
+                           "SOURCE_UNAVAILABLE", "REQUIREMENT_CONTRADICTION"], ...] = Field(min_length=1, max_length=5)
+
+
+def assessment_type(contract_version):
+    if contract_version not in {1, 2}:
+        raise ValueError("unsupported process contract version")
+    return AssessmentV2 if contract_version == 2 else Assessment
+
+
+def assessment_schema(contract_version=1):
     return [{"name": "submit_process_assessment", "description": "Classify the supplied contract against the registered rules. This is a process-test answer, never admission or evidence.",
-             "parameters": Assessment.model_json_schema()}]
+             "parameters": assessment_type(contract_version).model_json_schema()}]
 
 
 PROCESS_INSTRUCTIONS = """Classify the supplied proposed contract using the provided catalog.

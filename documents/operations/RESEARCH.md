@@ -1,6 +1,6 @@
 # Bounded research-agent operations
 
-**Implemented:** 09 October 2026, architecture 2.10.1.
+**Implemented:** 09 October 2026, architecture 2.10.2.
 
 The one-shot workflow is Research proposal → fresh-context Critic → deterministic
 contract review. An operator can then reject or admit an eligible draft to a
@@ -47,9 +47,9 @@ in `configs/research/openai_astra_bootstrap.*.json` for historical identity and
 replay. The campaign is exhausted at 40 runs; changing models does not reopen it
 or create another USD 50 allowance. Mini's Research/Critic versions are registered
 under that existing campaign without starting inference. Their local registration
-file is `data/research_control/worker/registration-mini.json`. The mandatory
-capability probe will run before any future agent workflow; Mini's real API
-behavior and research quality have not yet been measured in this project.
+file is `data/research_control/worker/registration-mini.json`. That registration records the historical v1 binding. New v2 executions use the
+separately bounded campaign described below; each model run starts with a typed
+capability probe. Research quality remains separate from API conformance.
 
 Every provider attempt reserves
 its input-byte upper estimate, framing allowance and maximum output tokens before
@@ -91,7 +91,7 @@ the corresponding control directories. Export the verified legacy bundle:
 ```bash
 PYTHONPATH=src .venv/bin/python -m ledgerquant.research.agent_cli export-legacy --root . > data/research_control/operator/legacy-bundle.json
 docker compose -f deploy/compose.yaml -f deploy/compose.research.yaml run --rm --no-deps research-operator provision-worker --password-file /run/secrets/research_worker_password
-docker compose -f deploy/compose.yaml -f deploy/compose.research.yaml run --rm --no-deps research-operator register --bundle /control/legacy-bundle.json --profile /control/openai_astra_bootstrap.profile.json --policy /control/openai_astra_bootstrap.policy.json --campaign openai_astra_bootstrap_20261009 > data/research_control/worker/registration.json
+docker compose -f deploy/compose.yaml -f deploy/compose.research.yaml run --rm --no-deps research-operator register --bundle /control/legacy-bundle.json --profile /control/openai_astra_bootstrap.profile.json --policy /control/openai_astra_bootstrap.policy.json --campaign openai_astra_bootstrap_20261009 --contract-version 1 > data/research_control/worker/registration.json
 ```
 
 The first command key is retained permanently:
@@ -107,11 +107,11 @@ changed instructions/tools/profile as a new effective agent version; never
 silently substitute another model. Keep retries within the original campaign so
 the authorized total does not reset.
 
-For the new Mini binding, register using the mounted default profile (omit
-`--profile`) and a separate output file:
+To reproduce the historical Mini v1 binding, register using the mounted default
+profile (omit `--profile`) and a separate output file:
 
 ```bash
-docker compose -f deploy/compose.yaml -f deploy/compose.research.yaml run --rm --no-deps research-operator register --bundle /control/legacy-bundle.json --policy /control/openai_astra_bootstrap.policy.json --campaign openai_astra_bootstrap_20261009 > data/research_control/worker/registration-mini.json
+docker compose -f deploy/compose.yaml -f deploy/compose.research.yaml run --rm --no-deps research-operator register --bundle /control/legacy-bundle.json --policy /control/openai_astra_bootstrap.policy.json --campaign openai_astra_bootstrap_20261009 --contract-version 1 > data/research_control/worker/registration-mini.json
 ```
 
 This only registers versions. A future task must have an explicitly allocated
@@ -139,10 +139,18 @@ hash, actor, `ADMIT_DEVELOPMENT` or `REJECT`, reason and explicit resolutions fo
 every material/blocking Critic objection. The worker database role cannot execute
 the resulting writes. A Critic `REVIEW` recommendation is never approval.
 
-Only an admissible typed contract can be frozen. Required sources are binding:
-a sentence saying a source is optional cannot cancel an entry in
-`data_requirements`. The first real draft has precisely this conflict over
-broker costs and remains blocked. Do not edit its recorded payload to unblock it.
+Only an admissible typed contract can be frozen. New registrations default to
+`--contract-version 2`: every requirement has `current_diagnostic` or
+`future_economic` scope. The former blocks on unavailable data; the latter records
+a prerequisite for a future economic contract. Current broker costs contradict
+the price-only catalog and cause contract rejection. Critic must explicitly check
+narrative/field consistency and record a material objection if contradictory;
+operator admission requires an explicit resolution. Semantic checking remains
+fallible and is not replaced by keyword matching.
+
+Historical registrations use `--contract-version 1`. Their required-source
+entries remain binding regardless of prose. The first real draft retains its
+broker-cost conflict and blocked state. Do not rewrite it or normalize it to v2.
 
 An admitted design is committed before development begins. The catalog retains
 missing anchors and recalculates the majority baseline on the selected hour
@@ -161,8 +169,8 @@ The initial campaign has reached its frozen **40-run limit**. Replays remain
 available; fresh inference needs a separately reviewed campaign allowance. Do
 not edit the old policy to continue searching. Its first 36-run process
 comparison is invalid because of an ambiguous duplicate context; the repaired
-context passed three corrective checks. The full corrected comparison remains
-unmeasured.
+context passed three corrective checks. The full original none/structured comparison remains
+unmeasured. The new requirement regression below is a separately frozen test.
 
 `configs/research/contract_process_suite.json` freezes three synthetic contract
 templates, two repetitions, three arms and two feedback policies: 36 runs.
@@ -184,3 +192,44 @@ Unit/API checks run with `.venv/bin/python -m pytest tests/unit tests/contract`.
 PostgreSQL integration tests require `RESEARCH_TEST_DATABASE_URL` naming the
 disposable database `research_test`. They reset that test ledger and must never
 be pointed at the capture database.
+
+## Approved Mini requirement regression
+
+`configs/research/mini_requirements.execution.json` freezes the additional step:
+24 process runs and one discovery run, at most 53 provider calls and USD 2 in
+retained reservations. The prior USD 24.187702 stays charged; combined reservations
+cannot exceed USD 26.187702 under this allocation, within the original USD 50.
+The parent campaign remains exhausted. Both v2 registrations share campaign
+`openai_mini_requirements_20261009`; do not create separate budgets for the arms.
+
+The process profile explicitly reduces maximum output to 1,536 tokens and request
+size to 18,000 bytes. The ordinary Mini profile remains the discovery binding.
+With 40 process calls and up to 13 discovery calls, even the maximum request/output
+reservations sum to USD 1.998912. The deterministic checklist has the same per-run
+allowance but makes no model call. Actual usage, retained reservations and the
+provider invoice are different quantities.
+
+The frozen suite is `configs/research/contract_requirements_suite.json`:
+deferred costs, current missing news, contradictory current costs and an exact
+renamed duplicate; two repetitions and three arms. Structured feedback is fixed.
+All templates are exposed contract regressions, not a held-out research benchmark.
+No-feedback comparison, broad semantic error detection and economic false rejection
+remain unmeasured. Reference labels never enter provider contexts.
+
+Register the process binding with `--workflow process_review --contract-version 2`
+and its explicit process profile; register discovery with `--contract-version 2`
+and the mounted ordinary Mini profile. Both use `mini_requirements.policy.json`.
+Use separate registration output files. Generate tasks with the existing
+`process_evaluation.schedule` function; only operator inputs contain the rubric.
+The suite and execution manifest are immutable registry artifacts as well as
+version-controlled inputs. Do not increase the budget or resample failures after
+seeing results. Run the single `mini_requirements.task.json` only once, retaining
+its parent campaign and blocked-draft references. Operator review remains required
+before development, and no independent validation window is allocated.
+
+This campaign has now completed and is exhausted at 25 runs. Its 49 provider calls
+returned `gpt-5.4-mini-2026-03-17`; the step retained USD 0.919859 in reservations.
+The actual proposal was rejected as a duplicate, so no development or candidate
+lock occurred. See the [Mini execution record](../research/evaluations/mini_requirements_20261009/REPORT.md).
+Replays remain available. Further inference needs a new explicitly allocated
+step; unused money does not reopen this campaign's stopping rule.

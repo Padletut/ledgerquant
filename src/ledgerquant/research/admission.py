@@ -7,7 +7,8 @@ from sqlalchemy import select
 
 from . import tables as t
 from .catalog import CATALOG, develop
-from .proposals import Proposal, Critique, review
+from .proposals import review
+from .scoped_proposals import parse_proposal, parse_critique
 from .registry import RegistryError, append, artifact, now, value
 from .types import Record, digest
 
@@ -39,9 +40,9 @@ def admit(registry, command: Admission):
         if prior and locked:
             return value(c, locked)
         frozen = c.execute(select(t.commitments.c.artifact_id).where(t.commitments.c.id == draft["id"] + ":DESIGN_FREEZE")).scalar_one_or_none()
-        proposal = Proposal.model_validate(value(c, draft["artifact_id"]))
+        proposal = parse_proposal(value(c, draft["artifact_id"]))
         critique_id = c.execute(select(t.critiques.c.artifact_id).where(t.critiques.c.draft_id == draft["id"])).scalar_one()
-        critique = Critique.model_validate(value(c, critique_id))
+        critique = parse_critique(value(c, critique_id))
         known = set(c.execute(select(t.drafts.c.signature).where(t.drafts.c.id != draft["id"])).scalars())
         decision = review(proposal, critique, set(manifest["evidence"]), known)
         if command.action == "ADMIT_DEVELOPMENT" and frozen is None:

@@ -1,0 +1,19 @@
+{
+  "version": "mini_requirements_execution/1",
+  "campaign_id": "openai_mini_requirements_20261009",
+  "parent_campaign_id": "openai_astra_bootstrap_20261009",
+  "prior_reserved_micro_usd": 24187702,
+  "authorization_total_usd": 50,
+  "step_cap_usd": 2,
+  "policy_sha256": "59c61f6557c02a4c1e08a522fc3c2088e3f031c2f522dcd8bcf98c4b005d7b39",
+  "suite_sha256": "51efd91690e4106e0ecabf90eaebf0d2cdec6e44398cac6eed12c54f2d65678e",
+  "task_sha256": "9de49c8188b0e127f47a115ce7a3507fb50b9ca72177e94f8a8619c99e657615",
+  "process_profile_sha256": "572227689559d6fbe8e6aecc0bec6679b68dd9aac11c254f263a7d590ebe7b75",
+  "discovery_profile_sha256": "376981edb8b3447d5c1a8d9a976ff5f4f514cfe0a1df3d31cdf96ed902bdd3ec",
+  "max_process_calls": 40,
+  "max_discovery_calls": 13,
+  "worst_case_reserved_micro_usd": 1998912,
+  "combined_reserved_ceiling_micro_usd": 26187702,
+  "economic_evaluation": false,
+  "new_independent_windows": []
+}

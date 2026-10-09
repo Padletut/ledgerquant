@@ -32,6 +32,8 @@ def parser():
     for name in ("bundle", "policy", "campaign"):
         register.add_argument("--" + name, required=True)
     register.add_argument("--workflow", choices=["discovery", "process_review"], default="discovery")
+    register.add_argument("--contract-version", type=int, choices=[1, 2], default=2,
+                          help="New registrations use v2; v1 remains explicit for historical execution.")
     worker = commands.add_parser("provision-worker")
     worker.add_argument("--password-file", required=True)
     run = commands.add_parser("run")
@@ -68,7 +70,7 @@ def main():
     try:
         if args.command == "register":
             result = bootstrap(registry, read(args.bundle), ModelProfile.model_validate(read(args.profile)),
-                               CampaignPolicy.model_validate(read(args.policy)), args.campaign, args.workflow)
+                               CampaignPolicy.model_validate(read(args.policy)), args.campaign, args.workflow, args.contract_version)
         elif args.command == "provision-worker":
             provision_worker(engine, Path(args.password_file))
             result = {"worker_role": "ledgerquant_research_worker", "status": "provisioned"}

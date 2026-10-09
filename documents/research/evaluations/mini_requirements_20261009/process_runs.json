@@ -1,0 +1,1869 @@
+[
+  {
+    "events": [
+      {
+        "detail": {
+          "capability": "bounded_typed_function_calling",
+          "does_not_certify": [
+            "factual_correctness",
+            "calibration",
+            "economic_value"
+          ],
+          "invocation_id": "8dd6a9d9-097a-46b3-83d9-3f8e7ebe71f8",
+          "model_profile_sha256": "572227689559d6fbe8e6aecc0bec6679b68dd9aac11c254f263a7d590ebe7b75"
+        },
+        "kind": "CAPABILITY_VERIFIED"
+      },
+      {
+        "detail": {
+          "answer": {
+            "confidence": 0.91,
+            "disposition": "REVIEW",
+            "explanation": "The proposal fits the registered EURUSD no-orders diagnostic catalog: same instrument, candidate rule, horizon, lookback, and baseline policy, with a permitted decision hour subset. It is not a duplicate because the diagnostic hours are [8], while the known duplicate comparison requires the full hours_utc array [8,12,16]. The data requirement is scoped future_economic, so broker_costs does not block this diagnostic review.",
+            "reasons": [
+              "SUPPORTED_CATALOG"
+            ]
+          },
+          "authority": "process_assessment_only",
+          "evaluator_measurement": false,
+          "research_answer": {
+            "confidence": 0.91,
+            "disposition": "REVIEW",
+            "explanation": "The proposal fits the registered EURUSD no-orders diagnostic catalog: same instrument, candidate rule, horizon, lookback, and baseline policy, with a permitted decision hour subset. It is not a duplicate because the diagnostic hours are [8], while the known duplicate comparison requires the full hours_utc array [8,12,16]. The data requirement is scoped future_economic, so broker_costs does not block this diagnostic review.",
+            "reasons": [
+              "SUPPORTED_CATALOG"
+            ]
+          }
+        },
+        "kind": "PROCESS_RESULT"
+      }
+    ],
+    "input_tokens": 2990,
+    "output_tokens": 593,
+    "reserved_micro_usd": 28929,
+    "run_id": "cb282dd6-cb2e-40f3-8122-3d3d60ffac58",
+    "task": {
+      "arm": "single",
+      "case_id": "deferred_costs",
+      "economic_evaluation": false,
+      "feedback": "structured",
+      "proposal": {
+        "admissibility_probability": 0.5,
+        "contrary_evidence": [
+          "The earlier full-day rule failed temporal validation."
+        ],
+        "data_requirements": [
+          {
+            "reactivation_condition": "Register independently measured source evidence.",
+            "reason": "Needed only for economic interpretation.",
+            "scope": "future_economic",
+            "source": "broker_costs"
+          }
+        ],
+        "diagnostic": {
+          "hours_utc": [
+            8
+          ]
+        },
+        "evidence_ids": [
+          "eurusd_four_hour_direction_2021_replication_v1"
+        ],
+        "falsifier": "No improvement against the frozen baseline on new evidence.",
+        "mechanism": "Test whether the registered price rule differs by decision hour.",
+        "predicted_failure": "TEMPORAL_FAILURE",
+        "schema_version": "research_proposal/2",
+        "support": [
+          "The released rule did not transport to 2021."
+        ],
+        "title": "Synthetic deferred costs"
+      },
+      "repetition": 0,
+      "split": "exposed_contract_regression",
+      "suite_sha256": "51efd91690e4106e0ecabf90eaebf0d2cdec6e44398cac6eed12c54f2d65678e"
+    }
+  },
+  {
+    "events": [
+      {
+        "detail": {
+          "capability": "bounded_typed_function_calling",
+          "does_not_certify": [
+            "factual_correctness",
+            "calibration",
+            "economic_value"
+          ],
+          "invocation_id": "9e282be1-8342-4e83-8018-b2543bd85d41",
+          "model_profile_sha256": "572227689559d6fbe8e6aecc0bec6679b68dd9aac11c254f263a7d590ebe7b75"
+        },
+        "kind": "CAPABILITY_VERIFIED"
+      },
+      {
+        "detail": {
+          "answer": {
+            "confidence": 0.9,
+            "disposition": "REVIEW",
+            "explanation": "The proposal is supported by the catalog as a non-economic EURUSD diagnostic using the registered candidate rule, horizon, lookback, and orders_allowed=false framing. Its diagnostic scope narrows hours_utc to [8], which is a subset variant rather than the exact normalized duplicate hours set [8,12,16], so it is not a duplicate under the supplied duplicate rule. The only data requirement is broker_costs with scope future_economic, which does not block this no-orders, noneconomic diagnostic. The cited evidence ids are recognized, and no current_diagnostic source-unavailable requirement is asserted.",
+            "reasons": [
+              "SUPPORTED_CATALOG"
+            ]
+          },
+          "authority": "process_assessment_only",
+          "evaluator_measurement": false,
+          "research_answer": {
+            "confidence": 0.88,
+            "disposition": "REVIEW",
+            "explanation": "The proposal matches the registered EURUSD diagnostic family: same instrument, candidate rule, horizon, lookback, order prohibition, and exploratory diagnostic framing. The diagnostic hours are a subset variant ([8]) rather than the exact normalized duplicate hours set ([8,12,16]), so it is not a duplicate under the stated duplicate rule. The cited evidence id is recognized in the supplied released evidence. The broker_costs item is explicitly scoped as future_economic, so it does not block this no-orders, no-economic-claim diagnostic. No unavailable current_diagnostic source is asserted, and no requirement contradiction is forced by the supplied scope.",
+            "reasons": [
+              "SUPPORTED_CATALOG"
+            ]
+          }
+        },
+        "kind": "PROCESS_RESULT"
+      }
+    ],
+    "input_tokens": 5983,
+    "output_tokens": 1382,
+    "reserved_micro_usd": 47972,
+    "run_id": "460c74ca-e890-4fa6-a62b-81af585706b4",
+    "task": {
+      "arm": "critic",
+      "case_id": "deferred_costs",
+      "economic_evaluation": false,
+      "feedback": "structured",
+      "proposal": {
+        "admissibility_probability": 0.5,
+        "contrary_evidence": [
+          "The earlier full-day rule failed temporal validation."
+        ],
+        "data_requirements": [
+          {
+            "reactivation_condition": "Register independently measured source evidence.",
+            "reason": "Needed only for economic interpretation.",
+            "scope": "future_economic",
+            "source": "broker_costs"
+          }
+        ],
+        "diagnostic": {
+          "hours_utc": [
+            8
+          ]
+        },
+        "evidence_ids": [
+          "eurusd_four_hour_direction_2021_replication_v1"
+        ],
+        "falsifier": "No improvement against the frozen baseline on new evidence.",
+        "mechanism": "Test whether the registered price rule differs by decision hour.",
+        "predicted_failure": "TEMPORAL_FAILURE",
+        "schema_version": "research_proposal/2",
+        "support": [
+          "The released rule did not transport to 2021."
+        ],
+        "title": "Synthetic deferred costs"
+      },
+      "repetition": 0,
+      "split": "exposed_contract_regression",
+      "suite_sha256": "51efd91690e4106e0ecabf90eaebf0d2cdec6e44398cac6eed12c54f2d65678e"
+    }
+  },
+  {
+    "events": [
+      {
+        "detail": {
+          "answer": {
+            "confidence": 1.0,
+            "disposition": "REVIEW",
+            "explanation": "Fixed catalog checklist; no semantic judgement.",
+            "reasons": [
+              "SUPPORTED_CATALOG"
+            ]
+          },
+          "authority": "process_assessment_only",
+          "evaluator_measurement": false,
+          "research_answer": null
+        },
+        "kind": "PROCESS_RESULT"
+      }
+    ],
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "reserved_micro_usd": 0,
+    "run_id": "b3fcc85d-61cb-43b1-8e07-479a9d305c5a",
+    "task": {
+      "arm": "checklist",
+      "case_id": "deferred_costs",
+      "economic_evaluation": false,
+      "feedback": "structured",
+      "proposal": {
+        "admissibility_probability": 0.5,
+        "contrary_evidence": [
+          "The earlier full-day rule failed temporal validation."
+        ],
+        "data_requirements": [
+          {
+            "reactivation_condition": "Register independently measured source evidence.",
+            "reason": "Needed only for economic interpretation.",
+            "scope": "future_economic",
+            "source": "broker_costs"
+          }
+        ],
+        "diagnostic": {
+          "hours_utc": [
+            8
+          ]
+        },
+        "evidence_ids": [
+          "eurusd_four_hour_direction_2021_replication_v1"
+        ],
+        "falsifier": "No improvement against the frozen baseline on new evidence.",
+        "mechanism": "Test whether the registered price rule differs by decision hour.",
+        "predicted_failure": "TEMPORAL_FAILURE",
+        "schema_version": "research_proposal/2",
+        "support": [
+          "The released rule did not transport to 2021."
+        ],
+        "title": "Synthetic deferred costs"
+      },
+      "repetition": 0,
+      "split": "exposed_contract_regression",
+      "suite_sha256": "51efd91690e4106e0ecabf90eaebf0d2cdec6e44398cac6eed12c54f2d65678e"
+    }
+  },
+  {
+    "events": [
+      {
+        "detail": {
+          "capability": "bounded_typed_function_calling",
+          "does_not_certify": [
+            "factual_correctness",
+            "calibration",
+            "economic_value"
+          ],
+          "invocation_id": "18da5e93-a58a-4421-a292-3b420c9be3e3",
+          "model_profile_sha256": "572227689559d6fbe8e6aecc0bec6679b68dd9aac11c254f263a7d590ebe7b75"
+        },
+        "kind": "CAPABILITY_VERIFIED"
+      },
+      {
+        "detail": {
+          "answer": {
+            "confidence": 0.96,
+            "disposition": "BLOCKED_DATA_REQUIREMENT",
+            "explanation": "The proposal is blocked by an explicit current_diagnostic requirement for raw_news, and the source is stated to be unavailable for this slice. Under the stated scope rules, that is a BLOCKED_DATA_REQUIREMENT rather than a measured failure or economic rejection. The submitted diagnostic is also not a duplicate of the registered exact hours_utc array, so duplicate handling does not apply.",
+            "reasons": [
+              "SOURCE_UNAVAILABLE",
+              "SUPPORTED_CATALOG"
+            ]
+          },
+          "authority": "process_assessment_only",
+          "evaluator_measurement": false,
+          "research_answer": {
+            "confidence": 0.96,
+            "disposition": "BLOCKED_DATA_REQUIREMENT",
+            "explanation": "The proposal is blocked by an explicit current_diagnostic requirement for raw_news, and the source is stated to be unavailable for this slice. Under the stated scope rules, that is a BLOCKED_DATA_REQUIREMENT rather than a measured failure or economic rejection. The submitted diagnostic is also not a duplicate of the registered exact hours_utc array, so duplicate handling does not apply.",
+            "reasons": [
+              "SOURCE_UNAVAILABLE",
+              "SUPPORTED_CATALOG"
+            ]
+          }
+        },
+        "kind": "PROCESS_RESULT"
+      }
+    ],
+    "input_tokens": 3005,
+    "output_tokens": 691,
+    "reserved_micro_usd": 29003,
+    "run_id": "9babc79c-976b-4b36-968b-450feaa649c7",
+    "task": {
+      "arm": "single",
+      "case_id": "current_news",
+      "economic_evaluation": false,
+      "feedback": "structured",
+      "proposal": {
+        "admissibility_probability": 0.5,
+        "contrary_evidence": [
+          "The earlier full-day rule failed temporal validation."
+        ],
+        "data_requirements": [
+          {
+            "reactivation_condition": "Register independently measured source evidence.",
+            "reason": "Current event conditioning requires PIT raw news unavailable to this slice.",
+            "scope": "current_diagnostic",
+            "source": "raw_news"
+          }
+        ],
+        "diagnostic": {
+          "hours_utc": [
+            8
+          ]
+        },
+        "evidence_ids": [
+          "eurusd_four_hour_direction_2021_replication_v1"
+        ],
+        "falsifier": "No improvement against the frozen baseline on new evidence.",
+        "mechanism": "Request a future catalog extension for an event-conditioned diagnostic; block this attempt until sources and catalog are reviewed.",
+        "predicted_failure": "TEMPORAL_FAILURE",
+        "schema_version": "research_proposal/2",
+        "support": [
+          "The released rule did not transport to 2021."
+        ],
+        "title": "Synthetic current news"
+      },
+      "repetition": 0,
+      "split": "exposed_contract_regression",
+      "suite_sha256": "51efd91690e4106e0ecabf90eaebf0d2cdec6e44398cac6eed12c54f2d65678e"
+    }
+  },
+  {
+    "events": [
+      {
+        "detail": {
+          "capability": "bounded_typed_function_calling",
+          "does_not_certify": [
+            "factual_correctness",
+            "calibration",
+            "economic_value"
+          ],
+          "invocation_id": "dc37b636-9abe-468d-8544-d04bea5c6f95",
+          "model_profile_sha256": "572227689559d6fbe8e6aecc0bec6679b68dd9aac11c254f263a7d590ebe7b75"
+        },
+        "kind": "CAPABILITY_VERIFIED"
+      },
+      {
+        "detail": {
+          "answer": {
+            "confidence": 0.89,
+            "disposition": "BLOCKED_DATA_REQUIREMENT",
+            "explanation": "The proposal fits the supported EURUSD diagnostic family, but it introduces a current_diagnostic requirement on raw_news, and that source is explicitly unavailable in this slice. Under the scoped rules, this blocks execution and validation until the source is registered and the catalog is reviewed. The cited evidence is recognized, and the 2021 temporal failure is not the blocking issue here.",
+            "reasons": [
+              "SUPPORTED_CATALOG",
+              "SOURCE_UNAVAILABLE"
+            ]
+          },
+          "authority": "process_assessment_only",
+          "evaluator_measurement": false,
+          "research_answer": {
+            "confidence": 0.92,
+            "disposition": "BLOCKED_DATA_REQUIREMENT",
+            "explanation": "The proposal is blocked because it adds a current_diagnostic requirement for raw_news, and the source is explicitly unavailable in this slice. The contract is otherwise within the EURUSD diagnostic family, but the requested event-conditioned extension cannot be executed or validated until the source is registered and the catalog is reviewed. The cited evidence IDs are known, and the 2021 temporal failure does not change the blocking data requirement.",
+            "reasons": [
+              "SUPPORTED_CATALOG",
+              "SOURCE_UNAVAILABLE"
+            ]
+          }
+        },
+        "kind": "PROCESS_RESULT"
+      }
+    ],
+    "input_tokens": 5975,
+    "output_tokens": 2146,
+    "reserved_micro_usd": 47995,
+    "run_id": "63c20842-f874-4cbc-8bfc-9fb9d84a8dcc",
+    "task": {
+      "arm": "critic",
+      "case_id": "current_news",
+      "economic_evaluation": false,
+      "feedback": "structured",
+      "proposal": {
+        "admissibility_probability": 0.5,
+        "contrary_evidence": [
+          "The earlier full-day rule failed temporal validation."
+        ],
+        "data_requirements": [
+          {
+            "reactivation_condition": "Register independently measured source evidence.",
+            "reason": "Current event conditioning requires PIT raw news unavailable to this slice.",
+            "scope": "current_diagnostic",
+            "source": "raw_news"
+          }
+        ],
+        "diagnostic": {
+          "hours_utc": [
+            8
+          ]
+        },
+        "evidence_ids": [
+          "eurusd_four_hour_direction_2021_replication_v1"
+        ],
+        "falsifier": "No improvement against the frozen baseline on new evidence.",
+        "mechanism": "Request a future catalog extension for an event-conditioned diagnostic; block this attempt until sources and catalog are reviewed.",
+        "predicted_failure": "TEMPORAL_FAILURE",
+        "schema_version": "research_proposal/2",
+        "support": [
+          "The released rule did not transport to 2021."
+        ],
+        "title": "Synthetic current news"
+      },
+      "repetition": 0,
+      "split": "exposed_contract_regression",
+      "suite_sha256": "51efd91690e4106e0ecabf90eaebf0d2cdec6e44398cac6eed12c54f2d65678e"
+    }
+  },
+  {
+    "events": [
+      {
+        "detail": {
+          "answer": {
+            "confidence": 1.0,
+            "disposition": "BLOCKED_DATA_REQUIREMENT",
+            "explanation": "Fixed catalog checklist; no semantic judgement.",
+            "reasons": [
+              "SOURCE_UNAVAILABLE"
+            ]
+          },
+          "authority": "process_assessment_only",
+          "evaluator_measurement": false,
+          "research_answer": null
+        },
+        "kind": "PROCESS_RESULT"
+      }
+    ],
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "reserved_micro_usd": 0,
+    "run_id": "ab88461b-19c9-48de-b7ed-a45a521b4bfb",
+    "task": {
+      "arm": "checklist",
+      "case_id": "current_news",
+      "economic_evaluation": false,
+      "feedback": "structured",
+      "proposal": {
+        "admissibility_probability": 0.5,
+        "contrary_evidence": [
+          "The earlier full-day rule failed temporal validation."
+        ],
+        "data_requirements": [
+          {
+            "reactivation_condition": "Register independently measured source evidence.",
+            "reason": "Current event conditioning requires PIT raw news unavailable to this slice.",
+            "scope": "current_diagnostic",
+            "source": "raw_news"
+          }
+        ],
+        "diagnostic": {
+          "hours_utc": [
+            8
+          ]
+        },
+        "evidence_ids": [
+          "eurusd_four_hour_direction_2021_replication_v1"
+        ],
+        "falsifier": "No improvement against the frozen baseline on new evidence.",
+        "mechanism": "Request a future catalog extension for an event-conditioned diagnostic; block this attempt until sources and catalog are reviewed.",
+        "predicted_failure": "TEMPORAL_FAILURE",
+        "schema_version": "research_proposal/2",
+        "support": [
+          "The released rule did not transport to 2021."
+        ],
+        "title": "Synthetic current news"
+      },
+      "repetition": 0,
+      "split": "exposed_contract_regression",
+      "suite_sha256": "51efd91690e4106e0ecabf90eaebf0d2cdec6e44398cac6eed12c54f2d65678e"
+    }
+  },
+  {
+    "events": [
+      {
+        "detail": {
+          "capability": "bounded_typed_function_calling",
+          "does_not_certify": [
+            "factual_correctness",
+            "calibration",
+            "economic_value"
+          ],
+          "invocation_id": "23b140c0-228f-4d45-8252-08cf5530f0eb",
+          "model_profile_sha256": "572227689559d6fbe8e6aecc0bec6679b68dd9aac11c254f263a7d590ebe7b75"
+        },
+        "kind": "CAPABILITY_VERIFIED"
+      },
+      {
+        "detail": {
+          "answer": {
+            "confidence": 0.93,
+            "disposition": "REJECT",
+            "explanation": "The proposal introduces a current_diagnostic broker_costs requirement even though the catalog is no-orders and economic_claim is none_predictive_diagnostic_only. Under the stated scope rules, that is a requirement contradiction rather than a measured cost issue. The hours_utc subset is not a duplicate by the catalog\u2019s duplicate rule, but the contract still fails on the contradictory source requirement.",
+            "reasons": [
+              "REQUIREMENT_CONTRADICTION",
+              "UNSUPPORTED_CONTRACT"
+            ]
+          },
+          "authority": "process_assessment_only",
+          "evaluator_measurement": false,
+          "research_answer": {
+            "confidence": 0.93,
+            "disposition": "REJECT",
+            "explanation": "The proposal introduces a current_diagnostic broker_costs requirement even though the catalog is no-orders and economic_claim is none_predictive_diagnostic_only. Under the stated scope rules, that is a requirement contradiction rather than a measured cost issue. The hours_utc subset is not a duplicate by the catalog\u2019s duplicate rule, but the contract still fails on the contradictory source requirement.",
+            "reasons": [
+              "REQUIREMENT_CONTRADICTION",
+              "UNSUPPORTED_CONTRACT"
+            ]
+          }
+        },
+        "kind": "PROCESS_RESULT"
+      }
+    ],
+    "input_tokens": 2990,
+    "output_tokens": 1104,
+    "reserved_micro_usd": 28935,
+    "run_id": "e4f154c3-6d22-471a-83c5-8a8ef440a517",
+    "task": {
+      "arm": "single",
+      "case_id": "contradictory_costs",
+      "economic_evaluation": false,
+      "feedback": "structured",
+      "proposal": {
+        "admissibility_probability": 0.5,
+        "contrary_evidence": [
+          "The earlier full-day rule failed temporal validation."
+        ],
+        "data_requirements": [
+          {
+            "reactivation_condition": "Register independently measured source evidence.",
+            "reason": "Needed only for economic interpretation.",
+            "scope": "current_diagnostic",
+            "source": "broker_costs"
+          }
+        ],
+        "diagnostic": {
+          "hours_utc": [
+            8
+          ]
+        },
+        "evidence_ids": [
+          "eurusd_four_hour_direction_2021_replication_v1"
+        ],
+        "falsifier": "No improvement against the frozen baseline on new evidence.",
+        "mechanism": "Test whether the registered price rule differs by decision hour.",
+        "predicted_failure": "TEMPORAL_FAILURE",
+        "schema_version": "research_proposal/2",
+        "support": [
+          "The released rule did not transport to 2021."
+        ],
+        "title": "Synthetic contradictory costs"
+      },
+      "repetition": 0,
+      "split": "exposed_contract_regression",
+      "suite_sha256": "51efd91690e4106e0ecabf90eaebf0d2cdec6e44398cac6eed12c54f2d65678e"
+    }
+  },
+  {
+    "events": [
+      {
+        "detail": {
+          "capability": "bounded_typed_function_calling",
+          "does_not_certify": [
+            "factual_correctness",
+            "calibration",
+            "economic_value"
+          ],
+          "invocation_id": "318232ba-945a-4085-8530-06efd4273097",
+          "model_profile_sha256": "572227689559d6fbe8e6aecc0bec6679b68dd9aac11c254f263a7d590ebe7b75"
+        },
+        "kind": "CAPABILITY_VERIFIED"
+      },
+      {
+        "detail": {
+          "answer": {
+            "confidence": 0.96,
+            "disposition": "REJECT",
+            "explanation": "The proposal is not a duplicate of the registered diagnostic because the normalized hours_utc set is [8], not the cataloged [8,12,16]. It otherwise matches the supported EURUSD diagnostic family, but it introduces a current_diagnostic requirement for broker_costs in a no-orders, none_predictive_diagnostic_only catalog. That is an explicit requirement contradiction under the supplied scope rules, so the contract is rejected rather than treated as a mere missing-data case.",
+            "reasons": [
+              "REQUIREMENT_CONTRADICTION",
+              "SUPPORTED_CATALOG"
+            ]
+          },
+          "authority": "process_assessment_only",
+          "evaluator_measurement": false,
+          "research_answer": {
+            "confidence": 0.95,
+            "disposition": "REJECT",
+            "explanation": "The proposal is not a duplicate of the known diagnostic because its normalized hours_utc array is [8], not [8,12,16]. It is otherwise aligned with the supported EURUSD diagnostic catalog, but it introduces a current_diagnostic requirement for broker_costs in a no-orders, no-economic-claim setting. That is a requirement contradiction under the catalog rules, so the contract is rejected rather than blocked for missing data.",
+            "reasons": [
+              "REQUIREMENT_CONTRADICTION",
+              "SUPPORTED_CATALOG"
+            ]
+          }
+        },
+        "kind": "PROCESS_RESULT"
+      }
+    ],
+    "input_tokens": 5951,
+    "output_tokens": 1257,
+    "reserved_micro_usd": 47829,
+    "run_id": "9705e526-0152-444e-aa94-6be7f36f639e",
+    "task": {
+      "arm": "critic",
+      "case_id": "contradictory_costs",
+      "economic_evaluation": false,
+      "feedback": "structured",
+      "proposal": {
+        "admissibility_probability": 0.5,
+        "contrary_evidence": [
+          "The earlier full-day rule failed temporal validation."
+        ],
+        "data_requirements": [
+          {
+            "reactivation_condition": "Register independently measured source evidence.",
+            "reason": "Needed only for economic interpretation.",
+            "scope": "current_diagnostic",
+            "source": "broker_costs"
+          }
+        ],
+        "diagnostic": {
+          "hours_utc": [
+            8
+          ]
+        },
+        "evidence_ids": [
+          "eurusd_four_hour_direction_2021_replication_v1"
+        ],
+        "falsifier": "No improvement against the frozen baseline on new evidence.",
+        "mechanism": "Test whether the registered price rule differs by decision hour.",
+        "predicted_failure": "TEMPORAL_FAILURE",
+        "schema_version": "research_proposal/2",
+        "support": [
+          "The released rule did not transport to 2021."
+        ],
+        "title": "Synthetic contradictory costs"
+      },
+      "repetition": 0,
+      "split": "exposed_contract_regression",
+      "suite_sha256": "51efd91690e4106e0ecabf90eaebf0d2cdec6e44398cac6eed12c54f2d65678e"
+    }
+  },
+  {
+    "events": [
+      {
+        "detail": {
+          "answer": {
+            "confidence": 1.0,
+            "disposition": "REJECT",
+            "explanation": "Fixed catalog checklist; no semantic judgement.",
+            "reasons": [
+              "REQUIREMENT_CONTRADICTION"
+            ]
+          },
+          "authority": "process_assessment_only",
+          "evaluator_measurement": false,
+          "research_answer": null
+        },
+        "kind": "PROCESS_RESULT"
+      }
+    ],
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "reserved_micro_usd": 0,
+    "run_id": "64165db8-9f6e-43f2-883d-eae995f5567e",
+    "task": {
+      "arm": "checklist",
+      "case_id": "contradictory_costs",
+      "economic_evaluation": false,
+      "feedback": "structured",
+      "proposal": {
+        "admissibility_probability": 0.5,
+        "contrary_evidence": [
+          "The earlier full-day rule failed temporal validation."
+        ],
+        "data_requirements": [
+          {
+            "reactivation_condition": "Register independently measured source evidence.",
+            "reason": "Needed only for economic interpretation.",
+            "scope": "current_diagnostic",
+            "source": "broker_costs"
+          }
+        ],
+        "diagnostic": {
+          "hours_utc": [
+            8
+          ]
+        },
+        "evidence_ids": [
+          "eurusd_four_hour_direction_2021_replication_v1"
+        ],
+        "falsifier": "No improvement against the frozen baseline on new evidence.",
+        "mechanism": "Test whether the registered price rule differs by decision hour.",
+        "predicted_failure": "TEMPORAL_FAILURE",
+        "schema_version": "research_proposal/2",
+        "support": [
+          "The released rule did not transport to 2021."
+        ],
+        "title": "Synthetic contradictory costs"
+      },
+      "repetition": 0,
+      "split": "exposed_contract_regression",
+      "suite_sha256": "51efd91690e4106e0ecabf90eaebf0d2cdec6e44398cac6eed12c54f2d65678e"
+    }
+  },
+  {
+    "events": [
+      {
+        "detail": {
+          "capability": "bounded_typed_function_calling",
+          "does_not_certify": [
+            "factual_correctness",
+            "calibration",
+            "economic_value"
+          ],
+          "invocation_id": "6ded65cc-60d6-432f-96dd-c2072f7ac783",
+          "model_profile_sha256": "572227689559d6fbe8e6aecc0bec6679b68dd9aac11c254f263a7d590ebe7b75"
+        },
+        "kind": "CAPABILITY_VERIFIED"
+      },
+      {
+        "detail": {
+          "answer": {
+            "confidence": 0.99,
+            "disposition": "REJECT",
+            "explanation": "The proposal is an exact duplicate of a known diagnostic: candidate_rule=prior_hour_midquote_momentum_sign, catalog_version=eurusd_direction/1, horizon_seconds=14400, instrument=EURUSD, lookback_seconds=3600, orders_allowed=false, and hours_utc=[8,12,16]. The catalog\u2019s duplicate rule treats this normalized diagnostic as a duplicate rather than a new contract.",
+            "reasons": [
+              "DUPLICATE"
+            ]
+          },
+          "authority": "process_assessment_only",
+          "evaluator_measurement": false,
+          "research_answer": {
+            "confidence": 0.99,
+            "disposition": "REJECT",
+            "explanation": "The proposal is an exact duplicate of a known diagnostic: candidate_rule=prior_hour_midquote_momentum_sign, catalog_version=eurusd_direction/1, horizon_seconds=14400, instrument=EURUSD, lookback_seconds=3600, orders_allowed=false, and hours_utc=[8,12,16]. The catalog\u2019s duplicate rule treats this normalized diagnostic as a duplicate rather than a new contract.",
+            "reasons": [
+              "DUPLICATE"
+            ]
+          }
+        },
+        "kind": "PROCESS_RESULT"
+      }
+    ],
+    "input_tokens": 2994,
+    "output_tokens": 378,
+    "reserved_micro_usd": 28936,
+    "run_id": "bc1ce01a-ceed-4b56-ace7-37ef933feaea",
+    "task": {
+      "arm": "single",
+      "case_id": "renamed_duplicate",
+      "economic_evaluation": false,
+      "feedback": "structured",
+      "proposal": {
+        "admissibility_probability": 0.5,
+        "contrary_evidence": [
+          "The earlier full-day rule failed temporal validation."
+        ],
+        "data_requirements": [
+          {
+            "reactivation_condition": "Register independently measured source evidence.",
+            "reason": "Needed only for economic interpretation.",
+            "scope": "future_economic",
+            "source": "broker_costs"
+          }
+        ],
+        "diagnostic": {
+          "hours_utc": [
+            8,
+            12,
+            16
+          ]
+        },
+        "evidence_ids": [
+          "eurusd_four_hour_direction_2021_replication_v1"
+        ],
+        "falsifier": "No improvement against the frozen baseline on new evidence.",
+        "mechanism": "Test whether the registered price rule differs by decision hour.",
+        "predicted_failure": "TEMPORAL_FAILURE",
+        "schema_version": "research_proposal/2",
+        "support": [
+          "The released rule did not transport to 2021."
+        ],
+        "title": "Synthetic renamed duplicate"
+      },
+      "repetition": 0,
+      "split": "exposed_contract_regression",
+      "suite_sha256": "51efd91690e4106e0ecabf90eaebf0d2cdec6e44398cac6eed12c54f2d65678e"
+    }
+  },
+  {
+    "events": [
+      {
+        "detail": {
+          "capability": "bounded_typed_function_calling",
+          "does_not_certify": [
+            "factual_correctness",
+            "calibration",
+            "economic_value"
+          ],
+          "invocation_id": "edcf1259-6538-492f-bdbf-28530b46fe35",
+          "model_profile_sha256": "572227689559d6fbe8e6aecc0bec6679b68dd9aac11c254f263a7d590ebe7b75"
+        },
+        "kind": "CAPABILITY_VERIFIED"
+      },
+      {
+        "detail": {
+          "answer": {
+            "confidence": 0.99,
+            "disposition": "REJECT",
+            "explanation": "The proposed contract matches the registered duplicate diagnostic exactly: the same candidate_rule, catalog_version, horizon_seconds, instrument, lookback_seconds, orders_allowed flag, and complete hours_utc array [8,12,16]. Per the duplicate rule, this is a duplicate rather than a new supported contract. The broker_costs requirement is explicitly scoped as future_economic, so it does not block the diagnostic and is not the basis for rejection.",
+            "reasons": [
+              "DUPLICATE",
+              "SUPPORTED_CATALOG"
+            ]
+          },
+          "authority": "process_assessment_only",
+          "evaluator_measurement": false,
+          "research_answer": {
+            "confidence": 0.98,
+            "disposition": "REJECT",
+            "explanation": "The proposal is a duplicate of a known normalized diagnostic: the same candidate_rule, catalog_version, horizon, instrument, lookback, orders_allowed flag, and complete hours_utc array [8,12,16] match the registered duplicate signature exactly. The cited broker_costs requirement is scoped as future_economic, so it does not block the diagnostic, but it is irrelevant to the duplicate determination. The evidence citation is known and not the basis for rejection; the contract is rejected as a duplicate.",
+            "reasons": [
+              "DUPLICATE",
+              "SUPPORTED_CATALOG"
+            ]
+          }
+        },
+        "kind": "PROCESS_RESULT"
+      }
+    ],
+    "input_tokens": 5970,
+    "output_tokens": 759,
+    "reserved_micro_usd": 47878,
+    "run_id": "93940f15-1af1-4467-b696-b924334b6461",
+    "task": {
+      "arm": "critic",
+      "case_id": "renamed_duplicate",
+      "economic_evaluation": false,
+      "feedback": "structured",
+      "proposal": {
+        "admissibility_probability": 0.5,
+        "contrary_evidence": [
+          "The earlier full-day rule failed temporal validation."
+        ],
+        "data_requirements": [
+          {
+            "reactivation_condition": "Register independently measured source evidence.",
+            "reason": "Needed only for economic interpretation.",
+            "scope": "future_economic",
+            "source": "broker_costs"
+          }
+        ],
+        "diagnostic": {
+          "hours_utc": [
+            8,
+            12,
+            16
+          ]
+        },
+        "evidence_ids": [
+          "eurusd_four_hour_direction_2021_replication_v1"
+        ],
+        "falsifier": "No improvement against the frozen baseline on new evidence.",
+        "mechanism": "Test whether the registered price rule differs by decision hour.",
+        "predicted_failure": "TEMPORAL_FAILURE",
+        "schema_version": "research_proposal/2",
+        "support": [
+          "The released rule did not transport to 2021."
+        ],
+        "title": "Synthetic renamed duplicate"
+      },
+      "repetition": 0,
+      "split": "exposed_contract_regression",
+      "suite_sha256": "51efd91690e4106e0ecabf90eaebf0d2cdec6e44398cac6eed12c54f2d65678e"
+    }
+  },
+  {
+    "events": [
+      {
+        "detail": {
+          "answer": {
+            "confidence": 1.0,
+            "disposition": "REJECT",
+            "explanation": "Fixed catalog checklist; no semantic judgement.",
+            "reasons": [
+              "DUPLICATE"
+            ]
+          },
+          "authority": "process_assessment_only",
+          "evaluator_measurement": false,
+          "research_answer": null
+        },
+        "kind": "PROCESS_RESULT"
+      }
+    ],
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "reserved_micro_usd": 0,
+    "run_id": "e1111e33-4a2e-4a52-9d68-ffd370b26858",
+    "task": {
+      "arm": "checklist",
+      "case_id": "renamed_duplicate",
+      "economic_evaluation": false,
+      "feedback": "structured",
+      "proposal": {
+        "admissibility_probability": 0.5,
+        "contrary_evidence": [
+          "The earlier full-day rule failed temporal validation."
+        ],
+        "data_requirements": [
+          {
+            "reactivation_condition": "Register independently measured source evidence.",
+            "reason": "Needed only for economic interpretation.",
+            "scope": "future_economic",
+            "source": "broker_costs"
+          }
+        ],
+        "diagnostic": {
+          "hours_utc": [
+            8,
+            12,
+            16
+          ]
+        },
+        "evidence_ids": [
+          "eurusd_four_hour_direction_2021_replication_v1"
+        ],
+        "falsifier": "No improvement against the frozen baseline on new evidence.",
+        "mechanism": "Test whether the registered price rule differs by decision hour.",
+        "predicted_failure": "TEMPORAL_FAILURE",
+        "schema_version": "research_proposal/2",
+        "support": [
+          "The released rule did not transport to 2021."
+        ],
+        "title": "Synthetic renamed duplicate"
+      },
+      "repetition": 0,
+      "split": "exposed_contract_regression",
+      "suite_sha256": "51efd91690e4106e0ecabf90eaebf0d2cdec6e44398cac6eed12c54f2d65678e"
+    }
+  },
+  {
+    "events": [
+      {
+        "detail": {
+          "answer": {
+            "confidence": 1.0,
+            "disposition": "REVIEW",
+            "explanation": "Fixed catalog checklist; no semantic judgement.",
+            "reasons": [
+              "SUPPORTED_CATALOG"
+            ]
+          },
+          "authority": "process_assessment_only",
+          "evaluator_measurement": false,
+          "research_answer": null
+        },
+        "kind": "PROCESS_RESULT"
+      }
+    ],
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "reserved_micro_usd": 0,
+    "run_id": "6c2f4e79-7be1-4b27-b2a8-bc8626bf068f",
+    "task": {
+      "arm": "checklist",
+      "case_id": "deferred_costs",
+      "economic_evaluation": false,
+      "feedback": "structured",
+      "proposal": {
+        "admissibility_probability": 0.5,
+        "contrary_evidence": [
+          "The earlier full-day rule failed temporal validation."
+        ],
+        "data_requirements": [
+          {
+            "reactivation_condition": "Register independently measured source evidence.",
+            "reason": "Needed only for economic interpretation.",
+            "scope": "future_economic",
+            "source": "broker_costs"
+          }
+        ],
+        "diagnostic": {
+          "hours_utc": [
+            8
+          ]
+        },
+        "evidence_ids": [
+          "eurusd_four_hour_direction_2021_replication_v1"
+        ],
+        "falsifier": "No improvement against the frozen baseline on new evidence.",
+        "mechanism": "Test whether the registered price rule differs by decision hour.",
+        "predicted_failure": "TEMPORAL_FAILURE",
+        "schema_version": "research_proposal/2",
+        "support": [
+          "The released rule did not transport to 2021."
+        ],
+        "title": "Synthetic deferred costs"
+      },
+      "repetition": 1,
+      "split": "exposed_contract_regression",
+      "suite_sha256": "51efd91690e4106e0ecabf90eaebf0d2cdec6e44398cac6eed12c54f2d65678e"
+    }
+  },
+  {
+    "events": [
+      {
+        "detail": {
+          "capability": "bounded_typed_function_calling",
+          "does_not_certify": [
+            "factual_correctness",
+            "calibration",
+            "economic_value"
+          ],
+          "invocation_id": "db8075d8-53b5-449c-8ee0-40044e528f97",
+          "model_profile_sha256": "572227689559d6fbe8e6aecc0bec6679b68dd9aac11c254f263a7d590ebe7b75"
+        },
+        "kind": "CAPABILITY_VERIFIED"
+      },
+      {
+        "detail": {
+          "answer": {
+            "confidence": 0.82,
+            "disposition": "REVIEW",
+            "explanation": "The proposal fits the supported EURUSD diagnostic catalog as a new variant of the registered price rule, and its broker_costs item is explicitly scoped as future_economic, so it does not block this no-orders, no-economic-claim diagnostic. The diagnostic hours_utc=[8] is a subset variant rather than an exact duplicate of the registered [8,12,16] diagnostic. The cited 2021 evidence is available and documents temporal failure, but that is not an unavailable-source problem for this diagnostic review.",
+            "reasons": [
+              "SUPPORTED_CATALOG"
+            ]
+          },
+          "authority": "process_assessment_only",
+          "evaluator_measurement": false,
+          "research_answer": {
+            "confidence": 0.96,
+            "disposition": "REJECT",
+            "explanation": "The proposal is not eligible for review as submitted because it introduces a broker_costs data requirement under a catalog that is explicitly no-orders and no-economic-claim. Per the process rules, that is a requirement contradiction rather than a merely deferred prerequisite. The cited 2021 evidence is also a known temporal failure, so the proposal is not supported as a new admissible contract.",
+            "reasons": [
+              "REQUIREMENT_CONTRADICTION",
+              "UNKNOWN_EVIDENCE"
+            ]
+          }
+        },
+        "kind": "PROCESS_RESULT"
+      }
+    ],
+    "input_tokens": 5941,
+    "output_tokens": 1841,
+    "reserved_micro_usd": 47796,
+    "run_id": "946668a7-c1f5-425e-8957-ddd1df219bc7",
+    "task": {
+      "arm": "critic",
+      "case_id": "deferred_costs",
+      "economic_evaluation": false,
+      "feedback": "structured",
+      "proposal": {
+        "admissibility_probability": 0.5,
+        "contrary_evidence": [
+          "The earlier full-day rule failed temporal validation."
+        ],
+        "data_requirements": [
+          {
+            "reactivation_condition": "Register independently measured source evidence.",
+            "reason": "Needed only for economic interpretation.",
+            "scope": "future_economic",
+            "source": "broker_costs"
+          }
+        ],
+        "diagnostic": {
+          "hours_utc": [
+            8
+          ]
+        },
+        "evidence_ids": [
+          "eurusd_four_hour_direction_2021_replication_v1"
+        ],
+        "falsifier": "No improvement against the frozen baseline on new evidence.",
+        "mechanism": "Test whether the registered price rule differs by decision hour.",
+        "predicted_failure": "TEMPORAL_FAILURE",
+        "schema_version": "research_proposal/2",
+        "support": [
+          "The released rule did not transport to 2021."
+        ],
+        "title": "Synthetic deferred costs"
+      },
+      "repetition": 1,
+      "split": "exposed_contract_regression",
+      "suite_sha256": "51efd91690e4106e0ecabf90eaebf0d2cdec6e44398cac6eed12c54f2d65678e"
+    }
+  },
+  {
+    "events": [
+      {
+        "detail": {
+          "capability": "bounded_typed_function_calling",
+          "does_not_certify": [
+            "factual_correctness",
+            "calibration",
+            "economic_value"
+          ],
+          "invocation_id": "4c2cbd8c-9382-4bf8-a9e0-ba3f759c29f8",
+          "model_profile_sha256": "572227689559d6fbe8e6aecc0bec6679b68dd9aac11c254f263a7d590ebe7b75"
+        },
+        "kind": "CAPABILITY_VERIFIED"
+      },
+      {
+        "detail": {
+          "answer": {
+            "confidence": 0.82,
+            "disposition": "REVIEW",
+            "explanation": "The proposal is supported by the catalog as a non-economic diagnostic contract for EURUSD using the registered candidate rule. It is not a duplicate of the known diagnostic because the proposal\u2019s normalized hours_utc is [8], while the registered duplicate check requires the complete [8,12,16] array; the catalog text says a subset is a related variant, not a duplicate. The broker_costs item is explicitly scoped future_economic, so it is a deferred prerequisite and does not block this current price diagnostic. No unknown evidence citation is present.",
+            "reasons": [
+              "SUPPORTED_CATALOG"
+            ]
+          },
+          "authority": "process_assessment_only",
+          "evaluator_measurement": false,
+          "research_answer": {
+            "confidence": 0.82,
+            "disposition": "REVIEW",
+            "explanation": "The proposal is supported by the catalog as a non-economic diagnostic contract for EURUSD using the registered candidate rule. It is not a duplicate of the known diagnostic because the proposal\u2019s normalized hours_utc is [8], while the registered duplicate check requires the complete [8,12,16] array; the catalog text says a subset is a related variant, not a duplicate. The broker_costs item is explicitly scoped future_economic, so it is a deferred prerequisite and does not block this current price diagnostic. No unknown evidence citation is present.",
+            "reasons": [
+              "SUPPORTED_CATALOG"
+            ]
+          }
+        },
+        "kind": "PROCESS_RESULT"
+      }
+    ],
+    "input_tokens": 2990,
+    "output_tokens": 1084,
+    "reserved_micro_usd": 28929,
+    "run_id": "fe234c54-0dca-4c01-b244-d85e0a809d94",
+    "task": {
+      "arm": "single",
+      "case_id": "deferred_costs",
+      "economic_evaluation": false,
+      "feedback": "structured",
+      "proposal": {
+        "admissibility_probability": 0.5,
+        "contrary_evidence": [
+          "The earlier full-day rule failed temporal validation."
+        ],
+        "data_requirements": [
+          {
+            "reactivation_condition": "Register independently measured source evidence.",
+            "reason": "Needed only for economic interpretation.",
+            "scope": "future_economic",
+            "source": "broker_costs"
+          }
+        ],
+        "diagnostic": {
+          "hours_utc": [
+            8
+          ]
+        },
+        "evidence_ids": [
+          "eurusd_four_hour_direction_2021_replication_v1"
+        ],
+        "falsifier": "No improvement against the frozen baseline on new evidence.",
+        "mechanism": "Test whether the registered price rule differs by decision hour.",
+        "predicted_failure": "TEMPORAL_FAILURE",
+        "schema_version": "research_proposal/2",
+        "support": [
+          "The released rule did not transport to 2021."
+        ],
+        "title": "Synthetic deferred costs"
+      },
+      "repetition": 1,
+      "split": "exposed_contract_regression",
+      "suite_sha256": "51efd91690e4106e0ecabf90eaebf0d2cdec6e44398cac6eed12c54f2d65678e"
+    }
+  },
+  {
+    "events": [
+      {
+        "detail": {
+          "answer": {
+            "confidence": 1.0,
+            "disposition": "BLOCKED_DATA_REQUIREMENT",
+            "explanation": "Fixed catalog checklist; no semantic judgement.",
+            "reasons": [
+              "SOURCE_UNAVAILABLE"
+            ]
+          },
+          "authority": "process_assessment_only",
+          "evaluator_measurement": false,
+          "research_answer": null
+        },
+        "kind": "PROCESS_RESULT"
+      }
+    ],
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "reserved_micro_usd": 0,
+    "run_id": "e7f226bd-f48f-4158-8c1a-9ac21c0bbb0e",
+    "task": {
+      "arm": "checklist",
+      "case_id": "current_news",
+      "economic_evaluation": false,
+      "feedback": "structured",
+      "proposal": {
+        "admissibility_probability": 0.5,
+        "contrary_evidence": [
+          "The earlier full-day rule failed temporal validation."
+        ],
+        "data_requirements": [
+          {
+            "reactivation_condition": "Register independently measured source evidence.",
+            "reason": "Current event conditioning requires PIT raw news unavailable to this slice.",
+            "scope": "current_diagnostic",
+            "source": "raw_news"
+          }
+        ],
+        "diagnostic": {
+          "hours_utc": [
+            8
+          ]
+        },
+        "evidence_ids": [
+          "eurusd_four_hour_direction_2021_replication_v1"
+        ],
+        "falsifier": "No improvement against the frozen baseline on new evidence.",
+        "mechanism": "Request a future catalog extension for an event-conditioned diagnostic; block this attempt until sources and catalog are reviewed.",
+        "predicted_failure": "TEMPORAL_FAILURE",
+        "schema_version": "research_proposal/2",
+        "support": [
+          "The released rule did not transport to 2021."
+        ],
+        "title": "Synthetic current news"
+      },
+      "repetition": 1,
+      "split": "exposed_contract_regression",
+      "suite_sha256": "51efd91690e4106e0ecabf90eaebf0d2cdec6e44398cac6eed12c54f2d65678e"
+    }
+  },
+  {
+    "events": [
+      {
+        "detail": {
+          "capability": "bounded_typed_function_calling",
+          "does_not_certify": [
+            "factual_correctness",
+            "calibration",
+            "economic_value"
+          ],
+          "invocation_id": "d7e721e8-a383-4eb7-a1f8-b3096b5130d7",
+          "model_profile_sha256": "572227689559d6fbe8e6aecc0bec6679b68dd9aac11c254f263a7d590ebe7b75"
+        },
+        "kind": "CAPABILITY_VERIFIED"
+      },
+      {
+        "detail": {
+          "answer": {
+            "confidence": 0.91,
+            "disposition": "REJECT",
+            "explanation": "The proposal is not a supported instantiation of the registered EURUSD diagnostic catalog. It pivots from the cataloged price diagnostic into a current-news/event-conditioned mechanism, while simultaneously saying the raw_news requirement is deferred to a future catalog extension. That is a requirement contradiction: it claims to rely on a source now while postponing the very source needed for the proposed mechanism. Because the contract is unsupported in the current catalog and contains that contradiction, it should be rejected rather than treated as a blocked supported diagnostic.",
+            "reasons": [
+              "UNSUPPORTED_CONTRACT",
+              "REQUIREMENT_CONTRADICTION"
+            ]
+          },
+          "authority": "process_assessment_only",
+          "evaluator_measurement": false,
+          "research_answer": {
+            "confidence": 0.94,
+            "disposition": "BLOCKED_DATA_REQUIREMENT",
+            "explanation": "The proposal is structurally aligned with the registered EURUSD diagnostic catalog (prior_hour_midquote_momentum_sign, 4h horizon, 1h lookback, no orders) and is not an exact duplicate of the known diagnostic because the normalized hours_utc set differs. However, it explicitly requires current_diagnostic raw_news, and the catalog rules state that an unavailable current_diagnostic source blocks this attempt. This is therefore a supported contract that is blocked pending source availability/review, not a measured economic failure.",
+            "reasons": [
+              "SUPPORTED_CATALOG",
+              "SOURCE_UNAVAILABLE"
+            ]
+          }
+        },
+        "kind": "PROCESS_RESULT"
+      }
+    ],
+    "input_tokens": 5997,
+    "output_tokens": 2642,
+    "reserved_micro_usd": 48055,
+    "run_id": "5b58e187-028e-40b5-bd1c-683acdf1c7a5",
+    "task": {
+      "arm": "critic",
+      "case_id": "current_news",
+      "economic_evaluation": false,
+      "feedback": "structured",
+      "proposal": {
+        "admissibility_probability": 0.5,
+        "contrary_evidence": [
+          "The earlier full-day rule failed temporal validation."
+        ],
+        "data_requirements": [
+          {
+            "reactivation_condition": "Register independently measured source evidence.",
+            "reason": "Current event conditioning requires PIT raw news unavailable to this slice.",
+            "scope": "current_diagnostic",
+            "source": "raw_news"
+          }
+        ],
+        "diagnostic": {
+          "hours_utc": [
+            8
+          ]
+        },
+        "evidence_ids": [
+          "eurusd_four_hour_direction_2021_replication_v1"
+        ],
+        "falsifier": "No improvement against the frozen baseline on new evidence.",
+        "mechanism": "Request a future catalog extension for an event-conditioned diagnostic; block this attempt until sources and catalog are reviewed.",
+        "predicted_failure": "TEMPORAL_FAILURE",
+        "schema_version": "research_proposal/2",
+        "support": [
+          "The released rule did not transport to 2021."
+        ],
+        "title": "Synthetic current news"
+      },
+      "repetition": 1,
+      "split": "exposed_contract_regression",
+      "suite_sha256": "51efd91690e4106e0ecabf90eaebf0d2cdec6e44398cac6eed12c54f2d65678e"
+    }
+  },
+  {
+    "events": [
+      {
+        "detail": {
+          "capability": "bounded_typed_function_calling",
+          "does_not_certify": [
+            "factual_correctness",
+            "calibration",
+            "economic_value"
+          ],
+          "invocation_id": "72d78c3f-3e4e-446f-b499-76b7b1edd1a5",
+          "model_profile_sha256": "572227689559d6fbe8e6aecc0bec6679b68dd9aac11c254f263a7d590ebe7b75"
+        },
+        "kind": "CAPABILITY_VERIFIED"
+      },
+      {
+        "detail": {
+          "answer": {
+            "confidence": 0.95,
+            "disposition": "BLOCKED_DATA_REQUIREMENT",
+            "explanation": "The proposal is not a duplicate of the known normalized diagnostic, and it is otherwise within the catalog\u2019s diagnostic-only scope. However, it explicitly requires raw_news under current_diagnostic, and that source is unavailable for this attempt. Under the scoped rules, that blocks classification until the source is provided and the catalog extension is reviewed.",
+            "reasons": [
+              "SOURCE_UNAVAILABLE",
+              "SUPPORTED_CATALOG"
+            ]
+          },
+          "authority": "process_assessment_only",
+          "evaluator_measurement": false,
+          "research_answer": {
+            "confidence": 0.95,
+            "disposition": "BLOCKED_DATA_REQUIREMENT",
+            "explanation": "The proposal is not a duplicate of the known normalized diagnostic, and it is otherwise within the catalog\u2019s diagnostic-only scope. However, it explicitly requires raw_news under current_diagnostic, and that source is unavailable for this attempt. Under the scoped rules, that blocks classification until the source is provided and the catalog extension is reviewed.",
+            "reasons": [
+              "SOURCE_UNAVAILABLE",
+              "SUPPORTED_CATALOG"
+            ]
+          }
+        },
+        "kind": "PROCESS_RESULT"
+      }
+    ],
+    "input_tokens": 3005,
+    "output_tokens": 651,
+    "reserved_micro_usd": 29003,
+    "run_id": "eab99184-70af-4420-974b-4ccd99b70e94",
+    "task": {
+      "arm": "single",
+      "case_id": "current_news",
+      "economic_evaluation": false,
+      "feedback": "structured",
+      "proposal": {
+        "admissibility_probability": 0.5,
+        "contrary_evidence": [
+          "The earlier full-day rule failed temporal validation."
+        ],
+        "data_requirements": [
+          {
+            "reactivation_condition": "Register independently measured source evidence.",
+            "reason": "Current event conditioning requires PIT raw news unavailable to this slice.",
+            "scope": "current_diagnostic",
+            "source": "raw_news"
+          }
+        ],
+        "diagnostic": {
+          "hours_utc": [
+            8
+          ]
+        },
+        "evidence_ids": [
+          "eurusd_four_hour_direction_2021_replication_v1"
+        ],
+        "falsifier": "No improvement against the frozen baseline on new evidence.",
+        "mechanism": "Request a future catalog extension for an event-conditioned diagnostic; block this attempt until sources and catalog are reviewed.",
+        "predicted_failure": "TEMPORAL_FAILURE",
+        "schema_version": "research_proposal/2",
+        "support": [
+          "The released rule did not transport to 2021."
+        ],
+        "title": "Synthetic current news"
+      },
+      "repetition": 1,
+      "split": "exposed_contract_regression",
+      "suite_sha256": "51efd91690e4106e0ecabf90eaebf0d2cdec6e44398cac6eed12c54f2d65678e"
+    }
+  },
+  {
+    "events": [
+      {
+        "detail": {
+          "answer": {
+            "confidence": 1.0,
+            "disposition": "REJECT",
+            "explanation": "Fixed catalog checklist; no semantic judgement.",
+            "reasons": [
+              "REQUIREMENT_CONTRADICTION"
+            ]
+          },
+          "authority": "process_assessment_only",
+          "evaluator_measurement": false,
+          "research_answer": null
+        },
+        "kind": "PROCESS_RESULT"
+      }
+    ],
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "reserved_micro_usd": 0,
+    "run_id": "f545d339-0cb3-4e99-882b-fe3ddbd6fd33",
+    "task": {
+      "arm": "checklist",
+      "case_id": "contradictory_costs",
+      "economic_evaluation": false,
+      "feedback": "structured",
+      "proposal": {
+        "admissibility_probability": 0.5,
+        "contrary_evidence": [
+          "The earlier full-day rule failed temporal validation."
+        ],
+        "data_requirements": [
+          {
+            "reactivation_condition": "Register independently measured source evidence.",
+            "reason": "Needed only for economic interpretation.",
+            "scope": "current_diagnostic",
+            "source": "broker_costs"
+          }
+        ],
+        "diagnostic": {
+          "hours_utc": [
+            8
+          ]
+        },
+        "evidence_ids": [
+          "eurusd_four_hour_direction_2021_replication_v1"
+        ],
+        "falsifier": "No improvement against the frozen baseline on new evidence.",
+        "mechanism": "Test whether the registered price rule differs by decision hour.",
+        "predicted_failure": "TEMPORAL_FAILURE",
+        "schema_version": "research_proposal/2",
+        "support": [
+          "The released rule did not transport to 2021."
+        ],
+        "title": "Synthetic contradictory costs"
+      },
+      "repetition": 1,
+      "split": "exposed_contract_regression",
+      "suite_sha256": "51efd91690e4106e0ecabf90eaebf0d2cdec6e44398cac6eed12c54f2d65678e"
+    }
+  },
+  {
+    "events": [
+      {
+        "detail": {
+          "capability": "bounded_typed_function_calling",
+          "does_not_certify": [
+            "factual_correctness",
+            "calibration",
+            "economic_value"
+          ],
+          "invocation_id": "1f3e665d-dab4-488f-b6ff-2b188ad7795a",
+          "model_profile_sha256": "572227689559d6fbe8e6aecc0bec6679b68dd9aac11c254f263a7d590ebe7b75"
+        },
+        "kind": "CAPABILITY_VERIFIED"
+      },
+      {
+        "detail": {
+          "answer": {
+            "confidence": 0.97,
+            "disposition": "REJECT",
+            "explanation": "The candidate rule is catalog-supported, and the proposal is not a duplicate because its diagnostic hours_utc is a subset rather than the exact normalized array. However, the added broker_costs requirement is scoped as current_diagnostic in a no-orders, no-economic-claim catalog, which is a requirement contradiction rather than a permissible blocked source requirement. That makes the contract rejectable.",
+            "reasons": [
+              "SUPPORTED_CATALOG",
+              "REQUIREMENT_CONTRADICTION"
+            ]
+          },
+          "authority": "process_assessment_only",
+          "evaluator_measurement": false,
+          "research_answer": {
+            "confidence": 0.96,
+            "disposition": "REJECT",
+            "explanation": "The proposed contract is not a duplicate of the registered diagnostic because its hours_utc set is a subset rather than the exact normalized array. The candidate rule itself is catalog-supported, but the proposal adds a current_diagnostic requirement for broker_costs in a no-orders, no-economic-claim catalog, which is a requirement contradiction and must be rejected.",
+            "reasons": [
+              "SUPPORTED_CATALOG",
+              "REQUIREMENT_CONTRADICTION"
+            ]
+          }
+        },
+        "kind": "PROCESS_RESULT"
+      }
+    ],
+    "input_tokens": 5934,
+    "output_tokens": 1263,
+    "reserved_micro_usd": 47787,
+    "run_id": "6a4b1504-f5a1-46ee-b723-2e9371737e7e",
+    "task": {
+      "arm": "critic",
+      "case_id": "contradictory_costs",
+      "economic_evaluation": false,
+      "feedback": "structured",
+      "proposal": {
+        "admissibility_probability": 0.5,
+        "contrary_evidence": [
+          "The earlier full-day rule failed temporal validation."
+        ],
+        "data_requirements": [
+          {
+            "reactivation_condition": "Register independently measured source evidence.",
+            "reason": "Needed only for economic interpretation.",
+            "scope": "current_diagnostic",
+            "source": "broker_costs"
+          }
+        ],
+        "diagnostic": {
+          "hours_utc": [
+            8
+          ]
+        },
+        "evidence_ids": [
+          "eurusd_four_hour_direction_2021_replication_v1"
+        ],
+        "falsifier": "No improvement against the frozen baseline on new evidence.",
+        "mechanism": "Test whether the registered price rule differs by decision hour.",
+        "predicted_failure": "TEMPORAL_FAILURE",
+        "schema_version": "research_proposal/2",
+        "support": [
+          "The released rule did not transport to 2021."
+        ],
+        "title": "Synthetic contradictory costs"
+      },
+      "repetition": 1,
+      "split": "exposed_contract_regression",
+      "suite_sha256": "51efd91690e4106e0ecabf90eaebf0d2cdec6e44398cac6eed12c54f2d65678e"
+    }
+  },
+  {
+    "events": [
+      {
+        "detail": {
+          "capability": "bounded_typed_function_calling",
+          "does_not_certify": [
+            "factual_correctness",
+            "calibration",
+            "economic_value"
+          ],
+          "invocation_id": "3b86d869-92a5-479f-9cc3-9b40d1183caf",
+          "model_profile_sha256": "572227689559d6fbe8e6aecc0bec6679b68dd9aac11c254f263a7d590ebe7b75"
+        },
+        "kind": "CAPABILITY_VERIFIED"
+      },
+      {
+        "detail": {
+          "answer": {
+            "confidence": 0.96,
+            "disposition": "REJECT",
+            "explanation": "The proposal is not a duplicate merely because it uses hours_utc=[8]; the catalog\u2019s duplicate rule says subset hours are a related variant, not an automatic duplicate. The underlying EURUSD prior-hour midquote momentum diagnostic is otherwise supported as a price-only, no-orders, no-economic-claim contract. However, the proposal adds a current_diagnostic requirement for broker_costs and states it is needed only for economic interpretation. Under this catalog, requiring broker_costs for a no-orders, no-economic-claim diagnostic is a REQUIREMENT_CONTRADICTION, which makes this a contract rejection rather than a blocked data request or a measured cost failure.",
+            "reasons": [
+              "SUPPORTED_CATALOG",
+              "REQUIREMENT_CONTRADICTION"
+            ]
+          },
+          "authority": "process_assessment_only",
+          "evaluator_measurement": false,
+          "research_answer": {
+            "confidence": 0.96,
+            "disposition": "REJECT",
+            "explanation": "The proposal is not a duplicate merely because it uses hours_utc=[8]; the catalog\u2019s duplicate rule says subset hours are a related variant, not an automatic duplicate. The underlying EURUSD prior-hour midquote momentum diagnostic is otherwise supported as a price-only, no-orders, no-economic-claim contract. However, the proposal adds a current_diagnostic requirement for broker_costs and states it is needed only for economic interpretation. Under this catalog, requiring broker_costs for a no-orders, no-economic-claim diagnostic is a REQUIREMENT_CONTRADICTION, which makes this a contract rejection rather than a blocked data request or a measured cost failure.",
+            "reasons": [
+              "SUPPORTED_CATALOG",
+              "REQUIREMENT_CONTRADICTION"
+            ]
+          }
+        },
+        "kind": "PROCESS_RESULT"
+      }
+    ],
+    "input_tokens": 2990,
+    "output_tokens": 945,
+    "reserved_micro_usd": 28935,
+    "run_id": "9fd0f3c7-db4b-4064-88c0-6d5ecfcb4bfa",
+    "task": {
+      "arm": "single",
+      "case_id": "contradictory_costs",
+      "economic_evaluation": false,
+      "feedback": "structured",
+      "proposal": {
+        "admissibility_probability": 0.5,
+        "contrary_evidence": [
+          "The earlier full-day rule failed temporal validation."
+        ],
+        "data_requirements": [
+          {
+            "reactivation_condition": "Register independently measured source evidence.",
+            "reason": "Needed only for economic interpretation.",
+            "scope": "current_diagnostic",
+            "source": "broker_costs"
+          }
+        ],
+        "diagnostic": {
+          "hours_utc": [
+            8
+          ]
+        },
+        "evidence_ids": [
+          "eurusd_four_hour_direction_2021_replication_v1"
+        ],
+        "falsifier": "No improvement against the frozen baseline on new evidence.",
+        "mechanism": "Test whether the registered price rule differs by decision hour.",
+        "predicted_failure": "TEMPORAL_FAILURE",
+        "schema_version": "research_proposal/2",
+        "support": [
+          "The released rule did not transport to 2021."
+        ],
+        "title": "Synthetic contradictory costs"
+      },
+      "repetition": 1,
+      "split": "exposed_contract_regression",
+      "suite_sha256": "51efd91690e4106e0ecabf90eaebf0d2cdec6e44398cac6eed12c54f2d65678e"
+    }
+  },
+  {
+    "events": [
+      {
+        "detail": {
+          "answer": {
+            "confidence": 1.0,
+            "disposition": "REJECT",
+            "explanation": "Fixed catalog checklist; no semantic judgement.",
+            "reasons": [
+              "DUPLICATE"
+            ]
+          },
+          "authority": "process_assessment_only",
+          "evaluator_measurement": false,
+          "research_answer": null
+        },
+        "kind": "PROCESS_RESULT"
+      }
+    ],
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "reserved_micro_usd": 0,
+    "run_id": "dbb9f6ce-40a0-4239-a2f2-c0da9d736bf8",
+    "task": {
+      "arm": "checklist",
+      "case_id": "renamed_duplicate",
+      "economic_evaluation": false,
+      "feedback": "structured",
+      "proposal": {
+        "admissibility_probability": 0.5,
+        "contrary_evidence": [
+          "The earlier full-day rule failed temporal validation."
+        ],
+        "data_requirements": [
+          {
+            "reactivation_condition": "Register independently measured source evidence.",
+            "reason": "Needed only for economic interpretation.",
+            "scope": "future_economic",
+            "source": "broker_costs"
+          }
+        ],
+        "diagnostic": {
+          "hours_utc": [
+            8,
+            12,
+            16
+          ]
+        },
+        "evidence_ids": [
+          "eurusd_four_hour_direction_2021_replication_v1"
+        ],
+        "falsifier": "No improvement against the frozen baseline on new evidence.",
+        "mechanism": "Test whether the registered price rule differs by decision hour.",
+        "predicted_failure": "TEMPORAL_FAILURE",
+        "schema_version": "research_proposal/2",
+        "support": [
+          "The released rule did not transport to 2021."
+        ],
+        "title": "Synthetic renamed duplicate"
+      },
+      "repetition": 1,
+      "split": "exposed_contract_regression",
+      "suite_sha256": "51efd91690e4106e0ecabf90eaebf0d2cdec6e44398cac6eed12c54f2d65678e"
+    }
+  },
+  {
+    "events": [
+      {
+        "detail": {
+          "capability": "bounded_typed_function_calling",
+          "does_not_certify": [
+            "factual_correctness",
+            "calibration",
+            "economic_value"
+          ],
+          "invocation_id": "1518e0f7-a0ef-4d1f-8063-e1e79eeba11c",
+          "model_profile_sha256": "572227689559d6fbe8e6aecc0bec6679b68dd9aac11c254f263a7d590ebe7b75"
+        },
+        "kind": "CAPABILITY_VERIFIED"
+      },
+      {
+        "detail": {
+          "answer": {
+            "confidence": 0.99,
+            "disposition": "REJECT",
+            "explanation": "The proposal matches a registered diagnostic already listed as a known duplicate: same candidate_rule, instrument, horizon, lookback, orders_allowed, catalog version, and the complete hours_utc array [8,12,16]. Under the stated duplicate rule, this is a duplicate rather than a new supported contract. The broker_costs item is scoped as future_economic, so it does not block the diagnostic, but it does not change the duplicate status.",
+            "reasons": [
+              "DUPLICATE",
+              "SUPPORTED_CATALOG"
+            ]
+          },
+          "authority": "process_assessment_only",
+          "evaluator_measurement": false,
+          "research_answer": {
+            "confidence": 0.98,
+            "disposition": "REJECT",
+            "explanation": "The proposed contract is an exact duplicate of a known registered diagnostic: same candidate_rule, instrument, horizon, lookback, orders_allowed, catalog version, and the complete hours_utc array [8,12,16]. The released evidence IDs and the proposal both point to the same normalized diagnostic, so this is a duplicate rather than a new contract. The deferred broker_costs item is future_economic and does not block the diagnostic, but it is irrelevant because duplicate status already requires rejection.",
+            "reasons": [
+              "DUPLICATE",
+              "SUPPORTED_CATALOG"
+            ]
+          }
+        },
+        "kind": "PROCESS_RESULT"
+      }
+    ],
+    "input_tokens": 5968,
+    "output_tokens": 750,
+    "reserved_micro_usd": 47879,
+    "run_id": "cb4aeba9-c22d-4718-9602-0af06459a4ec",
+    "task": {
+      "arm": "critic",
+      "case_id": "renamed_duplicate",
+      "economic_evaluation": false,
+      "feedback": "structured",
+      "proposal": {
+        "admissibility_probability": 0.5,
+        "contrary_evidence": [
+          "The earlier full-day rule failed temporal validation."
+        ],
+        "data_requirements": [
+          {
+            "reactivation_condition": "Register independently measured source evidence.",
+            "reason": "Needed only for economic interpretation.",
+            "scope": "future_economic",
+            "source": "broker_costs"
+          }
+        ],
+        "diagnostic": {
+          "hours_utc": [
+            8,
+            12,
+            16
+          ]
+        },
+        "evidence_ids": [
+          "eurusd_four_hour_direction_2021_replication_v1"
+        ],
+        "falsifier": "No improvement against the frozen baseline on new evidence.",
+        "mechanism": "Test whether the registered price rule differs by decision hour.",
+        "predicted_failure": "TEMPORAL_FAILURE",
+        "schema_version": "research_proposal/2",
+        "support": [
+          "The released rule did not transport to 2021."
+        ],
+        "title": "Synthetic renamed duplicate"
+      },
+      "repetition": 1,
+      "split": "exposed_contract_regression",
+      "suite_sha256": "51efd91690e4106e0ecabf90eaebf0d2cdec6e44398cac6eed12c54f2d65678e"
+    }
+  },
+  {
+    "events": [
+      {
+        "detail": {
+          "capability": "bounded_typed_function_calling",
+          "does_not_certify": [
+            "factual_correctness",
+            "calibration",
+            "economic_value"
+          ],
+          "invocation_id": "0a4e7931-31bf-4e22-9fd6-2c5ed08fc600",
+          "model_profile_sha256": "572227689559d6fbe8e6aecc0bec6679b68dd9aac11c254f263a7d590ebe7b75"
+        },
+        "kind": "CAPABILITY_VERIFIED"
+      },
+      {
+        "detail": {
+          "answer": {
+            "confidence": 0.98,
+            "disposition": "REJECT",
+            "explanation": "The proposal is a duplicate of an already registered diagnostic contract. Its normalized diagnostic matches the known duplicate exactly: candidate_rule=prior_hour_midquote_momentum_sign, catalog_version=eurusd_direction/1, horizon_seconds=14400, hours_utc=[8,12,16], instrument=EURUSD, lookback_seconds=3600, and orders_allowed=false. The supplied evidence also indicates this is a renamed duplicate of the prior EURUSD four-hour direction contract lineage, so it should be rejected rather than reviewed as new.",
+            "reasons": [
+              "DUPLICATE",
+              "SUPPORTED_CATALOG"
+            ]
+          },
+          "authority": "process_assessment_only",
+          "evaluator_measurement": false,
+          "research_answer": {
+            "confidence": 0.98,
+            "disposition": "REJECT",
+            "explanation": "The proposal is a duplicate of an already registered diagnostic contract. Its normalized diagnostic matches the known duplicate exactly: candidate_rule=prior_hour_midquote_momentum_sign, catalog_version=eurusd_direction/1, horizon_seconds=14400, hours_utc=[8,12,16], instrument=EURUSD, lookback_seconds=3600, and orders_allowed=false. The supplied evidence also indicates this is a renamed duplicate of the prior EURUSD four-hour direction contract lineage, so it should be rejected rather than reviewed as new.",
+            "reasons": [
+              "DUPLICATE",
+              "SUPPORTED_CATALOG"
+            ]
+          }
+        },
+        "kind": "PROCESS_RESULT"
+      }
+    ],
+    "input_tokens": 2994,
+    "output_tokens": 298,
+    "reserved_micro_usd": 28936,
+    "run_id": "576f9a1c-6180-4743-b87d-73bfc879365a",
+    "task": {
+      "arm": "single",
+      "case_id": "renamed_duplicate",
+      "economic_evaluation": false,
+      "feedback": "structured",
+      "proposal": {
+        "admissibility_probability": 0.5,
+        "contrary_evidence": [
+          "The earlier full-day rule failed temporal validation."
+        ],
+        "data_requirements": [
+          {
+            "reactivation_condition": "Register independently measured source evidence.",
+            "reason": "Needed only for economic interpretation.",
+            "scope": "future_economic",
+            "source": "broker_costs"
+          }
+        ],
+        "diagnostic": {
+          "hours_utc": [
+            8,
+            12,
+            16
+          ]
+        },
+        "evidence_ids": [
+          "eurusd_four_hour_direction_2021_replication_v1"
+        ],
+        "falsifier": "No improvement against the frozen baseline on new evidence.",
+        "mechanism": "Test whether the registered price rule differs by decision hour.",
+        "predicted_failure": "TEMPORAL_FAILURE",
+        "schema_version": "research_proposal/2",
+        "support": [
+          "The released rule did not transport to 2021."
+        ],
+        "title": "Synthetic renamed duplicate"
+      },
+      "repetition": 1,
+      "split": "exposed_contract_regression",
+      "suite_sha256": "51efd91690e4106e0ecabf90eaebf0d2cdec6e44398cac6eed12c54f2d65678e"
+    }
+  }
+]

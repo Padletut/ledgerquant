@@ -1,0 +1,17 @@
+{
+  "process_invocations": 40,
+  "discovery_invocations": 9,
+  "input_tokens": 99499,
+  "output_tokens": 23678,
+  "reserved_micro_usd": 919859,
+  "prior_reserved_micro_usd": 24187702,
+  "cumulative_reserved_micro_usd": 25107561,
+  "current_step_cap_micro_usd": 2000000,
+  "total_authorization_micro_usd": 50000000,
+  "usage_price_estimate_usd": 0.18117525,
+  "billing_status": "token-price estimate; cached-input discounts ignored; invoice unverified",
+  "campaign_run_count": 25,
+  "stopping_state": "EXHAUSTED_MAX_RUNS",
+  "remaining_new_independent_windows": 0,
+  "replay_identical": true
+}

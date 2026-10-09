@@ -2,7 +2,7 @@
 
 **Date:** 09.10.2026
 
-**Version:** 2.10.1
+**Version:** 2.10.2
 
 **Status:** Target architecture with implemented live capture, offline EURUSD diagnostics and the bounded Research/Critic bootstrap described in Section 6.1. Broad discovery, independent new validation, promotion, trading agents and the operational frontend remain target state.
 
@@ -318,7 +318,11 @@ The bounded agent bootstrap now adds an append-only PostgreSQL `research` schema
 
 The initial executable catalog is `eurusd_direction/1`: EURUSD, the existing one-hour momentum-sign rule, four-hour target, weekday subsets of 08:00/12:00/16:00 UTC and January–June 2020 development. It retains holidays and missing anchors, fits the majority baseline only on selected development cases and prohibits orders. Its minimum 100 eligible anchors is an explicit technical sufficiency rule for hour subsets; it does not change either legacy hypothesis's 250-case validation gate or create a new significance gate. All variants inherit the existing family's consumed-window exposure. Unsupported horizons, sources and executable economic payoffs require a new reviewed catalog implementation.
 
+New registrations use `research_proposal/2` and `research_critique/2`. Each unavailable-source requirement declares `current_diagnostic` or `future_economic` scope. Current news/sentiment requirements block the attempt pending the source and a reviewed catalog extension. Deferred requirements neither block the current price diagnostic nor confer economic eligibility. Requiring broker costs for this no-orders, no-economic-claim diagnostic contradicts its catalog and is rejected as `REQUIREMENT_CONTRADICTION`, never measured `COST_FAILURE`. Critic explicitly compares narrative claims with structured scopes; a reported contradiction requires a material/blocking objection and operator resolution before admission. The deterministic service does not pretend to understand arbitrary prose. Unversioned v1 artifacts and their hashes retain the original binding-required-data semantics; replay never upgrades them to v2. Agent definitions pin the contract version and schemas.
+
 OpenAI Responses is the first implemented generation adapter. The current user-selected default is `gpt-5.4-mini` with medium reasoning, configured by the immutable profile in `configs/research/openai_gpt54_mini.profile.json` and mounted into the Compose research jobs. Explicit profile overrides must match the registered agent versions. The initial `gpt-6-astra` profile and results remain historical records. Both profiles use the same typed tools, exact request/response recording and mandatory per-run capability probe; no retry or model fallback is implicit. The model change does not reopen the exhausted 40-run campaign or reset its USD 50 budget. The API's returned model identity is recorded, but it does not prove immutable hosted weights. The finite process suite compares contract triage by a single agent, Research plus Critic and a fixed checklist, separately with and without structured registry feedback. Its synthetic contract tasks do not establish open-ended discovery ability or economic value. [First-run evidence](research/evaluations/agent_loop_bootstrap_20261009/REPORT.md)
+
+The subsequent v2 Mini step completed 24 exposed requirement-regression runs and one actual proposal under a separately authorized USD 2 ceiling within the existing total. Mini passed the exercised typed-call probes. The single-agent/checklist arms matched 8/8 reference labels each; Research + Critic matched 7/8. The actual proposal correctly deferred economic costs but duplicated the earlier 12 UTC diagnostic; contract and operator review rejected it without development or new validation. This step retained USD 0.919859 in reservations and stopped at 25 runs. Structured feedback was fixed; a corrected no-feedback comparison remains pending. See the [Mini execution record](research/evaluations/mini_requirements_20261009/REPORT.md).
 
 ### 6.2 Structured evidence registry
 

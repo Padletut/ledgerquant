@@ -52,7 +52,13 @@ class ReviewDecision(Record):
 def review(proposal: Proposal, critique: Critique, evidence_ids: set[str], known_signatures: set[str]) -> ReviewDecision:
     from .catalog import classify
     from .types import digest
+    from .scoped_proposals import ProposalV2, CritiqueV2
 
+    scoped = isinstance(proposal, ProposalV2)
+    if scoped != isinstance(critique, CritiqueV2):
+        raise ValueError("proposal and critique contract versions differ")
+    current = tuple(item for item in proposal.data_requirements
+                    if not scoped or item.scope == "current_diagnostic")
     family, loop, signature = classify(proposal.diagnostic)
     if critique.draft_sha256 != digest(proposal):
         raise ValueError("critique refers to a different draft")
@@ -62,9 +68,11 @@ def review(proposal: Proposal, critique: Critique, evidence_ids: set[str], known
         reasons.append("UNKNOWN_EVIDENCE")
     if signature in known_signatures or loop == "DUPLICATE":
         reasons.append("DUPLICATE")
+    if scoped and any(item.source == "broker_costs" for item in current):
+        reasons.append("REQUIREMENT_CONTRADICTION")
     if reasons:
         status = "REJECTED"
-    elif proposal.data_requirements:
+    elif current:
         status, reasons = "BLOCKED_DATA_REQUIREMENT", ["SOURCE_UNAVAILABLE"]
     else:
         status, reasons = "AWAITING_OPERATOR_REVIEW", ["CRITIQUE_RECORDED_NOT_AN_APPROVAL"]

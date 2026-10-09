@@ -49,19 +49,65 @@ class Scripted:
             else:
                 name = "submit_critique"
                 arguments = {"draft_sha256": digest(self.proposal), "disposition": "REVIEW", "objections": [], "summary": "Supported bounded diagnostic."}
+                if self.proposal.get("schema_version") == "research_proposal/2":
+                    arguments.update(schema_version="research_critique/2", requirement_consistency="CONSISTENT",
+                                     requirement_explanation="Structured scope matches the stated current claim.")
+                arguments.update(getattr(self, "critique_changes", {}))
         call = ToolCall("scripted-" + str(self.count), name, canonical(arguments))
         return Generation("COMPLETED", {"fixture": True, "call": name, "arguments": arguments}, [], (call,), 100, 100)
 
 
-def setup(registered, payload=None):
+def setup(registered, payload=None, contract_version=1):
     registry, _, profile = registered
     config = bootstrap(registry, load_legacy_bundle(Path(__file__).parents[2]), profile,
-        CampaignPolicy(max_runs=1, max_invocations=9, max_reserved_tokens=500000, max_usd=1), "runtime-" + uuid4().hex)
+        CampaignPolicy(max_runs=1, max_invocations=9, max_reserved_tokens=500000, max_usd=1), "runtime-" + uuid4().hex,
+        contract_version=contract_version)
     payload = payload or proposal_payload()
     # Normalize defaults so the scripted Critic cites the actual submitted hash.
-    from ledgerquant.research.proposals import Proposal
-    provider = Scripted(profile, Proposal.model_validate(payload).model_dump(mode="json"))
+    from ledgerquant.research.scoped_proposals import parse_proposal
+    provider = Scripted(profile, parse_proposal(payload).model_dump(mode="json"))
     return registry, config, provider
+
+
+@pytest.mark.parametrize("scope,source,status", [
+    ("future_economic", "broker_costs", "AWAITING_OPERATOR_REVIEW"),
+    ("current_diagnostic", "raw_news", "BLOCKED_DATA_REQUIREMENT"),
+    ("current_diagnostic", "broker_costs", "REJECTED"),
+])
+def test_scoped_loop_and_operator_gate(registered, scope, source, status):
+    from tests.unit.test_requirement_scope import scoped_proposal
+    registry, config, provider = setup(registered, scoped_proposal(scope, source), contract_version=2)
+    report = Runner(registry, provider).run(config, "scoped-" + config["campaign_id"], {})
+    assert report["events"][-1]["detail"]["status"] == status
+    draft = registry.get(t.drafts, report["run"]["id"])
+    command = Admission(draft_id=draft["id"], draft_sha256=draft["artifact_id"], actor="test_operator",
+        action="ADMIT_DEVELOPMENT", reason="Reviewed current versus deferred source scope.", objection_resolutions={})
+    if status == "AWAITING_OPERATOR_REVIEW":
+        lock = admit(registry, command)
+        assert lock["execution_allowed"] is False
+        assert lock["economic_claim"] is None
+        assert admit(registry, command) == lock
+    else:
+        with pytest.raises(RegistryError, match="CONTRACT_NOT_ADMISSIBLE"):
+            admit(registry, command)
+
+
+def test_narrative_contradiction_requires_operator_resolution(registered):
+    from tests.unit.test_requirement_scope import scoped_proposal
+    proposal = scoped_proposal("future_economic", "raw_news")
+    proposal["mechanism"] = "Use observed news now, although its structured requirement is deferred."
+    registry, config, provider = setup(registered, proposal, contract_version=2)
+    provider.critique_changes = {"requirement_consistency": "CONTRADICTORY", "objections": [
+        {"code": "REQUIREMENT_CONTRADICTION", "severity": "material", "evidence_ids": [],
+         "explanation": "Current mechanism uses news but structured source scope defers it."}]}
+    report = Runner(registry, provider).run(config, "contradiction-" + config["campaign_id"], {})
+    assert report["events"][-1]["detail"]["status"] == "AWAITING_OPERATOR_REVIEW"
+    draft = registry.get(t.drafts, report["run"]["id"])
+    command = Admission(draft_id=draft["id"], draft_sha256=draft["artifact_id"], actor="test_operator",
+        action="ADMIT_DEVELOPMENT", reason="Attempt admission without resolving contradiction.", objection_resolutions={})
+    with pytest.raises(RegistryError, match="UNRESOLVED_CRITIC_OBJECTION"):
+        admit(registry, command)
+    assert admit(registry, command.model_copy(update={"action": "REJECT", "reason": "Unresolved narrative contradiction."}))["status"] == "REJECTED"
 
 
 def test_full_loop_replay_and_fresh_critic_context(registered):

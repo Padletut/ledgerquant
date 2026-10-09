@@ -21,7 +21,7 @@ class Runner:
 
     def run(self, config, command_key, task):
         for role in ("research", "critic"):
-            if config["versions"][role] != digest(definition(role, self.provider.profile)):
+            if config["versions"][role] != digest(definition(role, self.provider.profile, contract_version=config.get("contract_version", 1))):
                 raise RegistryError("runtime definition differs from registered agent version")
         run, created = self.registry.start_run(command_key, config["campaign_id"], config["snapshot_id"],
             config["versions"]["research"], config["versions"]["critic"], task)
@@ -82,7 +82,7 @@ class Runner:
         conversation = [self.provider.user_message(canonical(task))]
         tools = ResearchTools(self.registry, run["id"], role)
         for _ in range(self.provider.profile.max_steps_per_agent):
-            invocation, result = self._invoke(run, role, spec["instructions"], conversation, schemas(role))
+            invocation, result = self._invoke(run, role, spec["instructions"], conversation, schemas(role, tools.contract_version))
             conversation.extend(result.continuation)
             call = result.calls[0]
             try:

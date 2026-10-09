@@ -60,7 +60,7 @@ def score(suite, reports):
     return {"suite_sha256": digest(suite), "scorer_version": "contract_process_reference/1",
             "integrity": "INVALID" if any(row["evidence_integrity"] == "INVALID" for row in rows) else "UNCHANGED",
             "reference_author": suite["reference_author"], "rows": rows, "summary": summary,
-            "uncertainty": "Descriptive only: three correlated catalog templates; no generalization interval or discovery claim.",
+            "uncertainty": f"Descriptive only: {len(references)} correlated catalog templates; no generalization interval or discovery claim.",
             "economic_outcomes": "unmeasured; false economic rejection remains censored"}
 
 

@@ -8,6 +8,7 @@ from sqlalchemy import func, select
 from ledgerquant.research import tables as t
 from ledgerquant.research.catalog import classify
 from ledgerquant.research.proposals import Critique, Proposal, review
+from ledgerquant.research.scoped_proposals import contract_types, parse_proposal, parse_critique, REQUIREMENT_RULES
 from ledgerquant.research.registry import RegistryError, append, artifact, now, value
 from ledgerquant.research.types import Record, digest
 
@@ -32,9 +33,15 @@ OPERATIONS = {
 REQUIRED_READS = {"read_source_coverage", "read_released_evidence", "read_development_snapshot"}
 
 
-def schemas(role):
+def operations(version):
+    proposal, critique = contract_types(version)
+    return {name: ((proposal if name == "submit_hypothesis_draft" else critique if name == "submit_critique" else schema), roles, description)
+            for name, (schema, roles, description) in OPERATIONS.items()}
+
+
+def schemas(role, contract_version=1):
     return [{"name": name, "description": description, "parameters": schema.model_json_schema()}
-            for name, (schema, roles, description) in OPERATIONS.items() if role in roles]
+            for name, (schema, roles, description) in operations(contract_version).items() if role in roles]
 
 
 class ResearchTools:
@@ -43,6 +50,9 @@ class ResearchTools:
             raise RegistryError("unknown agent role")
         self.registry, self.run_id, self.role = registry, run_id, role
         run = registry.get(t.runs, run_id)
+        binding = registry.read(registry.get(t.agent_versions, run[f"{role}_version"])["definition_id"])
+        self.contract_version = binding.get("research_contract_version", 1)
+        self.operations = operations(self.contract_version)
         snapshot = registry.get(t.snapshots, run["snapshot_id"])
         self.manifest = registry.read(snapshot["manifest_id"])
         self.reads = set()
@@ -53,13 +63,13 @@ class ResearchTools:
         run = self.registry.get(t.runs, self.run_id)
         if invocation["run_id"] != self.run_id or invocation["agent_version"] != run[f"{self.role}_version"]:
             raise RegistryError("TOOL_CALLER_MISMATCH")
-        allowed = name in OPERATIONS and self.role in OPERATIONS[name][1]
+        allowed = name in self.operations and self.role in self.operations[name][1]
         with self.registry.engine.begin() as c:
             try:
                 with c.begin_nested():
                     if not allowed:
                         raise RegistryError("ROLE_DENIED")
-                    parsed = OPERATIONS[name][0].model_validate(arguments)
+                    parsed = self.operations[name][0].model_validate(arguments)
                     result = self._perform(name, parsed, c)
             except (ValidationError, RegistryError, ValueError) as exc:
                 result = {"error": "INVALID_ARGUMENT" if isinstance(exc, ValidationError) else str(exc)}
@@ -85,10 +95,16 @@ class ResearchTools:
             # This slice accepts only this one family. Count dispatched,
             # malformed, interrupted and rejected runs, not just drafts.
             run_count = c.execute(select(func.count()).select_from(t.runs)).scalar_one()
-            return {"catalog": self.manifest["catalog"], "source": self.manifest["source"],
+            result = {"catalog": self.manifest["catalog"], "source": self.manifest["source"],
                     "family_id": self.manifest["family_id"], "legacy_attempts": self.manifest["historical_attempt_count"],
                     "recorded_runs": run_count, "recorded_drafts": len(attempts),
                     "total_family_attempts": self.manifest["historical_attempt_count"] + run_count}
+            if self.contract_version == 2:
+                result["requirement_rules"] = REQUIREMENT_RULES
+                result["recorded_diagnostics"] = [{"draft_id": row.id, "draft_sha256": row.artifact_id,
+                    "diagnostic": value(c, row.artifact_id)["diagnostic"]}
+                    for row in c.execute(select(t.drafts).where(t.drafts.c.family_id == self.manifest["family_id"]))]
+            return result
         if name == "read_released_evidence":
             evidence = self._released(c)
             return {"evidence": evidence, "invalidated_ids": sorted(set(self.manifest["evidence"]) - set(evidence)),
@@ -125,8 +141,8 @@ class ResearchTools:
         if critique is None:
             return {"status": "AWAITING_CRITIQUE"}
         known = set(c.execute(select(t.drafts.c.signature).where(t.drafts.c.id != draft["id"])).scalars())
-        decision = review(Proposal.model_validate(value(c, draft["artifact_id"])),
-                          Critique.model_validate(value(c, critique["artifact_id"])), set(self._released(c)), known)
+        decision = review(parse_proposal(value(c, draft["artifact_id"])),
+                          parse_critique(value(c, critique["artifact_id"])), set(self._released(c)), known)
         return decision.model_dump(mode="json")
 
     def review(self):

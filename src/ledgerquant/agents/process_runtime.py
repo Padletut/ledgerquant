@@ -7,30 +7,36 @@ from sqlalchemy import select
 
 from ledgerquant.research import tables as t
 from ledgerquant.research.catalog import CATALOG, Diagnostic
-from ledgerquant.research.proposals import Proposal, Critique, review
+from ledgerquant.research.proposals import review
+from ledgerquant.research.scoped_proposals import contract_types, REQUIREMENT_RULES
 from ledgerquant.research.registry import RegistryError
 from ledgerquant.research.types import canonical, digest
 from .definitions import definition
-from .process_contracts import Assessment, assessment_schema
+from .process_contracts import assessment_type, assessment_schema
 from .runtime import Runner
 
 
-def checklist(payload, evidence_ids):
+def checklist(payload, evidence_ids, contract_version=1):
+    proposal_type, critique_type = contract_types(contract_version)
+    assessment = assessment_type(contract_version)
     try:
-        proposal = Proposal.model_validate(payload)
+        proposal = proposal_type.model_validate(payload)
     except ValidationError:
-        return Assessment(disposition="REJECT", reasons=("UNSUPPORTED_CONTRACT",), explanation="Catalog/schema rejection.", confidence=1)
-    critique = Critique(draft_sha256=digest(proposal), disposition="REVIEW", objections=(), summary="Deterministic catalog check only.")
+        return assessment(disposition="REJECT", reasons=("UNSUPPORTED_CONTRACT",), explanation="Catalog/schema rejection.", confidence=1)
+    critique = critique_type(draft_sha256=digest(proposal), disposition="REVIEW", objections=(), summary="Deterministic catalog check only.",
+        **({"schema_version": "research_critique/2", "requirement_consistency": "CONSISTENT",
+            "requirement_explanation": "Structural check only; narrative consistency is unmeasured by checklist."} if contract_version == 2 else {}))
     result = review(proposal, critique, set(evidence_ids), set())
     mapping = {"AWAITING_OPERATOR_REVIEW": "REVIEW", "REJECTED": "REJECT", "BLOCKED_DATA_REQUIREMENT": "BLOCKED_DATA_REQUIREMENT"}
     reasons = ("SUPPORTED_CATALOG",) if result.status == "AWAITING_OPERATOR_REVIEW" else result.reasons
-    return Assessment(disposition=mapping[result.status], reasons=reasons, explanation="Fixed catalog checklist; no semantic judgement.", confidence=1)
+    return assessment(disposition=mapping[result.status], reasons=reasons, explanation="Fixed catalog checklist; no semantic judgement.", confidence=1)
 
 
 class ProcessRunner(Runner):
     def run(self, config, command_key, task):
+        self.contract_version = config.get("contract_version", 1)
         for role in ("research", "critic"):
-            if config["versions"][role] != digest(definition(role, self.provider.profile, "process_review")):
+            if config["versions"][role] != digest(definition(role, self.provider.profile, "process_review", self.contract_version)):
                 raise RegistryError("unregistered process binding")
         if task["arm"] not in {"single", "critic", "checklist"} or task["feedback"] not in {"none", "structured"}:
             raise RegistryError("unknown process arm")
@@ -51,10 +57,12 @@ class ProcessRunner(Runner):
                        "proposal_defaults": Diagnostic(hours_utc=[8, 12, 16]).model_dump(mode="json"),
                        "proposal": task["proposal"],
                        "feedback_policy": task["feedback"], "evidence_mode": "synthetic_contract_process_test"}
+            if self.contract_version == 2:
+                context["requirement_rules"] = REQUIREMENT_RULES
             if task["feedback"] == "structured":
                 context["released_evidence"] = {key: self.registry.read(value) for key, value in manifest["evidence"].items()}
             if task["arm"] == "checklist":
-                answer = checklist(task["proposal"], manifest["evidence"])
+                answer = checklist(task["proposal"], manifest["evidence"], self.contract_version)
                 first = None
             else:
                 self._probe(run)
@@ -70,10 +78,10 @@ class ProcessRunner(Runner):
     def _assess(self, run, role, context):
         binding = self.registry.read(self.registry.get(t.agent_versions, run[f"{role}_version"])["definition_id"])
         invocation, result = self._invoke(run, role, binding["instructions"],
-            [self.provider.user_message(canonical(context))], assessment_schema())
+            [self.provider.user_message(canonical(context))], assessment_schema(self.contract_version))
         call = result.calls[0]
         if call.name != "submit_process_assessment":
             raise RegistryError("WRONG_PROCESS_TOOL")
-        answer = Assessment.model_validate_json(call.arguments)
+        answer = assessment_type(self.contract_version).model_validate_json(call.arguments)
         self.registry.record_tool(run["id"], invocation["id"], role, call.name, json.loads(call.arguments), answer.model_dump(mode="json"), True)
         return answer
