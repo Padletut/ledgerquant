@@ -1,0 +1,16 @@
+{
+  "version": "grounded_revision_recovery/1",
+  "campaign_id": "openai_grounded_revision_recovery_20261009",
+  "parent_campaign_id": "openai_grounded_revision_20261009",
+  "failed_run_id": "10972e1f-0613-4984-951d-7a01e1a37199",
+  "protocol_amendment": "One technical recovery attempt, separately registered after output truncation. Original benchmark and 19-run stopping state remain intact; no new candidate search or validation.",
+  "prior_step_reserved_micro_usd": 965816,
+  "additional_cap_micro_usd": 1034184,
+  "combined_step_cap_micro_usd": 2000000,
+  "policy_sha256": "0015c8a3c26aa7813afab4c7cfcdfd0459875f1b576652540ff3e3455b8caea2",
+  "profile_sha256": "15958023e91ce83ef0f229b0a0adcbf4810bf50eb4c2b4836825bea0ca651c27",
+  "task_sha256": "e4cb82c491943150f5709d8b382f9192f27ec669d7cac590b4d6db627c3979fb",
+  "maximum_recovery_reservation_micro_usd": 1033296,
+  "max_additional_attempts": 1,
+  "new_independent_windows": []
+}

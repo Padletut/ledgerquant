@@ -32,8 +32,8 @@ def parser():
     for name in ("bundle", "policy", "campaign"):
         register.add_argument("--" + name, required=True)
     register.add_argument("--workflow", choices=["discovery", "process_review"], default="discovery")
-    register.add_argument("--contract-version", type=int, choices=[1, 2], default=2,
-                          help="New registrations use v2; v1 remains explicit for historical execution.")
+    register.add_argument("--contract-version", type=int, choices=[1, 2, 3], default=3,
+                          help="New registrations use v3; v1/v2 remain explicit for historical execution.")
     worker = commands.add_parser("provision-worker")
     worker.add_argument("--password-file", required=True)
     run = commands.add_parser("run")
@@ -51,6 +51,8 @@ def parser():
     replay.add_argument("--run-id", required=True)
     admission = commands.add_parser("admit")
     admission.add_argument("--decision", required=True)
+    review_correction = commands.add_parser("correct-contract-review")
+    review_correction.add_argument("--decision", required=True)
     invalidation = commands.add_parser("invalidate")
     for name in ("evidence-id", "reason", "actor"):
         invalidation.add_argument("--" + name, required=True)
@@ -97,6 +99,9 @@ def main():
             result = registry.report(args.run_id)
         elif args.command == "admit":
             result = admit(registry, Admission.model_validate(read(args.decision)))
+        elif args.command == "correct-contract-review":
+            from .review_corrections import ReviewCorrection, correct_review
+            result = correct_review(registry, ReviewCorrection.model_validate(read(args.decision)))
         elif args.command == "invalidate-process":
             from .process_corrections import invalidate_suite
             result = invalidate_suite(registry, args.suite_sha256, args.reason, args.actor)

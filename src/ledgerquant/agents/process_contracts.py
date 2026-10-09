@@ -18,9 +18,19 @@ class AssessmentV2(Assessment):
                            "SOURCE_UNAVAILABLE", "REQUIREMENT_CONTRADICTION"], ...] = Field(min_length=1, max_length=5)
 
 
+class AssessmentV3(AssessmentV2):
+    reasons: tuple[Literal["SUPPORTED_CATALOG", "DUPLICATE", "UNSUPPORTED_CONTRACT", "UNKNOWN_EVIDENCE",
+                           "SOURCE_UNAVAILABLE", "REQUIREMENT_CONTRADICTION", "PRIOR_INVENTORY_MISMATCH",
+                           "PRIOR_RELATION_MISMATCH", "UNKNOWN_EVIDENCE_FACT", "EVIDENCE_SCOPE_MISMATCH",
+                           "EVIDENCE_CITATION_MISMATCH", "REVISION_NOT_AUTHORIZED", "REVISION_PARENT_HASH_MISMATCH",
+                           "REVISION_PATCH_MISMATCH", "REVISION_CHANGED_OTHER_FIELDS"], ...] = Field(min_length=1, max_length=10)
+
+
 def assessment_type(contract_version):
-    if contract_version not in {1, 2}:
+    if contract_version not in {1, 2, 3}:
         raise ValueError("unsupported process contract version")
+    if contract_version == 3:
+        return AssessmentV3
     return AssessmentV2 if contract_version == 2 else Assessment
 
 

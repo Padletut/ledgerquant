@@ -93,3 +93,12 @@ Independent validation, credible costs, meaningful research novelty, general
 calibration and a valid broader agent comparison remain open work. The next
 process study needs a separately frozen allowance and must retain this suite's
 exposure and defect history.
+
+## Subsequent interpretation correction — 09 October 2026
+
+The original `BLOCKED_DATA_REQUIREMENT` output remains unchanged. Operator review now classifies the conflicting required-cost declaration as `BLOCKED_CONTRACT_DEFECT`. The same market idea may receive an explicitly linked correction; the original attempt still counts.
+
+The append-only [correction records](../grounded_revision_20261009/review_corrections.json)
+preserve original hashes, family accounting and consumed exposure. They grant no
+retroactive admission. The new v3 contract separates idea identity from attempt
+identity and applies an authorized scope correction on the service side.

@@ -110,3 +110,12 @@ its cases, budget and stopping rule before running it; do not relax the duplicat
 gate to make this proposal pass. Broader researcher quality, semantic contradiction
 recall, no-feedback benefit, economic payoff and new independent validation remain
 unmeasured. This step does not authorize broader search or trading.
+
+## Subsequent interpretation correction — 09 October 2026
+
+The original `REJECTED / DUPLICATE` output records the then-active v2 policy. The user clarified that identical market-idea identity does not by itself justify rejecting an authorized corrected contract revision. Operator review annotates this attempt as `SAME_IDEA_REVISION_CANDIDATE`; its original rejection, unlinked submission and narrative defects remain recorded. A later attempt needs an explicit parent and verified patch.
+
+The append-only [correction records](../grounded_revision_20261009/review_corrections.json)
+preserve original hashes, family accounting and consumed exposure. They grant no
+retroactive admission. The new v3 contract separates idea identity from attempt
+identity and applies an authorized scope correction on the service side.

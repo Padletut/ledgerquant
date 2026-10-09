@@ -1,0 +1,643 @@
+{
+  "id": "d6149cdb-bc86-47bb-8857-d0225010c35e",
+  "command_key": "grounded-revision-recovery-20261009-01",
+  "campaign_id": "openai_grounded_revision_recovery_20261009",
+  "snapshot_id": "f7663aa72f72bee91d5a1271d48d44d1477ae20a8881440a6eadf56bf7a69e7e",
+  "research_version": "c3ad3af21bc43d4c50a037fdb96541abc03b828542273992d821b0554112677d",
+  "critic_version": "0117e2fa9ca78b86cfe0cdc3ecbb0707a9586805fa489151072cd0cdab594f37",
+  "task_id": "e4cb82c491943150f5709d8b382f9192f27ec669d7cac590b4d6db627c3979fb",
+  "created_at": "2026-10-09 21:17:23.857293+00:00",
+  "events": [
+    {
+      "kind": "GROUNDING_CONTEXT",
+      "detail": {
+        "artifact_sha256": "65aa591d14a553962ac2e192a5d8b01da6c5ab374d4a95c1f46f957c810f6bb5"
+      }
+    },
+    {
+      "kind": "CAPABILITY_VERIFIED",
+      "detail": {
+        "capability": "bounded_typed_function_calling",
+        "does_not_certify": [
+          "factual_correctness",
+          "calibration",
+          "economic_value"
+        ],
+        "invocation_id": "9616e785-eafa-4f41-9c56-d8101106a156",
+        "model_profile_sha256": "15958023e91ce83ef0f229b0a0adcbf4810bf50eb4c2b4836825bea0ca651c27"
+      }
+    },
+    {
+      "kind": "CONTRACT_REVIEW",
+      "detail": {
+        "attempt_kind": "CORRECTED_REVISION",
+        "family_id": "eurusd_four_hour_direction",
+        "idea_relation": "SAME_RESEARCH_IDEA",
+        "loop": "B",
+        "parent_draft_id": "e7f85e02-fe52-473b-a786-6e659ae2f246",
+        "reasons": [
+          "UNKNOWN_EVIDENCE"
+        ],
+        "signature": "24c3c3e2b3d52116469ac293d2be78ea9778a0a5cb3cb0628825b04c701e36b5",
+        "status": "REJECTED"
+      }
+    },
+    {
+      "kind": "FINISHED",
+      "detail": {
+        "attempt_kind": "CORRECTED_REVISION",
+        "family_id": "eurusd_four_hour_direction",
+        "idea_relation": "SAME_RESEARCH_IDEA",
+        "loop": "B",
+        "parent_draft_id": "e7f85e02-fe52-473b-a786-6e659ae2f246",
+        "reasons": [
+          "UNKNOWN_EVIDENCE"
+        ],
+        "signature": "24c3c3e2b3d52116469ac293d2be78ea9778a0a5cb3cb0628825b04c701e36b5",
+        "status": "REJECTED"
+      }
+    }
+  ],
+  "proposal": {
+    "admissibility_probability": 0.78,
+    "admission_risks": [
+      "Authorized cost-scope correction is narrow: if the parent broker_costs requirement is treated as current rather than future_economic, the attempt remains a contract defect rather than a predictive refutation.",
+      "The 2021 all-hours replication failed temporally, so stability across later data remains doubtful even though that result does not measure the 12 UTC subset.",
+      "The released outcomes are all-hours family aggregates; attributing them to the 12 UTC subset would be an attribution error.",
+      "Historical quote visibility is assumed and execution costs remain unverified; no economic or trading claim is established by this diagnostic.",
+      "A single subset revision still shares the same exposed research family, so duplicate-idea scrutiny remains material."
+    ],
+    "contrary_evidence": [
+      "eurusd_four_hour_direction_2021_replication_v1 failed temporally: candidate accuracy 0.4717223650 versus baseline 0.4935732648; paired difference -0.0218508997 and bootstrap lower bound -0.0644329897. This weighs against stable momentum, but does not establish that every hour subset fails.",
+      "The released 2020 all-hours advantage weakened from 0.1111111111 in Q3 to 0.0103626943 in Q4. Neither released aggregate establishes an advantage at 12 UTC.",
+      "The inspected development page includes a missing 2020-01-01 12 UTC input and an incorrect 2020-01-02 12 UTC candidate prediction. This small page cannot establish subset accuracy or sufficient support.",
+      "All independent windows are consumed. Historical quote visibility is assumed, many 2020 bid/ask pairs are equal, and execution costs remain COST_UNVERIFIED; no confirmatory, model-quality or economic-edge claim is justified."
+    ],
+    "data_requirements": [
+      {
+        "reactivation_condition": "Only reconsider an execution-oriented extension after independently verified, timestamp-aligned broker spread, commission and slippage evidence becomes available and a separate authorization process permits that research.",
+        "reason": "Broker execution costs are unverified. This blocks economic interpretation, not the present no-trade price diagnostic, and is not evidence of absent predictive value.",
+        "scope": "future_economic",
+        "source": "broker_costs"
+      }
+    ],
+    "diagnostic": {
+      "candidate_rule": "prior_hour_midquote_momentum_sign",
+      "catalog_version": "eurusd_direction/1",
+      "horizon_seconds": 14400,
+      "hours_utc": [
+        12
+      ],
+      "instrument": "EURUSD",
+      "lookback_seconds": 3600,
+      "orders_allowed": false
+    },
+    "evidence_claims": [
+      {
+        "applies_to": "SOURCE_CONTRACT",
+        "fact_id": "12c4ed740773044b65d3154f16b123641c006fd7ace03e50651c828bdbbbfcdb",
+        "interpretation": "The released 2020 all-hours evaluation for the same rule family showed candidate_accuracy 0.5242966752 versus baseline 0.4629156010. This supports keeping the family in view, but it is aggregate evidence and does not measure the 12 UTC subset."
+      },
+      {
+        "applies_to": "SOURCE_CONTRACT",
+        "fact_id": "c777a1433df16553e713fbf9436a283b5443e4d041ab8a6b248c856586ec7d2f",
+        "interpretation": "The 2020 all-hours baseline_accuracy of 0.4629156010 is a benchmark for the released aggregate diagnostic only; it cannot be repurposed as 12 UTC subset performance."
+      },
+      {
+        "applies_to": "SOURCE_CONTRACT",
+        "fact_id": "8b28beab9b525ce1b347be59c4de4bd36dede627f9b5625d04aa6e06329d7bbb",
+        "interpretation": "The 2021 replication gate decision TEMPORAL_FAILED is contrary evidence for the same all-hours family and shows later instability, but it still does not falsify the 12 UTC subset by itself."
+      },
+      {
+        "applies_to": "SOURCE_CONTRACT",
+        "fact_id": "a2e83f808feabf35c02ce41c6c3e4cc62374ecd92fe99c4361e381c2720a7eb3",
+        "interpretation": "The 2021 all-hours paired_accuracy_difference of -0.0218508997 is negative aggregate evidence for the related family, again not a subset measurement and not a basis for claiming the 12 UTC variant was tested."
+      }
+    ],
+    "evidence_ids": [
+      "eurusd_four_hour_direction_2020_v1",
+      "eurusd_four_hour_direction_2021_replication_v1"
+    ],
+    "falsification_target": "predictive_performance",
+    "falsifier": "Apply the catalog unchanged to the declared 12 UTC weekday subset of the permitted 2020-01-01 through 2020-07-01 exclusive development window: retain holidays, the one-second decision delay, 60-second quote-age and settlement-delay limits, and the registered majority-development-target baseline with NON_UP ties. Fewer than 100 eligible anchors or missing fraction above 0.10 blocks an interpretable comparison rather than proving no predictive value. With adequate support and quality, a nonpositive paired candidate-minus-baseline accuracy difference contradicts the proposed directional continuation in this diagnostic window. A positive difference is merely exploratory and does not establish transport, confirmatory success, model quality or profitability. Do not search other hour subsets after observing the result. No independent validation window is available.",
+    "mechanism": "Declare only 12 UTC, not the known-duplicate all-hours rule. The testable conjecture is that prior-hour midquote direction during the European trading day may persist over the next four hours as activity transitions toward the US session. Restricting the clock hour reduces mixing with morning and late-day conditions, but fixed UTC hours do not perfectly track daylight-saving session shifts. This is a mechanism conjecture, not measured order-flow evidence. Use exactly the catalog momentum-sign rule with its registered label and tie semantics; add no filters or alternative rules. The hour choice is mechanism-motivated, not selected by a performance comparison. Admissibility probability 0.80 is my pre-review belief that this bounded exploratory proposal is admissible, not a probability of predictive success.",
+    "predicted_failure": "TEMPORAL_FAILURE",
+    "prior_comparisons": [
+      {
+        "difference": "Same candidate_rule, horizon, instrument, lookback, and 12 UTC focus as the parent; this submission is the authorized cost-scope-only correction that classifies broker_costs as future_economic rather than a current blocker.",
+        "relation": "SAME_RESEARCH_IDEA",
+        "signature": "24c3c3e2b3d52116469ac293d2be78ea9778a0a5cb3cb0628825b04c701e36b5"
+      },
+      {
+        "difference": "Broader all-hours family variant using [8,12,16] rather than the single 12 UTC subset; related exposure, but not the corrected 12 UTC contract itself.",
+        "relation": "RELATED_VARIANT",
+        "signature": "2dceefbecd63b41726bf86d3fbfd2397c5e91fe4c9737433dcc23757c7598188"
+      }
+    ],
+    "revision": {
+      "change_kind": "DATA_REQUIREMENT_SCOPE_CORRECTION",
+      "parent_draft_id": "e7f85e02-fe52-473b-a786-6e659ae2f246",
+      "parent_draft_sha256": "a09b3f29fc094bf0eb810a9953d9756f6bb428282b0c71c1b2495f89d144f034",
+      "reason": "Authorized revision of the parent exploratory 12 UTC EURUSD prior-hour momentum diagnostic, preserving the parent diagnostic and rationale while correcting the broker_costs requirement to future_economic. The revised contract remains a no-trade, price-only diagnostic; the cost prerequisite is deferred rather than treated as a current blocker. Released aggregate evidence is cited only as family-level motivation and contrary evidence, not as subset measurements. This revision does not add a new diagnostic or extend the source beyond the approved contract family.",
+      "scope_changes": [
+        {
+          "requirement_index": 0,
+          "scope": "future_economic"
+        }
+      ]
+    },
+    "schema_version": "research_proposal/3",
+    "support": [
+      "The registered catalog permits 12 UTC and the exact prior-hour momentum-sign rule with a four-hour horizon, enabling a bounded price-only test without additional data or execution.",
+      "eurusd_four_hour_direction_2020_v1 supplies limited motivation to inspect directional continuation: released candidate accuracy 0.5242966752 versus baseline 0.4629156010, with paired difference 0.0613810742. These are prior all-hours results, not results for this proposal.",
+      "The bounded development page demonstrates available case statuses, target labels and settlement provenance, including a measurable 12 UTC case. It supports diagnostic feasibility only, not predictive value or a support-count claim."
+    ],
+    "title": "Exploratory 12 UTC EURUSD prior-hour momentum direction diagnostic"
+  },
+  "critique": {
+    "disposition": "REVIEW",
+    "draft_sha256": "df1bc355a480b211da53a156c0d08450c69776594e0e2f46654cd99d6ed00537",
+    "evidence_attribution": "CONSISTENT",
+    "falsifier_consistency": "CONSISTENT",
+    "grounding_explanation": "The draft is grounded in the released evidence and the development snapshot, and it correctly preserves the no-trade, price-only scope while deferring broker_costs to future_economic. The authorized revision link is clear, and the falsifier is predictive rather than administrative: it defines how a 12 UTC subset result would count against the directional conjecture only if support and data-quality conditions are met. The main issue is wording scope, not a blocking defect: the draft repeatedly describes the released 2020/2021 results as 'all-hours' aggregates, but the cited released evidence is for the exposed family variant hours_utc [8,12,16], not literal all-hours and not the 12 UTC subset. That should be tightened to avoid evidence-scope drift.",
+    "objections": [
+      {
+        "code": "EVIDENCE_SCOPE_MISMATCH",
+        "evidence_ids": [
+          "eurusd_four_hour_direction_2020_v1",
+          "eurusd_four_hour_direction_2021_replication_v1",
+          "12c4ed740773044b65d3154f16b123641c006fd7ace03e50651c828bdbbbfcdb",
+          "a2e83f808feabf35c02ce41c6c3e4cc62374ecd92fe99c4361e381c2720a7eb3"
+        ],
+        "explanation": "The narrative and some evidence-claim wording describe the released results as 'all-hours' family aggregates. The released evidence attached to this catalog is the [8,12,16] exposed family, not literal all-hours data, and it still must not be attributed to the 12 UTC subset. This is a scope/attribution precision issue, not a blocker, but it should be corrected for exactness.",
+        "severity": "advisory"
+      }
+    ],
+    "prior_attempt_consistency": "CONSISTENT",
+    "requirement_consistency": "CONSISTENT",
+    "requirement_explanation": "The draft correctly applies the catalog's explicit scope rule: broker_costs is deferred as future_economic and does not block this no-trade diagnostic. It also keeps orders_allowed false, uses the cataloged rule and permitted hour, and does not introduce an unsupported execution or economic claim. That matches the requirement rules and avoids the REQUIREMENT_CONTRADICTION the service warns against.",
+    "schema_version": "research_critique/3",
+    "summary": "REVIEW. The revision is admissible as a linked same-idea correction with proper scope handling and preserved no-trade diagnostic framing. The only material issue is evidence-scope wording: 'all-hours' is too loose for the released [8,12,16] family evidence. Tighten that language, but no blocking objection was found."
+  },
+  "input_output_refs": [
+    {
+      "run_id": "d6149cdb-bc86-47bb-8857-d0225010c35e",
+      "invocation_id": "9616e785-eafa-4f41-9c56-d8101106a156",
+      "agent_version": "c3ad3af21bc43d4c50a037fdb96541abc03b828542273992d821b0554112677d",
+      "request_sha256": "0a76b5ced53d3294ea9098c988a778c7b9cfa2c438a31e30eab159711c245435",
+      "response_sha256": "008050fc8ee60fcaf9dca8d7ffca1339a7b6e346f2679f091a17b49ea762b248",
+      "returned_model": "gpt-5.4-mini-2026-03-17",
+      "status": "COMPLETED",
+      "input_tokens": 150,
+      "output_tokens": 22,
+      "reserved_micro_usd": 40428
+    },
+    {
+      "run_id": "d6149cdb-bc86-47bb-8857-d0225010c35e",
+      "invocation_id": "4fb703da-1594-4848-a285-0e240dd26973",
+      "agent_version": "c3ad3af21bc43d4c50a037fdb96541abc03b828542273992d821b0554112677d",
+      "request_sha256": "eefdf3cd948e648824f05e6f8e9a01107ab1ec6e9a5eb8a2d21caa4db27380d5",
+      "response_sha256": "ecf449d440a06d126a6b4859eee25f012026371b4f85c30343a708367618367d",
+      "returned_model": "gpt-5.4-mini-2026-03-17",
+      "status": "COMPLETED",
+      "input_tokens": 2521,
+      "output_tokens": 209,
+      "reserved_micro_usd": 50779
+    },
+    {
+      "run_id": "d6149cdb-bc86-47bb-8857-d0225010c35e",
+      "invocation_id": "139578c2-67e9-495b-81fe-50f371f28e41",
+      "agent_version": "c3ad3af21bc43d4c50a037fdb96541abc03b828542273992d821b0554112677d",
+      "request_sha256": "2a341a546b5e929cc38789f39d93f84b8b87ee040b42853143aeb6d9e2fe00e8",
+      "response_sha256": "52ec40373d0485930fddf5bc14a294c11af3eca3b110a1fc2164c358b732da80",
+      "returned_model": "gpt-5.4-mini-2026-03-17",
+      "status": "COMPLETED",
+      "input_tokens": 4937,
+      "output_tokens": 37,
+      "reserved_micro_usd": 61208
+    },
+    {
+      "run_id": "d6149cdb-bc86-47bb-8857-d0225010c35e",
+      "invocation_id": "030b93d0-82a8-4508-9f7b-8300bee05534",
+      "agent_version": "c3ad3af21bc43d4c50a037fdb96541abc03b828542273992d821b0554112677d",
+      "request_sha256": "77534c2bd3f3d6bb0e5aeb68a1533ecc427328f7669361641bcb71a6903e4f95",
+      "response_sha256": "8dd64889005daf81e9343f5c65ee952b9f975347bedf92ff38ea2c1a20a13f7d",
+      "returned_model": "gpt-5.4-mini-2026-03-17",
+      "status": "COMPLETED",
+      "input_tokens": 8961,
+      "output_tokens": 34,
+      "reserved_micro_usd": 72508
+    },
+    {
+      "run_id": "d6149cdb-bc86-47bb-8857-d0225010c35e",
+      "invocation_id": "49e5a518-4201-46ba-8e97-fa1335016e7b",
+      "agent_version": "c3ad3af21bc43d4c50a037fdb96541abc03b828542273992d821b0554112677d",
+      "request_sha256": "5e1c3ce8354e78ce133ea408f0b65e69840c6f5f74927c258459e090cba7739e",
+      "response_sha256": "e492ebd25b1d7720f76b8266349e7fabbe62a9fd1c7098f38bf27015c67c1fb1",
+      "returned_model": "gpt-5.4-mini-2026-03-17",
+      "status": "COMPLETED",
+      "input_tokens": 11176,
+      "output_tokens": 3576,
+      "reserved_micro_usd": 79587
+    },
+    {
+      "run_id": "d6149cdb-bc86-47bb-8857-d0225010c35e",
+      "invocation_id": "988c014c-7f0d-42b4-8362-d9d0283d8ecd",
+      "agent_version": "0117e2fa9ca78b86cfe0cdc3ecbb0707a9586805fa489151072cd0cdab594f37",
+      "request_sha256": "e5a0895f3a1673a50c90470f85c2473a190b5161156d1efb69828ba60ed4447c",
+      "response_sha256": "b2cf2fca91299995ac1452535e84044a409d03752ca31031f5c2dd68a44822d8",
+      "returned_model": "gpt-5.4-mini-2026-03-17",
+      "status": "COMPLETED",
+      "input_tokens": 3627,
+      "output_tokens": 90,
+      "reserved_micro_usd": 53181
+    },
+    {
+      "run_id": "d6149cdb-bc86-47bb-8857-d0225010c35e",
+      "invocation_id": "918f208f-9846-405b-ab74-27dc74cd814a",
+      "agent_version": "0117e2fa9ca78b86cfe0cdc3ecbb0707a9586805fa489151072cd0cdab594f37",
+      "request_sha256": "8ec29ffbafe5738e3e621a644b12d9dac7f3f773611f3377de66dc378e1ff74e",
+      "response_sha256": "09ea5cf7e59e7b55c5256e1f7b52bd1f3c8e03b8d90f238d0a155356c44399eb",
+      "returned_model": "gpt-5.4-mini-2026-03-17",
+      "status": "COMPLETED",
+      "input_tokens": 5924,
+      "output_tokens": 32,
+      "reserved_micro_usd": 62314
+    },
+    {
+      "run_id": "d6149cdb-bc86-47bb-8857-d0225010c35e",
+      "invocation_id": "ad2cfaa3-64bb-40ee-befc-2270c52c9ac3",
+      "agent_version": "0117e2fa9ca78b86cfe0cdc3ecbb0707a9586805fa489151072cd0cdab594f37",
+      "request_sha256": "c1349aabb2ce7f415c7405e08e767ff961d2c502ad3255f7b0809a977fc24ee0",
+      "response_sha256": "c2504e61f7e693146285eaf56302941eb5995419ce1c26e4fbc5998473b775af",
+      "returned_model": "gpt-5.4-mini-2026-03-17",
+      "status": "COMPLETED",
+      "input_tokens": 9943,
+      "output_tokens": 34,
+      "reserved_micro_usd": 73566
+    },
+    {
+      "run_id": "d6149cdb-bc86-47bb-8857-d0225010c35e",
+      "invocation_id": "de2956c3-097c-48a9-a041-b2572fb4ea35",
+      "agent_version": "0117e2fa9ca78b86cfe0cdc3ecbb0707a9586805fa489151072cd0cdab594f37",
+      "request_sha256": "85484f4e3080dbf32e7f6cfdb324da1969038d40004ed3115f7cd786f4a0239c",
+      "response_sha256": "a88e2db069bdf5c4376507bdad9b035dd5d9ea88bbe3c6f2fe6526513960e808",
+      "returned_model": "gpt-5.4-mini-2026-03-17",
+      "status": "COMPLETED",
+      "input_tokens": 12158,
+      "output_tokens": 1957,
+      "reserved_micro_usd": 80646
+    }
+  ],
+  "operator_commitments": [
+    {
+      "id": "d6149cdb-bc86-47bb-8857-d0225010c35e:CONTRACT_REVIEW_CORRECTION",
+      "draft_id": "d6149cdb-bc86-47bb-8857-d0225010c35e",
+      "actor": "codex_operator_reference_boundary_review",
+      "kind": "CONTRACT_REVIEW_CORRECTION",
+      "artifact_id": "1f067d6c99bb923d578532df2b76e4ac6e33a211a951f1ce102d18f771900231",
+      "created_at": "2026-10-09 21:21:36.104502+00:00",
+      "detail": {
+        "actor": "codex_operator_reference_boundary_review",
+        "admission_granted": false,
+        "attempt_count": "RETAINED",
+        "classification": "CITATION_NAMESPACE_DEFECT",
+        "draft_id": "d6149cdb-bc86-47bb-8857-d0225010c35e",
+        "draft_sha256": "df1bc355a480b211da53a156c0d08450c69776594e0e2f46654cd99d6ed00537",
+        "exposure": "UNCHANGED",
+        "original_decision_retained": true,
+        "original_review_sha256": "a0f35ec0dcb9e48c6d535c784607b47f3de549b9836b167f7829174e2990e284",
+        "reason": "Architecture 2.11.1 reference policy scoped_registry_references/1 resolves exact frozen fact hashes as well as evidence-record IDs. The original UNKNOWN_EVIDENCE rejection treated two valid in-context fact hashes as unknown. Proposal and Critic output remain unchanged; arbitrary hashes still fail. Reassessment is deterministic, with no new inference, measurements or validation exposure."
+      }
+    },
+    {
+      "id": "d6149cdb-bc86-47bb-8857-d0225010c35e:CONTRACT_REVIEW_ASSESSMENT",
+      "draft_id": "d6149cdb-bc86-47bb-8857-d0225010c35e",
+      "actor": "codex_operator_under_user_authorized_same_idea_revision",
+      "kind": "CONTRACT_REVIEW_ASSESSMENT",
+      "artifact_id": "a33672c912d6ef6ee7c30650e7db5644b1a8f5675cf1835575e007114a4c3bc0",
+      "created_at": "2026-10-09 21:21:37.849520+00:00",
+      "detail": {
+        "critique_sha256": "84cb0ad34184c0f90e09a579c140479e41ae2fe7290e054f76011cd6ec687214",
+        "decision": {
+          "attempt_kind": "CORRECTED_REVISION",
+          "family_id": "eurusd_four_hour_direction",
+          "idea_relation": "SAME_RESEARCH_IDEA",
+          "loop": "B",
+          "parent_draft_id": "e7f85e02-fe52-473b-a786-6e659ae2f246",
+          "reasons": [
+            "CRITIQUE_RECORDED_NOT_AN_APPROVAL"
+          ],
+          "reference_policy": "scoped_registry_references/1",
+          "signature": "24c3c3e2b3d52116469ac293d2be78ea9778a0a5cb3cb0628825b04c701e36b5",
+          "status": "AWAITING_OPERATOR_REVIEW"
+        },
+        "proposal_sha256": "df1bc355a480b211da53a156c0d08450c69776594e0e2f46654cd99d6ed00537"
+      }
+    },
+    {
+      "id": "d6149cdb-bc86-47bb-8857-d0225010c35e:OPERATOR_DECISION",
+      "draft_id": "d6149cdb-bc86-47bb-8857-d0225010c35e",
+      "actor": "codex_operator_under_user_authorized_same_idea_revision",
+      "kind": "OPERATOR_DECISION",
+      "artifact_id": "64e2f9beeca2b2748e08928a2c409b11ccd3444fced8c241732548a749e57bac",
+      "created_at": "2026-10-09 21:21:37.854293+00:00",
+      "detail": {
+        "action": "ADMIT_DEVELOPMENT",
+        "actor": "codex_operator_under_user_authorized_same_idea_revision",
+        "draft_id": "d6149cdb-bc86-47bb-8857-d0225010c35e",
+        "draft_sha256": "df1bc355a480b211da53a156c0d08450c69776594e0e2f46654cd99d6ed00537",
+        "objection_resolutions": {
+          "0": "The registered source diagnostics explicitly enumerate [8,12,16]. Inherited all-hours wording means all registered anchors, not every clock hour; no fact is applied to the 12 UTC subset. Retain this precision caveat in the operator assessment and report."
+        },
+        "reason": "Verified exact parent hash and scope-only patch: only broker_costs becomes future_economic; diagnostic, source IDs, rationale and predictive falsifier remain inherited. Both released outcomes are cited as source-contract facts, never 12 UTC measurements. Critic fact hashes resolve to the frozen authorized records under scoped_registry_references/1. Its advisory all-hours wording is interpreted explicitly as the registered [8,12,16] anchors; parent wording is retained as historical rationale. All original attempts and consumed exposure remain. Admit only the registered development calculation and candidate lock; no new validation or economic claim."
+      }
+    },
+    {
+      "id": "d6149cdb-bc86-47bb-8857-d0225010c35e:DESIGN_FREEZE",
+      "draft_id": "d6149cdb-bc86-47bb-8857-d0225010c35e",
+      "actor": "codex_operator_under_user_authorized_same_idea_revision",
+      "kind": "DESIGN_FREEZE",
+      "artifact_id": "6d68aa9105717190fd504b1faf1bb824d620d6f65e9d1d6feef6d79afcc2eaa0",
+      "created_at": "2026-10-09 21:21:37.858429+00:00",
+      "detail": {
+        "attempt_kind": "CORRECTED_REVISION",
+        "campaign_id": "openai_grounded_revision_recovery_20261009",
+        "catalog": {
+          "baseline_rule": "majority_development_target_class",
+          "baseline_tie": "PREDICT_NON_UP",
+          "candidate_rule": "prior_hour_midquote_momentum_sign",
+          "decision_delay_seconds": 1,
+          "development_end": "2020-07-01T00:00:00Z",
+          "development_start": "2020-01-01T00:00:00Z",
+          "economic_claim": "none_predictive_diagnostic_only",
+          "horizon_seconds": 14400,
+          "include_holidays": true,
+          "inference_policy": "exploratory_only_no_confirmatory_pass",
+          "instrument": "EURUSD",
+          "iso_weekdays": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "lookback_seconds": 3600,
+          "maximum_missing_fraction": 0.1,
+          "maximum_quote_age_seconds": 60,
+          "maximum_settlement_delay_seconds": 60,
+          "minimum_eligible_anchors": 100,
+          "orders_allowed": false,
+          "permitted_hours_utc": [
+            8,
+            12,
+            16
+          ],
+          "search_policy": "one_declared_candidate_no_optimization",
+          "validation_policy": "NO_INDEPENDENT_WINDOW",
+          "version": "eurusd_direction/1"
+        },
+        "catalog_sha256": "e3dcaf625ed677bfe780f71ee7de07802509e2e9fdaa82f2cf7efecfbdff341b",
+        "confirmatory_tests": 0,
+        "development_id": "b44d2abe89925bcdc86ba3aeb7501a4369b7bd3656b3d2d817f821deb2eb09c4",
+        "family_id": "eurusd_four_hour_direction",
+        "idea_relation": "SAME_RESEARCH_IDEA",
+        "proposal_id": "df1bc355a480b211da53a156c0d08450c69776594e0e2f46654cd99d6ed00537",
+        "registered_at": "2026-10-09T21:17:48.142557+00:00",
+        "revision": {
+          "change_kind": "DATA_REQUIREMENT_SCOPE_CORRECTION",
+          "parent_draft_id": "e7f85e02-fe52-473b-a786-6e659ae2f246",
+          "parent_draft_sha256": "a09b3f29fc094bf0eb810a9953d9756f6bb428282b0c71c1b2495f89d144f034",
+          "reason": "Authorized revision of the parent exploratory 12 UTC EURUSD prior-hour momentum diagnostic, preserving the parent diagnostic and rationale while correcting the broker_costs requirement to future_economic. The revised contract remains a no-trade, price-only diagnostic; the cost prerequisite is deferred rather than treated as a current blocker. Released aggregate evidence is cited only as family-level motivation and contrary evidence, not as subset measurements. This revision does not add a new diagnostic or extend the source beyond the approved contract family.",
+          "scope_changes": [
+            {
+              "requirement_index": 0,
+              "scope": "future_economic"
+            }
+          ]
+        },
+        "snapshot_id": "f7663aa72f72bee91d5a1271d48d44d1477ae20a8881440a6eadf56bf7a69e7e",
+        "validation_status": "NO_INDEPENDENT_WINDOW"
+      }
+    },
+    {
+      "id": "d6149cdb-bc86-47bb-8857-d0225010c35e:DEVELOPMENT_RESULT",
+      "draft_id": "d6149cdb-bc86-47bb-8857-d0225010c35e",
+      "actor": "catalog:eurusd_direction/1",
+      "kind": "DEVELOPMENT_RESULT",
+      "artifact_id": "acde0e5422b46c9f19d379945f1ca587fb6718da9679f32f88832cdd36b03dfc",
+      "created_at": "2026-10-09 21:21:37.866180+00:00",
+      "detail": {
+        "baseline_accuracy": 0.5426356589147286,
+        "baseline_class": "PREDICT_NON_UP",
+        "candidate_accuracy": 0.4883720930232558,
+        "case_ids": [
+          "EURUSD:2020-01-01T12:00:00Z",
+          "EURUSD:2020-01-02T12:00:00Z",
+          "EURUSD:2020-01-03T12:00:00Z",
+          "EURUSD:2020-01-06T12:00:00Z",
+          "EURUSD:2020-01-07T12:00:00Z",
+          "EURUSD:2020-01-08T12:00:00Z",
+          "EURUSD:2020-01-09T12:00:00Z",
+          "EURUSD:2020-01-10T12:00:00Z",
+          "EURUSD:2020-01-13T12:00:00Z",
+          "EURUSD:2020-01-14T12:00:00Z",
+          "EURUSD:2020-01-15T12:00:00Z",
+          "EURUSD:2020-01-16T12:00:00Z",
+          "EURUSD:2020-01-17T12:00:00Z",
+          "EURUSD:2020-01-20T12:00:00Z",
+          "EURUSD:2020-01-21T12:00:00Z",
+          "EURUSD:2020-01-22T12:00:00Z",
+          "EURUSD:2020-01-23T12:00:00Z",
+          "EURUSD:2020-01-24T12:00:00Z",
+          "EURUSD:2020-01-27T12:00:00Z",
+          "EURUSD:2020-01-28T12:00:00Z",
+          "EURUSD:2020-01-29T12:00:00Z",
+          "EURUSD:2020-01-30T12:00:00Z",
+          "EURUSD:2020-01-31T12:00:00Z",
+          "EURUSD:2020-02-03T12:00:00Z",
+          "EURUSD:2020-02-04T12:00:00Z",
+          "EURUSD:2020-02-05T12:00:00Z",
+          "EURUSD:2020-02-06T12:00:00Z",
+          "EURUSD:2020-02-07T12:00:00Z",
+          "EURUSD:2020-02-10T12:00:00Z",
+          "EURUSD:2020-02-11T12:00:00Z",
+          "EURUSD:2020-02-12T12:00:00Z",
+          "EURUSD:2020-02-13T12:00:00Z",
+          "EURUSD:2020-02-14T12:00:00Z",
+          "EURUSD:2020-02-17T12:00:00Z",
+          "EURUSD:2020-02-18T12:00:00Z",
+          "EURUSD:2020-02-19T12:00:00Z",
+          "EURUSD:2020-02-20T12:00:00Z",
+          "EURUSD:2020-02-21T12:00:00Z",
+          "EURUSD:2020-02-24T12:00:00Z",
+          "EURUSD:2020-02-25T12:00:00Z",
+          "EURUSD:2020-02-26T12:00:00Z",
+          "EURUSD:2020-02-27T12:00:00Z",
+          "EURUSD:2020-02-28T12:00:00Z",
+          "EURUSD:2020-03-02T12:00:00Z",
+          "EURUSD:2020-03-03T12:00:00Z",
+          "EURUSD:2020-03-04T12:00:00Z",
+          "EURUSD:2020-03-05T12:00:00Z",
+          "EURUSD:2020-03-06T12:00:00Z",
+          "EURUSD:2020-03-09T12:00:00Z",
+          "EURUSD:2020-03-10T12:00:00Z",
+          "EURUSD:2020-03-11T12:00:00Z",
+          "EURUSD:2020-03-12T12:00:00Z",
+          "EURUSD:2020-03-13T12:00:00Z",
+          "EURUSD:2020-03-16T12:00:00Z",
+          "EURUSD:2020-03-17T12:00:00Z",
+          "EURUSD:2020-03-18T12:00:00Z",
+          "EURUSD:2020-03-19T12:00:00Z",
+          "EURUSD:2020-03-20T12:00:00Z",
+          "EURUSD:2020-03-23T12:00:00Z",
+          "EURUSD:2020-03-24T12:00:00Z",
+          "EURUSD:2020-03-25T12:00:00Z",
+          "EURUSD:2020-03-26T12:00:00Z",
+          "EURUSD:2020-03-27T12:00:00Z",
+          "EURUSD:2020-03-30T12:00:00Z",
+          "EURUSD:2020-03-31T12:00:00Z",
+          "EURUSD:2020-04-01T12:00:00Z",
+          "EURUSD:2020-04-02T12:00:00Z",
+          "EURUSD:2020-04-03T12:00:00Z",
+          "EURUSD:2020-04-06T12:00:00Z",
+          "EURUSD:2020-04-07T12:00:00Z",
+          "EURUSD:2020-04-08T12:00:00Z",
+          "EURUSD:2020-04-09T12:00:00Z",
+          "EURUSD:2020-04-10T12:00:00Z",
+          "EURUSD:2020-04-13T12:00:00Z",
+          "EURUSD:2020-04-14T12:00:00Z",
+          "EURUSD:2020-04-15T12:00:00Z",
+          "EURUSD:2020-04-16T12:00:00Z",
+          "EURUSD:2020-04-17T12:00:00Z",
+          "EURUSD:2020-04-20T12:00:00Z",
+          "EURUSD:2020-04-21T12:00:00Z",
+          "EURUSD:2020-04-22T12:00:00Z",
+          "EURUSD:2020-04-23T12:00:00Z",
+          "EURUSD:2020-04-24T12:00:00Z",
+          "EURUSD:2020-04-27T12:00:00Z",
+          "EURUSD:2020-04-28T12:00:00Z",
+          "EURUSD:2020-04-29T12:00:00Z",
+          "EURUSD:2020-04-30T12:00:00Z",
+          "EURUSD:2020-05-01T12:00:00Z",
+          "EURUSD:2020-05-04T12:00:00Z",
+          "EURUSD:2020-05-05T12:00:00Z",
+          "EURUSD:2020-05-06T12:00:00Z",
+          "EURUSD:2020-05-07T12:00:00Z",
+          "EURUSD:2020-05-08T12:00:00Z",
+          "EURUSD:2020-05-11T12:00:00Z",
+          "EURUSD:2020-05-12T12:00:00Z",
+          "EURUSD:2020-05-13T12:00:00Z",
+          "EURUSD:2020-05-14T12:00:00Z",
+          "EURUSD:2020-05-15T12:00:00Z",
+          "EURUSD:2020-05-18T12:00:00Z",
+          "EURUSD:2020-05-19T12:00:00Z",
+          "EURUSD:2020-05-20T12:00:00Z",
+          "EURUSD:2020-05-21T12:00:00Z",
+          "EURUSD:2020-05-22T12:00:00Z",
+          "EURUSD:2020-05-25T12:00:00Z",
+          "EURUSD:2020-05-26T12:00:00Z",
+          "EURUSD:2020-05-27T12:00:00Z",
+          "EURUSD:2020-05-28T12:00:00Z",
+          "EURUSD:2020-05-29T12:00:00Z",
+          "EURUSD:2020-06-01T12:00:00Z",
+          "EURUSD:2020-06-02T12:00:00Z",
+          "EURUSD:2020-06-03T12:00:00Z",
+          "EURUSD:2020-06-04T12:00:00Z",
+          "EURUSD:2020-06-05T12:00:00Z",
+          "EURUSD:2020-06-08T12:00:00Z",
+          "EURUSD:2020-06-09T12:00:00Z",
+          "EURUSD:2020-06-10T12:00:00Z",
+          "EURUSD:2020-06-11T12:00:00Z",
+          "EURUSD:2020-06-12T12:00:00Z",
+          "EURUSD:2020-06-15T12:00:00Z",
+          "EURUSD:2020-06-16T12:00:00Z",
+          "EURUSD:2020-06-17T12:00:00Z",
+          "EURUSD:2020-06-18T12:00:00Z",
+          "EURUSD:2020-06-19T12:00:00Z",
+          "EURUSD:2020-06-22T12:00:00Z",
+          "EURUSD:2020-06-23T12:00:00Z",
+          "EURUSD:2020-06-24T12:00:00Z",
+          "EURUSD:2020-06-25T12:00:00Z",
+          "EURUSD:2020-06-26T12:00:00Z",
+          "EURUSD:2020-06-29T12:00:00Z",
+          "EURUSD:2020-06-30T12:00:00Z"
+        ],
+        "case_status_counts": {
+          "INPUT_MISSING": 1,
+          "MEASURABLE": 129
+        },
+        "catalog_sha256": "e3dcaf625ed677bfe780f71ee7de07802509e2e9fdaa82f2cf7efecfbdff341b",
+        "confirmatory_pass": null,
+        "data_sufficient": true,
+        "diagnostic_sha256": "24c3c3e2b3d52116469ac293d2be78ea9778a0a5cb3cb0628825b04c701e36b5",
+        "evidence_mode": "development",
+        "measurable_count": 129,
+        "scheduled_count": 130
+      }
+    },
+    {
+      "id": "d6149cdb-bc86-47bb-8857-d0225010c35e:CANDIDATE_LOCK",
+      "draft_id": "d6149cdb-bc86-47bb-8857-d0225010c35e",
+      "actor": "catalog:eurusd_direction/1",
+      "kind": "CANDIDATE_LOCK",
+      "artifact_id": "4db0bac3589119c08c9dc09f65a9068f47eadc47d2e17f24fabdb15ae58ba691",
+      "created_at": "2026-10-09 21:21:37.869413+00:00",
+      "detail": {
+        "baseline_class": "PREDICT_NON_UP",
+        "design_sha256": "6d68aa9105717190fd504b1faf1bb824d620d6f65e9d1d6feef6d79afcc2eaa0",
+        "development_sha256": "acde0e5422b46c9f19d379945f1ca587fb6718da9679f32f88832cdd36b03dfc",
+        "diagnostic": {
+          "candidate_rule": "prior_hour_midquote_momentum_sign",
+          "catalog_version": "eurusd_direction/1",
+          "horizon_seconds": 14400,
+          "hours_utc": [
+            12
+          ],
+          "instrument": "EURUSD",
+          "lookback_seconds": 3600,
+          "orders_allowed": false
+        },
+        "economic_claim": null,
+        "execution_allowed": false,
+        "status": "NO_INDEPENDENT_WINDOW"
+      }
+    }
+  ],
+  "current_operator_state": {
+    "baseline_class": "PREDICT_NON_UP",
+    "design_sha256": "6d68aa9105717190fd504b1faf1bb824d620d6f65e9d1d6feef6d79afcc2eaa0",
+    "development_sha256": "acde0e5422b46c9f19d379945f1ca587fb6718da9679f32f88832cdd36b03dfc",
+    "diagnostic": {
+      "candidate_rule": "prior_hour_midquote_momentum_sign",
+      "catalog_version": "eurusd_direction/1",
+      "horizon_seconds": 14400,
+      "hours_utc": [
+        12
+      ],
+      "instrument": "EURUSD",
+      "lookback_seconds": 3600,
+      "orders_allowed": false
+    },
+    "economic_claim": null,
+    "execution_allowed": false,
+    "status": "NO_INDEPENDENT_WINDOW"
+  },
+  "replay_preserves_original_run_calls_tools_and_events": true,
+  "historical_review_annotation": {
+    "status": "REVIEW_REQUIRED",
+    "invalidated_dependencies": [],
+    "contract_review_correction": {
+      "actor": "codex_operator_reference_boundary_review",
+      "admission_granted": false,
+      "attempt_count": "RETAINED",
+      "classification": "CITATION_NAMESPACE_DEFECT",
+      "draft_id": "d6149cdb-bc86-47bb-8857-d0225010c35e",
+      "draft_sha256": "df1bc355a480b211da53a156c0d08450c69776594e0e2f46654cd99d6ed00537",
+      "exposure": "UNCHANGED",
+      "original_decision_retained": true,
+      "original_review_sha256": "a0f35ec0dcb9e48c6d535c784607b47f3de549b9836b167f7829174e2990e284",
+      "reason": "Architecture 2.11.1 reference policy scoped_registry_references/1 resolves exact frozen fact hashes as well as evidence-record IDs. The original UNKNOWN_EVIDENCE rejection treated two valid in-context fact hashes as unknown. Proposal and Critic output remain unchanged; arbitrary hashes still fail. Reassessment is deterministic, with no new inference, measurements or validation exposure."
+    }
+  }
+}

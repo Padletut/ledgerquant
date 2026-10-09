@@ -1,0 +1,32 @@
+{
+  "version": "grounded_revision_task/3",
+  "purpose": "Submit exactly one authorized corrected contract revision of the existing 12 UTC research idea. Use submit_contract_revision after reading all required tools. Do not propose another diagnostic. The service preserves the parent rationale and only corrects broker_costs scope. Cite both released aggregate outcomes without treating them as subset measurements.",
+  "submission_policy": "revision_only",
+  "revision_authorizations": [
+    {
+      "parent_draft_id": "e7f85e02-fe52-473b-a786-6e659ae2f246",
+      "parent_draft_sha256": "a09b3f29fc094bf0eb810a9953d9756f6bb428282b0c71c1b2495f89d144f034",
+      "scope_changes": [
+        {
+          "requirement_index": 0,
+          "scope": "future_economic"
+        }
+      ],
+      "reason": "User explicitly authorized the same research idea to receive a cost-scope-only corrected attempt with full ancestry and unchanged exposure."
+    }
+  ],
+  "parent_campaigns": [
+    "openai_astra_bootstrap_20261009",
+    "openai_mini_requirements_20261009"
+  ],
+  "related_attempt_ids": [
+    "e7f85e02-fe52-473b-a786-6e659ae2f246",
+    "23632117-fb7e-40c6-bffc-b9bbc39df16e"
+  ],
+  "proposal_limit": 1,
+  "confirmatory_tests": 0,
+  "validation_status": "NO_INDEPENDENT_WINDOW",
+  "stop_after": "One revision and one critique; operator review, then design freeze, fixed development and candidate lock only if admissible. No replacement sampling.",
+  "engineering_recovery_of_run_id": "10972e1f-0613-4984-951d-7a01e1a37199",
+  "recovery_reason": "Prior attempt stopped with max_output_tokens before submitting any draft; preserve failure and repeat the same authorized cost-scope correction once with a larger response limit."
+}

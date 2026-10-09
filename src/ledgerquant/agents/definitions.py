@@ -50,14 +50,17 @@ def definition(role: str, profile: ModelProfile, workflow: str = "discovery", co
     if workflow not in {"discovery", "process_review"}:
         raise ValueError("unsupported agent workflow")
     instructions = INSTRUCTIONS[role] if workflow == "discovery" else PROCESS_INSTRUCTIONS + f"\nYour role is {role}."
-    if contract_version == 2:
+    if contract_version >= 2:
         instructions += "\n" + REQUIREMENT_RULES
         if role == "critic" and workflow == "discovery":
             instructions += "\nExplicitly report requirement_consistency and explain your comparison of narrative and fields."
+    if contract_version == 3:
+        from ledgerquant.research.grounded_proposals import GROUNDING_RULES
+        instructions += "\n" + GROUNDING_RULES
     tools = schemas(role, contract_version) if workflow == "discovery" else assessment_schema(contract_version)
     return {"role": role, "instructions": instructions, "workflow": workflow,
             "model_profile": profile.model_dump(mode="json"), "tool_policy": TOOL_POLICY_VERSION,
             "tool_schema_sha256": digest(tools), "runtime_version": "bounded_runner/1",
             "instruction_sha256": digest(instructions),
-            **({"research_contract_version": 2} if contract_version == 2 else {}),
+            **({"research_contract_version": contract_version} if contract_version >= 2 else {}),
             **({"process_context_version": "exact_diagnostic_identity/2"} if workflow == "process_review" else {})}

@@ -55,20 +55,24 @@ def contract_types(version):
         return Proposal, Critique
     if version == 2:
         return ProposalV2, CritiqueV2
+    if version == 3:
+        from .grounded_proposals import ProposalV3, CritiqueV3
+        return ProposalV3, CritiqueV3
     raise ValueError("unsupported research contract version")
 
 
 def parse_proposal(payload):
-    return _parse(payload, Proposal, ProposalV2, "research_proposal/2")
+    return _parse(payload, "research_proposal", 0)
 
 
 def parse_critique(payload):
-    return _parse(payload, Critique, CritiqueV2, "research_critique/2")
+    return _parse(payload, "research_critique", 1)
 
 
-def _parse(payload, legacy, current, version):
+def _parse(payload, prefix, index):
     if "schema_version" not in payload:
-        return legacy.model_validate(payload)
-    if payload["schema_version"] != version:
-        raise ValueError("unsupported research contract version")
-    return current.model_validate(payload)
+        return contract_types(1)[index].model_validate(payload)
+    for version in (2, 3):
+        if payload["schema_version"] == f"{prefix}/{version}":
+            return contract_types(version)[index].model_validate(payload)
+    raise ValueError("unsupported research contract version")

@@ -9,6 +9,8 @@ from . import tables as t
 from .catalog import CATALOG, develop
 from .proposals import review
 from .scoped_proposals import parse_proposal, parse_critique
+from .grounded_proposals import ProposalV3
+from .grounding import recorded_context
 from .registry import RegistryError, append, artifact, now, value
 from .types import Record, digest
 
@@ -44,13 +46,18 @@ def admit(registry, command: Admission):
         critique_id = c.execute(select(t.critiques.c.artifact_id).where(t.critiques.c.draft_id == draft["id"])).scalar_one()
         critique = parse_critique(value(c, critique_id))
         known = set(c.execute(select(t.drafts.c.signature).where(t.drafts.c.id != draft["id"])).scalars())
-        decision = review(proposal, critique, set(manifest["evidence"]), known)
+        decision = review(proposal, critique, set(manifest["evidence"]), known,
+                          recorded_context(c, run["id"]) if isinstance(proposal, ProposalV3) else None)
         if command.action == "ADMIT_DEVELOPMENT" and frozen is None:
             if decision.status != "AWAITING_OPERATOR_REVIEW":
                 raise RegistryError("CONTRACT_NOT_ADMISSIBLE")
             required = {str(i) for i, objection in enumerate(critique.objections) if objection.severity != "advisory"}
             if not required <= set(command.objection_resolutions) or any(not text.strip() for text in command.objection_resolutions.values()):
                 raise RegistryError("UNRESOLVED_CRITIC_OBJECTION")
+        if isinstance(proposal, ProposalV3):
+            _commit(c, draft["id"], command.actor, "CONTRACT_REVIEW_ASSESSMENT", {
+                "proposal_sha256": draft["artifact_id"], "critique_sha256": critique_id,
+                "decision": decision.model_dump(mode="json")})
         _commit(c, draft["id"], command.actor, "OPERATOR_DECISION", command)
         if command.action == "REJECT":
             return {"status": "REJECTED", "economic_failure": False}
@@ -59,6 +66,9 @@ def admit(registry, command: Admission):
                   "family_id": draft["family_id"], "campaign_id": run["campaign_id"],
                   "registered_at": draft["created_at"].isoformat(), "confirmatory_tests": 0,
                   "validation_status": "NO_INDEPENDENT_WINDOW"}
+        if isinstance(proposal, ProposalV3) and proposal.revision is not None:
+            freeze = {**freeze, "revision": proposal.revision.model_dump(mode="json"),
+                      "idea_relation": "SAME_RESEARCH_IDEA", "attempt_kind": "CORRECTED_REVISION"}
         _commit(c, draft["id"], command.actor, "DESIGN_FREEZE", freeze)
     # Commit the design before any new development calculation. Re-running the
     # same command resumes the deterministic job, never a new provider call.

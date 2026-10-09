@@ -20,7 +20,8 @@ class ProcessTransport(Scripted):
             return super().invoke(request)
         self.count += 1
         context = json.loads(request["input"][0]["content"])
-        answer = checklist(context["proposal"], LEGACY_IDS, 2 if "requirement_rules" in context else 1)
+        version = 3 if "grounding" in context else 2 if "requirement_rules" in context else 1
+        answer = checklist(context["proposal"], LEGACY_IDS, version, context.get("grounding"))
         return Generation("COMPLETED", {"fixture": True}, [],
                           (ToolCall("test", "submit_process_assessment", canonical(answer)),), 100, 100)
 
@@ -70,3 +71,26 @@ def test_scoped_process_binding_and_schema(registered):
         assert report["events"][-1]["kind"] == "PROCESS_RESULT"
         assert report["events"][-1]["detail"]["answer"]["disposition"] == "REVIEW"
         assert all('"reference"' not in canonical(i["request"]) for i in report["invocations"])
+
+
+def test_grounded_process_freezes_context_and_does_not_duplicate_raw_evidence(registered):
+    from ledgerquant.research.grounding import build_context
+    from ledgerquant.research.registry import now
+    from ledgerquant.research import tables as t
+    from tests.unit.test_grounded_proposals import grounded_payload
+    registry, _, profile = registered
+    config = bootstrap(registry, load_legacy_bundle(Path(__file__).parents[2]), profile,
+        CampaignPolicy(max_runs=1, max_invocations=3, max_reserved_tokens=200000, max_usd=1),
+        "grounded-process-" + uuid4().hex, "process_review", contract_version=3)
+    manifest = registry.read(registry.get(t.snapshots, config["snapshot_id"])["manifest_id"])
+    with registry.engine.connect() as c:
+        context = build_context(c, manifest, now(), "before-run")
+    proposal = grounded_payload(context)
+    proposal["evidence_ids"] = list(LEGACY_IDS)
+    task = {"arm": "critic", "feedback": "structured", "proposal": proposal}
+    report = ProcessRunner(registry, ProcessTransport(profile, {})).run(config, uuid4().hex, task)
+    assert report["events"][-1]["detail"]["answer"]["disposition"] == "REVIEW"
+    for invocation in report["invocations"][1:]:
+        sent = json.loads(invocation["request"]["input"][0]["content"])
+        assert "released_evidence" not in sent
+        assert sent["grounding"]["facts"] == context["facts"]

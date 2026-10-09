@@ -15,7 +15,8 @@ def schedule(suite):
         for feedback, arm in product(suite["feedback_policies"], arms):
             tasks.append({"suite_sha256": digest(suite), "case_id": case["id"], "split": case["split"],
                           "repetition": repetition, "arm": arm, "feedback": feedback,
-                          "proposal": case["proposal"], "economic_evaluation": False})
+                          "proposal": case["proposal"], "economic_evaluation": False,
+                          **({"revision_authorizations": suite["revision_authorizations"]} if "revision_authorizations" in suite else {})})
     return tasks
 
 
@@ -65,7 +66,9 @@ def score(suite, reports):
 
 
 def compact_report(task, report):
-    return {"task": task, "run_id": report["run"]["id"], "events": report["events"],
+    events = [{"kind": event["kind"], "detail": {"artifact_sha256": digest(event["detail"])}}
+              if event["kind"] == "GROUNDING_CONTEXT" else event for event in report["events"]]
+    return {"task": task, "run_id": report["run"]["id"], "events": events,
             "reserved_micro_usd": sum(item["reserved_micro_usd"] for item in report["invocations"]),
             "input_tokens": sum(item["outcome"]["input_tokens"] or 0 for item in report["invocations"] if item["outcome"]),
             "output_tokens": sum(item["outcome"]["output_tokens"] or 0 for item in report["invocations"] if item["outcome"])}

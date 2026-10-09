@@ -29,6 +29,9 @@ class Runner:
             return self.registry.report(run["id"])
         self.step = 0
         try:
+            if config.get("contract_version", 1) == 3:
+                from ledgerquant.research.grounding import frozen_context
+                frozen_context(self.registry, run["id"])
             self._probe(run)
             self._role(run, "research", {"task": task})
             draft = self.registry.get(t.drafts, run["id"])

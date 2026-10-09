@@ -1,0 +1,27 @@
+{
+  "id": "d6149cdb-bc86-47bb-8857-d0225010c35e:CANDIDATE_LOCK",
+  "draft_id": "d6149cdb-bc86-47bb-8857-d0225010c35e",
+  "actor": "catalog:eurusd_direction/1",
+  "kind": "CANDIDATE_LOCK",
+  "artifact_id": "4db0bac3589119c08c9dc09f65a9068f47eadc47d2e17f24fabdb15ae58ba691",
+  "created_at": "2026-10-09 21:21:37.869413+00:00",
+  "detail": {
+    "baseline_class": "PREDICT_NON_UP",
+    "design_sha256": "6d68aa9105717190fd504b1faf1bb824d620d6f65e9d1d6feef6d79afcc2eaa0",
+    "development_sha256": "acde0e5422b46c9f19d379945f1ca587fb6718da9679f32f88832cdd36b03dfc",
+    "diagnostic": {
+      "candidate_rule": "prior_hour_midquote_momentum_sign",
+      "catalog_version": "eurusd_direction/1",
+      "horizon_seconds": 14400,
+      "hours_utc": [
+        12
+      ],
+      "instrument": "EURUSD",
+      "lookback_seconds": 3600,
+      "orders_allowed": false
+    },
+    "economic_claim": null,
+    "execution_allowed": false,
+    "status": "NO_INDEPENDENT_WINDOW"
+  }
+}

@@ -37,3 +37,10 @@ def test_model_transition_keeps_original_binding_and_changes_only_model_metadata
     changed = {key for key, value in old.model_dump().items() if new.model_dump()[key] != value}
     assert changed == {"model", "input_usd_per_million", "cache_write_usd_per_million", "output_usd_per_million", "price_basis", "knowledge_exposure"}
     assert digest(definition("research", new)) != original["research_version"]
+
+
+def test_v2_binding_identity_is_preserved_after_v3_transition():
+    profile = ModelProfile.model_validate_json((ROOT / "configs/research/openai_gpt54_mini.profile.json").read_text())
+    original = json.loads((ROOT / "documents/research/evaluations/mini_requirements_20261009/discovery_run.json").read_text())
+    for role in ("research", "critic"):
+        assert digest(definition(role, profile, contract_version=2)) == original[f"{role}_version"]

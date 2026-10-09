@@ -49,24 +49,37 @@ class ReviewDecision(Record):
     loop: str
 
 
-def review(proposal: Proposal, critique: Critique, evidence_ids: set[str], known_signatures: set[str]) -> ReviewDecision:
+def review(proposal: Proposal, critique: Critique, evidence_ids: set[str], known_signatures: set[str], grounding=None) -> ReviewDecision:
     from .catalog import classify
     from .types import digest
     from .scoped_proposals import ProposalV2, CritiqueV2
+    from .grounded_proposals import ProposalV3, CritiqueV3, ReviewDecisionV3, grounding_errors
+    from .contract_revisions import revision_errors
 
     scoped = isinstance(proposal, ProposalV2)
-    if scoped != isinstance(critique, CritiqueV2):
+    if scoped != isinstance(critique, CritiqueV2) or isinstance(proposal, ProposalV3) != isinstance(critique, CritiqueV3):
         raise ValueError("proposal and critique contract versions differ")
     current = tuple(item for item in proposal.data_requirements
                     if not scoped or item.scope == "current_diagnostic")
     family, loop, signature = classify(proposal.diagnostic)
     if critique.draft_sha256 != digest(proposal):
         raise ValueError("critique refers to a different draft")
-    references = set(proposal.evidence_ids) | {ref for item in critique.objections for ref in item.evidence_ids}
+    critic_references = {ref for item in critique.objections for ref in item.evidence_ids}
+    allowed_critic_references = set(evidence_ids)
     reasons = []
-    if not references <= evidence_ids:
+    corrected_revision = False
+    if isinstance(proposal, ProposalV3):
+        if grounding is None:
+            raise ValueError("v3 review requires frozen grounding context")
+        reasons.extend(grounding_errors(proposal, grounding))
+        defects = revision_errors(proposal, grounding)
+        reasons.extend(defects)
+        corrected_revision = proposal.revision is not None and not defects
+        allowed_critic_references.update(key for key, fact in grounding["facts"].items()
+            if key == digest(fact) and fact["evidence_id"] in evidence_ids)
+    if not set(proposal.evidence_ids) <= evidence_ids or not critic_references <= allowed_critic_references:
         reasons.append("UNKNOWN_EVIDENCE")
-    if signature in known_signatures or loop == "DUPLICATE":
+    if (signature in known_signatures or loop == "DUPLICATE") and not corrected_revision:
         reasons.append("DUPLICATE")
     if scoped and any(item.source == "broker_costs" for item in current):
         reasons.append("REQUIREMENT_CONTRADICTION")
@@ -76,4 +89,12 @@ def review(proposal: Proposal, critique: Critique, evidence_ids: set[str], known
         status, reasons = "BLOCKED_DATA_REQUIREMENT", ["SOURCE_UNAVAILABLE"]
     else:
         status, reasons = "AWAITING_OPERATOR_REVIEW", ["CRITIQUE_RECORDED_NOT_AN_APPROVAL"]
-    return ReviewDecision(status=status, reasons=tuple(reasons), family_id=family, signature=signature, loop=loop)
+    fields = dict(status=status, reasons=tuple(reasons), family_id=family, signature=signature, loop=loop)
+    if isinstance(proposal, ProposalV3):
+        if reasons == ["REQUIREMENT_CONTRADICTION"]:
+            fields["status"] = "BLOCKED_CONTRACT_DEFECT"
+        return ReviewDecisionV3(**fields, idea_relation="SAME_RESEARCH_IDEA" if signature in known_signatures or loop == "DUPLICATE" else "RELATED_VARIANT",
+            attempt_kind="CORRECTED_REVISION" if corrected_revision else "NEW_PROPOSAL",
+            parent_draft_id=proposal.revision.parent_draft_id if proposal.revision else None,
+            reference_policy="scoped_registry_references/1")
+    return ReviewDecision(**fields)

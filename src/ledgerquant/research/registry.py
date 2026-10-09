@@ -143,8 +143,11 @@ class Registry:
             manifest = value(c, c.execute(select(t.snapshots.c.manifest_id).where(t.snapshots.c.id == run["snapshot_id"])).scalar_one())
             invalid = set(c.execute(select(t.evidence_events.c.evidence_id).where(t.evidence_events.c.kind == "INVALIDATED")).scalars())
             process_invalid = any(event["kind"] == "PROCESS_CONTEXT_INVALIDATED" for event in events)
+            correction = c.execute(select(t.commitments.c.artifact_id).where(t.commitments.c.draft_id == run_id,
+                t.commitments.c.kind == "CONTRACT_REVIEW_CORRECTION")).scalar_one_or_none()
             return {"run": run, "events": [{"kind": e["kind"], "detail": value(c, e["detail_id"])} for e in events],
                     "invocations": invocation_records, "tools": [{**dict(row), "arguments": value(c, row["arguments_id"]),
                         "result": value(c, row["result_id"])} for row in tool_records], "mode": "recorded_output_replay",
-                    "current_integrity": {"status": "INVALID" if process_invalid else "REVIEW_REQUIRED" if invalid & set(manifest["evidence"]) else "UNCHANGED",
-                                          "invalidated_dependencies": sorted(invalid & set(manifest["evidence"]))}}
+                    "current_integrity": {"status": "INVALID" if process_invalid else "REVIEW_REQUIRED" if correction or invalid & set(manifest["evidence"]) else "UNCHANGED",
+                                          "invalidated_dependencies": sorted(invalid & set(manifest["evidence"])),
+                                          **({"contract_review_correction": value(c, correction)} if correction else {})}}

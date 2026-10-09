@@ -1,6 +1,6 @@
 # Bounded research-agent operations
 
-**Implemented:** 09 October 2026, architecture 2.10.2.
+**Implemented:** 09 October 2026, architecture 2.11.1.
 
 The one-shot workflow is Research proposal → fresh-context Critic → deterministic
 contract review. An operator can then reject or admit an eligible draft to a
@@ -139,11 +139,11 @@ hash, actor, `ADMIT_DEVELOPMENT` or `REJECT`, reason and explicit resolutions fo
 every material/blocking Critic objection. The worker database role cannot execute
 the resulting writes. A Critic `REVIEW` recommendation is never approval.
 
-Only an admissible typed contract can be frozen. New registrations default to
-`--contract-version 2`: every requirement has `current_diagnostic` or
+Only an admissible typed contract can be frozen. V2/v3 requirements declare `current_diagnostic` or
 `future_economic` scope. The former blocks on unavailable data; the latter records
 a prerequisite for a future economic contract. Current broker costs contradict
-the price-only catalog and cause contract rejection. Critic must explicitly check
+the price-only catalog: v2 rejects the contract, while v3 reports
+`BLOCKED_CONTRACT_DEFECT`. Critic must explicitly check
 narrative/field consistency and record a material objection if contradictory;
 operator admission requires an explicit resolution. Semantic checking remains
 fallible and is not replaced by keyword matching.
@@ -233,3 +233,63 @@ The actual proposal was rejected as a duplicate, so no development or candidate
 lock occurred. See the [Mini execution record](../research/evaluations/mini_requirements_20261009/REPORT.md).
 Replays remain available. Further inference needs a new explicitly allocated
 step; unused money does not reopen this campaign's stopping rule.
+
+## Grounded contracts and corrected attempts (v3)
+
+New registrations default to `--contract-version 3`; old v1/v2 registrations and
+replays remain explicit. Research and Critic share an immutable `GROUNDING_CONTEXT`
+record. Source-coverage results include all prior signatures and authorized
+revision parents; released-evidence results include exact, scoped fact references.
+Both successful and negative released outcomes must be cited. The service rejects
+unknown facts, missing prior comparisons and aggregate-as-subset attribution.
+It does not certify arbitrary narrative claims.
+
+Same market idea does not mean same attempt. An operator can authorize a parent
+ID/hash and a scope-only correction through `revision_authorizations` in the
+frozen task. The agent uses `submit_contract_revision`; the service copies the
+parent's contract and applies only the authorized `broker_costs` scope change.
+A `revision_only` task cannot submit a different hypothesis. Each revision has a
+new run/draft ID and keeps its parent, family and consumed-window exposure.
+Operator admission can freeze and develop an eligible revision; a repeated idea
+without a valid revision link cannot claim newness. Decision/payoff changes need
+a separately reviewed hypothesis path. The implemented correction is deliberately
+limited to the observed cost-declaration defect.
+
+`correct-contract-review --decision /control/FILE.json` appends an operator-only
+annotation with exact draft and original-review hashes. It preserves the original
+output, consumes no new holdout and grants no admission. Annotated run reports
+show `REVIEW_REQUIRED` and the explanation. The first two attempts now carry the
+user-requested interpretation corrections in
+`configs/research/grounded_revisions.corrections.json`.
+
+Campaign `openai_grounded_revision_20261009` is limited to 19 runs and 41 calls,
+with a shared USD 2 ceiling: 18 process runs and one actual revision. It uses the
+explicit process profile `openai_mini_grounding_process.profile.json` (32,000
+request bytes, 2,048 output tokens) and revision profile
+`openai_mini_revision.profile.json` (five tool steps per role). The worst-case
+reservation is USD 1.985184. Prior reservations remain USD 25.107561, so this
+allocation stays within the original USD 50 authorization. Unused money does not
+extend the run limit. V3 process testing currently supports structured feedback
+only, using scoped facts; no-feedback comparison remains pending.
+
+The initial 19-run campaign is now exhausted. One separate engineering recovery,
+`openai_grounded_revision_recovery_20261009`, was declared after output truncation
+before submission. Its explicit profile raises output capacity to 8,192 tokens
+and limits request size to 72,000 bytes. Its reservation ceiling is USD 1.034184,
+from the remaining allowance of the same USD 2 step. It is also exhausted at one
+run. Original failures and calls remain counted; this is not automatic retry.
+
+The completed draft was initially rejected because Critic cited valid fact hashes
+where the checker recognized only source-record IDs. Policy
+`scoped_registry_references/1` now resolves exact, verified in-context facts as
+Critic references and continues rejecting unknown hashes. The original review
+is preserved with a `CITATION_NAMESPACE_DEFECT` annotation. Operator admission
+records a separate `CONTRACT_REVIEW_ASSESSMENT` using the unchanged proposal and
+critique; no additional model call is needed for deterministic reassessment.
+
+The corrected attempt was admitted and developed: 129 measurable anchors out of
+130, candidate accuracy 48.84% versus baseline 54.26%. Its candidate lock has
+`NO_INDEPENDENT_WINDOW`, no economic claim and no execution permission. Later
+prior-inventory views show operator/lock state alongside the original review
+and immutable commitment references. The entire step reserved USD 1.540033.
+See the [full execution record](../research/evaluations/grounded_revision_20261009/REPORT.md).
