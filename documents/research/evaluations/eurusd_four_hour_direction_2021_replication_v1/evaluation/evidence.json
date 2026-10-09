@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "hypothesis_id": "eurusd_four_hour_direction_2021_replication_v1",
+  "trial_id": "eurusd_four_hour_direction_2021_replication_v1:trial_1",
+  "evidence_mode": "retrospective_historical_simulation",
+  "economic_claim": "none_predictive_diagnostic_only",
+  "promotion_eligible": false,
+  "contract_sha256": "e0def15777b1a1317faf63eca4b68e7a6e6137346b0e32d60b7e18f3e7c85363",
+  "audit_manifest_sha256": "f3511928cf7ba8650b5c6f4536038322de3dc0bac6385411a943e3efb508d4c8",
+  "selection_sha256": "bcf54c45895bd314986a27203ef9919f71d43d32a0e8dc51091c65738185d4df",
+  "source_sha256": "446d6fd78f61ebb54af9b38c4c44b41273cdbda0fca73e28a6af06783a9e571f",
+  "evaluation_code_sha256": "a8bab47e07daac543b10d2a3ac870496a2d8ce7f77675eaf7edfe257a34afd56",
+  "validation_cases_file": "validation_cases.jsonl",
+  "validation_cases_sha256": "efd0f56ec8abf10b2751ec04dcd5e98f18b47d616f208da8a21a34a53ae1190c",
+  "related_trial_count": 1,
+  "validation": {
+    "scheduled_count": 783,
+    "measurable_count": 778,
+    "case_status_counts": {
+      "INPUT_MISSING": 3,
+      "MEASURABLE": 778,
+      "OUTCOME_MISSING": 2
+    },
+    "candidate_accuracy": 0.4717223650385604,
+    "baseline_accuracy": 0.493573264781491,
+    "paired_accuracy_difference": -0.021850899742930585,
+    "bootstrap_lower_bound": -0.06443298969072164,
+    "bootstrap_method": "utc_date_block_bootstrap",
+    "bootstrap_resamples": 10000,
+    "bootstrap_seed": 20261009,
+    "bootstrap_percentile": 5,
+    "bootstrap_percentile_convention": "nearest_rank",
+    "quarters": {
+      "2021Q1": {
+        "count": 189,
+        "candidate_accuracy": 0.5026455026455027,
+        "baseline_accuracy": 0.5185185185185185,
+        "paired_accuracy_difference": -0.015873015873015817
+      },
+      "2021Q2": {
+        "count": 195,
+        "candidate_accuracy": 0.4512820512820513,
+        "baseline_accuracy": 0.4461538461538462,
+        "paired_accuracy_difference": 0.00512820512820511
+      },
+      "2021Q3": {
+        "count": 198,
+        "candidate_accuracy": 0.46464646464646464,
+        "baseline_accuracy": 0.5252525252525253,
+        "paired_accuracy_difference": -0.06060606060606066
+      },
+      "2021Q4": {
+        "count": 196,
+        "candidate_accuracy": 0.46938775510204084,
+        "baseline_accuracy": 0.4846938775510204,
+        "paired_accuracy_difference": -0.015306122448979553
+      }
+    },
+    "forward_midquote_change_by_prediction": {
+      "PREDICT_UP": {
+        "count": 383,
+        "mean_midquote_change": "-0.00009900783289817232375979112272"
+      },
+      "PREDICT_NON_UP": {
+        "count": 395,
+        "mean_midquote_change": "-0.00001467088607594936708860759494"
+      }
+    },
+    "minimum_support_met": true,
+    "maximum_missingness_met": true
+  },
+  "gate_decision": "TEMPORAL_FAILED",
+  "failure_reason": "TEMPORAL_FAILURE",
+  "cost_stress": "not_applicable_no_trade",
+  "drawdown_and_tail_risk": "not_applicable_no_trade",
+  "calibration": "not_applicable_no_probability_output",
+  "evaluated_at_utc": "2026-10-09T17:51:06Z"
+}

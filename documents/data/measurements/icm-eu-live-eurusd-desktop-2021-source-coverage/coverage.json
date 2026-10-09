@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "measurement_type": "source_presence_without_research_outcomes",
+  "source_sha256": "446d6fd78f61ebb54af9b38c4c44b41273cdbda0fca73e28a6af06783a9e571f",
+  "source_bytes": 4734455043,
+  "start_inclusive_utc": "2021-01-01T00:00:00Z",
+  "end_exclusive_utc": "2022-01-01T00:00:00Z",
+  "rows_in_scope": 13412772,
+  "observed_utc_dates": 312,
+  "first_event_at_utc": "2021-01-03T22:01:00.160000Z",
+  "last_event_at_utc": "2021-12-31T18:59:55.152000Z",
+  "weekday_dates_without_rows": [
+    "2021-01-01"
+  ],
+  "identical_bid_ask_rows": 10714169,
+  "equal_timestamp_rows": 0,
+  "monthly_presence": {
+    "2021-01": {
+      "rows": 1317375,
+      "observed_utc_dates": 25
+    },
+    "2021-02": {
+      "rows": 1109265,
+      "observed_utc_dates": 24
+    },
+    "2021-03": {
+      "rows": 1420088,
+      "observed_utc_dates": 27
+    },
+    "2021-04": {
+      "rows": 1153495,
+      "observed_utc_dates": 26
+    },
+    "2021-05": {
+      "rows": 1093421,
+      "observed_utc_dates": 26
+    },
+    "2021-06": {
+      "rows": 1088850,
+      "observed_utc_dates": 26
+    },
+    "2021-07": {
+      "rows": 1105942,
+      "observed_utc_dates": 26
+    },
+    "2021-08": {
+      "rows": 834340,
+      "observed_utc_dates": 27
+    },
+    "2021-09": {
+      "rows": 990740,
+      "observed_utc_dates": 26
+    },
+    "2021-10": {
+      "rows": 989819,
+      "observed_utc_dates": 26
+    },
+    "2021-11": {
+      "rows": 1219744,
+      "observed_utc_dates": 26
+    },
+    "2021-12": {
+      "rows": 1089693,
+      "observed_utc_dates": 27
+    }
+  },
+  "contains_predictions_or_outcomes": false,
+  "source_id": "icm_eu_live_ACCOUNT_REDACTED_ctrader_desktop_server_ticks_20180522_20261008",
+  "source_file": "data/ctrader_tick_exports/desktop_reference/LedgerQuant.LiveCapture EURUSD t1 20180522-20261008.csv",
+  "source_contract_sha256": "edb0bf2a3fe9aade8170cd8bcdf08d85b50c921e8417446ccab5dd70b1eb77a8",
+  "measurement_code_sha256": "cc45889413b9458134550ee0608af3b0b5f5b01a3b2df48d135be36754c4e805",
+  "generated_at_utc": "2026-10-09T17:47:19Z"
+}

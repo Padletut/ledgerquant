@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "hypothesis_id": "eurusd_four_hour_direction_2021_replication_v1",
+  "trial_id": "eurusd_four_hour_direction_2021_replication_v1:trial_1",
+  "selection_status": "CANDIDATE_FROZEN",
+  "contract_sha256": "e0def15777b1a1317faf63eca4b68e7a6e6137346b0e32d60b7e18f3e7c85363",
+  "audit_manifest_sha256": "f3511928cf7ba8650b5c6f4536038322de3dc0bac6385411a943e3efb508d4c8",
+  "source_sha256": "446d6fd78f61ebb54af9b38c4c44b41273cdbda0fca73e28a6af06783a9e571f",
+  "selection_code_sha256": "a1b15d6b038f90e439e06c121d1dbe98eb7efa5e54e16ba5cc10824e2d24605a",
+  "candidate_rule": "prior_hour_midquote_momentum_sign",
+  "baseline_rule": "majority_development_target_class",
+  "baseline_class": "PREDICT_NON_UP",
+  "development_cases_file": "development_cases.jsonl",
+  "development_cases_sha256": "ceda859ed4f0bbac51216444395a032f58d674b816359a900123eafc2860982f",
+  "validation_predictions_file": "validation_predictions.jsonl",
+  "validation_predictions_sha256": "26c9b2ec5fad11b4f32260b60c00550ebf1c54194087120a638a5c17e39fd871",
+  "development_summary": {
+    "scheduled_count": 390,
+    "measurable_count": 386,
+    "target_counts": {
+      "PREDICT_NON_UP": 196,
+      "PREDICT_UP": 190
+    },
+    "candidate_accuracy": 0.5310880829015544,
+    "baseline_accuracy": 0.5077720207253886,
+    "data_sufficiency_gates": {
+      "minimum_eligible_anchors_met": true,
+      "maximum_unmeasurable_fraction_met": true
+    }
+  },
+  "validation_prediction_count": 783,
+  "selected_at_utc": "2026-10-09T17:50:20Z",
+  "contains_validation_outcomes": false
+}

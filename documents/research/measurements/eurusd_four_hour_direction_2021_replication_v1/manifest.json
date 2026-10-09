@@ -1,0 +1,137 @@
+{
+  "schema_version": 1,
+  "audit_version": 1,
+  "hypothesis_id": "eurusd_four_hour_direction_2021_replication_v1",
+  "evidence_mode": "retrospective_historical_simulation",
+  "contract_sha256": "e0def15777b1a1317faf63eca4b68e7a6e6137346b0e32d60b7e18f3e7c85363",
+  "freeze_sha256": "33175ab234d7217acc02ae3a7a1ffd544431490094223ecff16788c0391705e4",
+  "audit_code_sha256": "ab8b4b604ae9f821da7869c85949c9987574d8969c298a7c9ccacbfa5f73ab8c",
+  "source_id": "icm_eu_live_ACCOUNT_REDACTED_ctrader_desktop_server_ticks_20180522_20261008",
+  "instrument": "EURUSD",
+  "source_sha256": "446d6fd78f61ebb54af9b38c4c44b41273cdbda0fca73e28a6af06783a9e571f",
+  "source_bytes": 4734455043,
+  "source_rows_in_scope": 30917122,
+  "source_scan_start_inclusive_utc": "2020-01-01T00:00:00Z",
+  "source_scan_end_exclusive_utc": "2022-01-01T00:00:00Z",
+  "decision_inputs_file": "decision_inputs.jsonl",
+  "decision_inputs_sha256": "b131cb28023ecd39e20a21bfd38c23ea722122f9f648f01ab872f4902fd4dc02",
+  "case_eligibility_file": "case_eligibility.jsonl",
+  "case_eligibility_sha256": "bd59c3d88beceb134d7782112d24123ea3d1bc73626848917b110df5b2eb43c1",
+  "case_count": 1173,
+  "counts_by_window": {
+    "development": {
+      "MEASURABLE": 386,
+      "INPUT_MISSING": 4,
+      "OUTCOME_MISSING": 0
+    },
+    "validation": {
+      "MEASURABLE": 778,
+      "INPUT_MISSING": 3,
+      "OUTCOME_MISSING": 2
+    }
+  },
+  "counts_by_month": {
+    "2020-01": {
+      "MEASURABLE": 65,
+      "INPUT_MISSING": 4,
+      "OUTCOME_MISSING": 0
+    },
+    "2020-02": {
+      "MEASURABLE": 60,
+      "INPUT_MISSING": 0,
+      "OUTCOME_MISSING": 0
+    },
+    "2020-03": {
+      "MEASURABLE": 66,
+      "INPUT_MISSING": 0,
+      "OUTCOME_MISSING": 0
+    },
+    "2020-04": {
+      "MEASURABLE": 66,
+      "INPUT_MISSING": 0,
+      "OUTCOME_MISSING": 0
+    },
+    "2020-05": {
+      "MEASURABLE": 63,
+      "INPUT_MISSING": 0,
+      "OUTCOME_MISSING": 0
+    },
+    "2020-06": {
+      "MEASURABLE": 66,
+      "INPUT_MISSING": 0,
+      "OUTCOME_MISSING": 0
+    },
+    "2021-01": {
+      "MEASURABLE": 60,
+      "INPUT_MISSING": 3,
+      "OUTCOME_MISSING": 0
+    },
+    "2021-02": {
+      "MEASURABLE": 60,
+      "INPUT_MISSING": 0,
+      "OUTCOME_MISSING": 0
+    },
+    "2021-03": {
+      "MEASURABLE": 69,
+      "INPUT_MISSING": 0,
+      "OUTCOME_MISSING": 0
+    },
+    "2021-04": {
+      "MEASURABLE": 66,
+      "INPUT_MISSING": 0,
+      "OUTCOME_MISSING": 0
+    },
+    "2021-05": {
+      "MEASURABLE": 63,
+      "INPUT_MISSING": 0,
+      "OUTCOME_MISSING": 0
+    },
+    "2021-06": {
+      "MEASURABLE": 66,
+      "INPUT_MISSING": 0,
+      "OUTCOME_MISSING": 0
+    },
+    "2021-07": {
+      "MEASURABLE": 66,
+      "INPUT_MISSING": 0,
+      "OUTCOME_MISSING": 0
+    },
+    "2021-08": {
+      "MEASURABLE": 66,
+      "INPUT_MISSING": 0,
+      "OUTCOME_MISSING": 0
+    },
+    "2021-09": {
+      "MEASURABLE": 66,
+      "INPUT_MISSING": 0,
+      "OUTCOME_MISSING": 0
+    },
+    "2021-10": {
+      "MEASURABLE": 63,
+      "INPUT_MISSING": 0,
+      "OUTCOME_MISSING": 0
+    },
+    "2021-11": {
+      "MEASURABLE": 66,
+      "INPUT_MISSING": 0,
+      "OUTCOME_MISSING": 0
+    },
+    "2021-12": {
+      "MEASURABLE": 67,
+      "INPUT_MISSING": 0,
+      "OUTCOME_MISSING": 2
+    }
+  },
+  "data_sufficiency_gates": {
+    "development": {
+      "minimum_eligible_anchors_met": true,
+      "maximum_unmeasurable_fraction_met": true
+    },
+    "validation": {
+      "minimum_eligible_anchors_met": true,
+      "maximum_unmeasurable_fraction_met": true
+    }
+  },
+  "contains_predictions_or_outcome_prices": false,
+  "generated_at_utc": "2026-10-09T17:49:49Z"
+}
