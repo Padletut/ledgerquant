@@ -2,7 +2,7 @@
 
 **Date:** 09 October 2026
 
-**Status:** Bounded EURUSD and GBPUSD server-tick exports exist, and EURUSD CLI rows match cTrader Desktop in sampled windows. EURUSD has 2020 daily-presence measurements; GBPUSD has January daily-presence measurements. Five EURUSD pauses of at least ten minutes remain schedule-unverified, and broker quote/cost semantics remain open. These source facts do not determine whether every proposed hypothesis needs complete tick coverage. No Research Kernel or certified economic research result exists yet.
+**Status:** Bounded EURUSD and GBPUSD server-tick exports exist, and EURUSD CLI rows match cTrader Desktop in sampled windows. EURUSD has 2020 daily-presence measurements; GBPUSD has January daily-presence measurements. Five EURUSD pauses of at least ten minutes remain schedule-unverified, and broker quote/cost semantics remain open. A first EURUSD price-direction diagnostic has an offline frozen contract; its source view, case audit and independent evaluation have not been built. No Research Kernel or certified economic research result exists yet.
 
 This plan starts with broker-data evidence. The initial **source measurement** scope is IC Markets EU live account ACCOUNT_REDACTED, EURUSD and GBPUSD, from 2020 onward. It does not force every hypothesis to use both pairs or every tick. Each hypothesis freezes its own instrument universe and required information before independent validation. Other accounts, symbols and asset classes enter only after separate source checks. The target architecture and authority boundaries remain in [ARCHITECTURE.md](../ARCHITECTURE.md); measured source limits remain in [DATA_AVAILABILITY.md](../data/DATA_AVAILABILITY.md).
 
@@ -19,6 +19,8 @@ This stage produces a versioned source inventory with hashes, coverage intervals
 ## 2. Freeze the hypothesis and data-sufficiency policy
 
 Before independent validation, register the decision, event-selection rule, feature/source, payoff, cost, development and validation windows, instruments, minimum support, success/failure gates and trial budget. Generate the event candidate set from the frozen source and selection rule without consulting future price outcomes. Freeze a `data_sufficiency_policy` with requirements for three different roles:
+
+The first bounded contract is [EURUSD four-hour direction, 2020 v1](hypotheses/eurusd_four_hour_direction_2020_v1.json), with a separate [content-hash freeze record](hypotheses/eurusd_four_hour_direction_2020_v1.freeze.json). It fixes one deterministic prior-hour momentum question, January–June development, July–December validation, a development-frozen constant-direction baseline, source and quote sampling rules, missing-case handling, minimum support and a paired uncertainty gate. Its claim is **predictive only**: no order is placed and no net-payoff or promotion conclusion is permitted. The freeze record is an offline preregistration artifact, not the future research registry or an evaluation result. The next gate is to verify the source artifact and materialize every scheduled anchor with its input and settlement eligibility without inspecting validation performance.
 
 | Data role | Required declaration | What makes a case ineligible or uncertain |
 | --- | --- | --- |
