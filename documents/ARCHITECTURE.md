@@ -2,9 +2,9 @@
 
 **Date:** 09.10.2026
 
-**Version:** 2.9.3
+**Version:** 2.10.1
 
-**Status:** Target architecture; implemented bootstrap comprises the read-only history probe, the bounded historical tick exporter and the isolated live-capture stack described in Section 4.2, plus the offline EURUSD research case audits, candidate freezes and historical validations described in Section 6.1
+**Status:** Target architecture with implemented live capture, offline EURUSD diagnostics and the bounded Research/Critic bootstrap described in Section 6.1. Broad discovery, independent new validation, promotion, trading agents and the operational frontend remain target state.
 
 ## 1. Purpose and design rules
 
@@ -314,6 +314,12 @@ The design freeze fixes the permitted development problem and search policy; a l
 
 The implemented offline bootstrap in `src/ledgerquant/research/` audits frozen EURUSD price-direction diagnostics. It verifies the contract and source hashes, streams the operator-confirmed cTrader Desktop CSV, validates quote order and fields, generates calendar anchors before assigning source rows, and publishes decision inputs with midquotes and source references, plus separate evaluator-facing settlement-presence metadata. These artifacts are hashed and retain every scheduled anchor; neither contains predictions, settlement prices or payoff measurements. A development-only selection step then records every development case, freezes the constant-direction baseline and all validation predictions, and publishes a hashed selection record before the offline evaluator resolves validation outcomes. The evaluator publishes hashed case-level evidence and the frozen predictive gate decision. The original July–December 2020 diagnostic narrowly passed its predictive gate; a child contract with the same rule failed full-year 2021 temporal validation. Both outcomes remain visible. This is a logical phase boundary in one local repository: the raw CSV remains accessible, so it is not enforced holdout access isolation, a production evidence registry or a complete Research Kernel. Source visibility remains retrospective, and no execution-cost or promotion claim follows from either result. The [plan and measured evaluations](research/RESEARCH_KERNEL_PLAN.md) describe the exact scope and limitations.
 
+The bounded agent bootstrap now adds an append-only PostgreSQL `research` schema, immutable agent/model bindings, transactional campaign reservations and six scoped application tools. A one-shot Compose worker runs Research and then a fresh-context Critic against released evidence and a registered development snapshot. The worker has no raw CSV mount, capture-table access, evidence-write permission or freeze/promotion permission. The operator imports the exact 2020/2021 artifacts and separately admits or rejects a draft. Design freeze precedes the catalog development calculation; candidate lock follows it. No newly allocated independent validation storage or evaluator service exists yet. See the [research operations guide](operations/RESEARCH.md).
+
+The initial executable catalog is `eurusd_direction/1`: EURUSD, the existing one-hour momentum-sign rule, four-hour target, weekday subsets of 08:00/12:00/16:00 UTC and January–June 2020 development. It retains holidays and missing anchors, fits the majority baseline only on selected development cases and prohibits orders. Its minimum 100 eligible anchors is an explicit technical sufficiency rule for hour subsets; it does not change either legacy hypothesis's 250-case validation gate or create a new significance gate. All variants inherit the existing family's consumed-window exposure. Unsupported horizons, sources and executable economic payoffs require a new reviewed catalog implementation.
+
+OpenAI Responses is the first implemented generation adapter. The current user-selected default is `gpt-5.4-mini` with medium reasoning, configured by the immutable profile in `configs/research/openai_gpt54_mini.profile.json` and mounted into the Compose research jobs. Explicit profile overrides must match the registered agent versions. The initial `gpt-6-astra` profile and results remain historical records. Both profiles use the same typed tools, exact request/response recording and mandatory per-run capability probe; no retry or model fallback is implicit. The model change does not reopen the exhausted 40-run campaign or reset its USD 50 budget. The API's returned model identity is recorded, but it does not prove immutable hosted weights. The finite process suite compares contract triage by a single agent, Research plus Critic and a fixed checklist, separately with and without structured registry feedback. Its synthetic contract tasks do not establish open-ended discovery ability or economic value. [First-run evidence](research/evaluations/agent_loop_bootstrap_20261009/REPORT.md)
+
 ### 6.2 Structured evidence registry
 
 The evidence registry stores typed, queryable facts rather than treating a narrative report or embedding as the result. A complete hypothesis view exposes at least:
@@ -466,7 +472,7 @@ Read models support pagination, filtering and stable sorting. Live updates carry
 
 ## 11. Repository and module layout
 
-The following is the **target layout**, not a claim about files already implemented. The implemented bootstrap currently occupies `src/ledgerquant/capture/`, `cbots/LedgerQuant.LiveCapture/`, `deploy/compose.yaml` and `migrations/`:
+The following is the **target layout**, not a claim that every directory exists. Implemented packages include capture, offline research, the bounded agent runtime, model profiles and the OpenAI provider adapter. Directories are added only with an implemented responsibility:
 
 ```text
 documents/
@@ -477,10 +483,12 @@ documents/
     measurements/             # retained probe logs
   operations/
     CAPTURE.md                # live-capture bootstrap runbook
+    RESEARCH.md               # bounded agent registry and execution runbook
   research/
     RESEARCH_KERNEL_PLAN.md   # data-first implementation sequence
   decisions/                  # architecture decisions and migrations of intent
 contracts/                    # OpenAPI, events and broker wire schemas
+configs/research/             # actual versioned model, budget, task and suite inputs
 src/ledgerquant/
   api/                        # HTTP/stream adapters, request/response schemas
   agents/                     # definitions, capabilities, runner, validation
@@ -530,6 +538,7 @@ cbots/
   LedgerQuant.LiveCapture/     # current sentiment and optional live tick capture
 deploy/
   compose.yaml                # current bootstrap; full stack remains a target
+  compose.research.yaml        # isolated operator and one-shot research workers
   Caddyfile.capture           # bootstrap HTTPS ingress for remote Desktop capture
 migrations/                   # ordered database migrations
 tests/

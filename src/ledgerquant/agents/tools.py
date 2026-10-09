@@ -1,0 +1,136 @@
+"""Six bounded research operations; authorization is independent of model text."""
+
+import json
+
+from pydantic import Field, ValidationError
+from sqlalchemy import func, select
+
+from ledgerquant.research import tables as t
+from ledgerquant.research.catalog import classify
+from ledgerquant.research.proposals import Critique, Proposal, review
+from ledgerquant.research.registry import RegistryError, append, artifact, now, value
+from ledgerquant.research.types import Record, digest
+
+
+class Empty(Record):
+    pass
+
+
+class Page(Record):
+    offset: int = Field(default=0, ge=0, le=10000)
+    limit: int = Field(default=10, ge=1, le=20)
+
+
+OPERATIONS = {
+    "read_source_coverage": (Empty, {"research", "critic"}, "Read catalog, source provenance, limits and family counts."),
+    "read_released_evidence": (Empty, {"research", "critic"}, "Read both released prior outcomes, including failures."),
+    "read_development_snapshot": (Page, {"research", "critic"}, "Read a bounded page from the permitted development view."),
+    "submit_hypothesis_draft": (Proposal, {"research"}, "Submit the one typed proposal. This does not freeze or approve it."),
+    "submit_critique": (Critique, {"critic"}, "Submit one critique of the supplied exact draft."),
+    "request_contract_review": (Empty, {"research", "critic"}, "Request deterministic checks; operator admission remains separate."),
+}
+REQUIRED_READS = {"read_source_coverage", "read_released_evidence", "read_development_snapshot"}
+
+
+def schemas(role):
+    return [{"name": name, "description": description, "parameters": schema.model_json_schema()}
+            for name, (schema, roles, description) in OPERATIONS.items() if role in roles]
+
+
+class ResearchTools:
+    def __init__(self, registry, run_id, role):
+        if role not in {"research", "critic"}:
+            raise RegistryError("unknown agent role")
+        self.registry, self.run_id, self.role = registry, run_id, role
+        run = registry.get(t.runs, run_id)
+        snapshot = registry.get(t.snapshots, run["snapshot_id"])
+        self.manifest = registry.read(snapshot["manifest_id"])
+        self.reads = set()
+        self.submitted = False
+
+    def execute(self, invocation_id, name, arguments):
+        invocation = self.registry.get(t.invocations, invocation_id)
+        run = self.registry.get(t.runs, self.run_id)
+        if invocation["run_id"] != self.run_id or invocation["agent_version"] != run[f"{self.role}_version"]:
+            raise RegistryError("TOOL_CALLER_MISMATCH")
+        allowed = name in OPERATIONS and self.role in OPERATIONS[name][1]
+        with self.registry.engine.begin() as c:
+            try:
+                with c.begin_nested():
+                    if not allowed:
+                        raise RegistryError("ROLE_DENIED")
+                    parsed = OPERATIONS[name][0].model_validate(arguments)
+                    result = self._perform(name, parsed, c)
+            except (ValidationError, RegistryError, ValueError) as exc:
+                result = {"error": "INVALID_ARGUMENT" if isinstance(exc, ValidationError) else str(exc)}
+            self.registry.record_tool(self.run_id, invocation_id, self.role, name, arguments, result, allowed, c)
+        if name in REQUIRED_READS and "error" not in result:
+            self.reads.add(name)
+        return result
+
+    def _released(self, c):
+        invalid = set(c.execute(select(t.evidence_events.c.evidence_id)
+                               .where(t.evidence_events.c.kind == "INVALIDATED")).scalars())
+        return {key: value(c, artifact_id) for key, artifact_id in self.manifest["evidence"].items() if key not in invalid}
+
+    def _perform(self, name, arguments, connection=None):
+        if connection is None:
+            with self.registry.engine.begin() as c:
+                return self._perform(name, arguments, c)
+        return self._perform_in_transaction(connection, name, arguments)
+
+    def _perform_in_transaction(self, c, name, arguments):
+        if name == "read_source_coverage":
+            attempts = c.execute(select(t.drafts.c.id).where(t.drafts.c.family_id == self.manifest["family_id"])).all()
+            # This slice accepts only this one family. Count dispatched,
+            # malformed, interrupted and rejected runs, not just drafts.
+            run_count = c.execute(select(func.count()).select_from(t.runs)).scalar_one()
+            return {"catalog": self.manifest["catalog"], "source": self.manifest["source"],
+                    "family_id": self.manifest["family_id"], "legacy_attempts": self.manifest["historical_attempt_count"],
+                    "recorded_runs": run_count, "recorded_drafts": len(attempts),
+                    "total_family_attempts": self.manifest["historical_attempt_count"] + run_count}
+        if name == "read_released_evidence":
+            evidence = self._released(c)
+            return {"evidence": evidence, "invalidated_ids": sorted(set(self.manifest["evidence"]) - set(evidence)),
+                    "all_windows_consumed": True}
+        if name == "read_development_snapshot":
+            if len(self._released(c)) != len(self.manifest["evidence"]):
+                raise RegistryError("SOURCE_REVIEW_REQUIRED")
+            snapshot = value(c, self.manifest["development_id"])
+            cases = snapshot["cases"]
+            return {"artifact_id": self.manifest["development_id"], "evidence_mode": "development",
+                    "start": snapshot["start_inclusive_utc"], "end": snapshot["end_exclusive_utc"],
+                    "total_cases": len(cases), "offset": arguments.offset,
+                    "cases": cases[arguments.offset:arguments.offset + arguments.limit]}
+        if name.startswith("submit_") and not REQUIRED_READS <= self.reads:
+            raise RegistryError("REQUIRED_EVIDENCE_NOT_READ")
+        if name == "submit_hypothesis_draft":
+            family, loop, signature = classify(arguments.diagnostic)
+            key = artifact(c, arguments)
+            row = append(c, t.drafts, {"id": self.run_id, "run_id": self.run_id, "family_id": family,
+                                       "signature": signature, "artifact_id": key, "created_at": now()})
+            self.submitted = True
+            return {"draft_id": row["id"], "draft_sha256": key, "status": "PROPOSED", "loop": loop}
+        draft = c.execute(select(t.drafts).where(t.drafts.c.run_id == self.run_id)).mappings().one_or_none()
+        if draft is None:
+            raise RegistryError("DRAFT_NOT_SUBMITTED")
+        if name == "submit_critique":
+            if arguments.draft_sha256 != draft["artifact_id"]:
+                raise RegistryError("DRAFT_HASH_MISMATCH")
+            append(c, t.critiques, {"id": draft["id"], "draft_id": draft["id"],
+                                    "artifact_id": artifact(c, arguments), "created_at": now()})
+            self.submitted = True
+            return {"critique_id": draft["id"], "status": "CRITIQUE_RECORDED"}
+        critique = c.execute(select(t.critiques).where(t.critiques.c.draft_id == draft["id"])).mappings().one_or_none()
+        if critique is None:
+            return {"status": "AWAITING_CRITIQUE"}
+        known = set(c.execute(select(t.drafts.c.signature).where(t.drafts.c.id != draft["id"])).scalars())
+        decision = review(Proposal.model_validate(value(c, draft["artifact_id"])),
+                          Critique.model_validate(value(c, critique["artifact_id"])), set(self._released(c)), known)
+        return decision.model_dump(mode="json")
+
+    def review(self):
+        """The trusted scheduler requests review without impersonating a model call."""
+        result = self._perform("request_contract_review", Empty())
+        self.registry.event(self.run_id, "CONTRACT_REVIEW", result)
+        return result

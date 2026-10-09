@@ -1,0 +1,264 @@
+{
+  "manifest_sha256": "a9c3d2ffe1bb8a14002372601720d82f8dbdf5985d2755e4457f097bbcc0a4db",
+  "scope": "Three corrective smoke checks on exposed tasks; not a replacement benchmark or new holdout.",
+  "reference_matches": 3,
+  "runs": [
+    {
+      "task": {
+        "arm": "single",
+        "case_id": "bounded_variant",
+        "context_revision": "exact_diagnostic_identity/2",
+        "economic_evaluation": false,
+        "evidence_mode": "correction_on_exposed_process_tasks",
+        "feedback": "structured",
+        "parent_suite_sha256": "07cae64f35382811d907b12b38ed89b4b7d55a03ddb2a37b286b6915e37b245a",
+        "proposal": {
+          "admissibility_probability": 0.5,
+          "contrary_evidence": [
+            "The earlier full-day rule failed temporal validation."
+          ],
+          "data_requirements": [],
+          "diagnostic": {
+            "hours_utc": [
+              8
+            ]
+          },
+          "evidence_ids": [
+            "eurusd_four_hour_direction_2021_replication_v1"
+          ],
+          "falsifier": "No improvement against the frozen baseline on new evidence.",
+          "mechanism": "Test whether the registered price rule differs by decision hour.",
+          "predicted_failure": "TEMPORAL_FAILURE",
+          "support": [
+            "The released rule did not transport to 2021."
+          ],
+          "title": "bounded_variant"
+        },
+        "repetition": 0,
+        "split": "audit",
+        "suite_sha256": "a9c3d2ffe1bb8a14002372601720d82f8dbdf5985d2755e4457f097bbcc0a4db"
+      },
+      "run_id": "d754fc67-5a1d-4a7e-a3c0-68b4c654bab8",
+      "events": [
+        {
+          "kind": "CAPABILITY_VERIFIED",
+          "detail": {
+            "capability": "bounded_typed_function_calling",
+            "does_not_certify": [
+              "factual_correctness",
+              "calibration",
+              "economic_value"
+            ],
+            "invocation_id": "28ddc8b2-ad30-4a4f-bfaf-69df27f321ca",
+            "model_profile_sha256": "d942a79610562abf8b510f47de0881cf78905f134cdc0ae7c5623b20e94abee7"
+          }
+        },
+        {
+          "kind": "PROCESS_RESULT",
+          "detail": {
+            "answer": {
+              "confidence": 0.99,
+              "disposition": "REVIEW",
+              "explanation": "Applying the proposal defaults, the diagnostic retains the catalog's EURUSD instrument, momentum rule, lookback, horizon, version, and prohibition on orders, with hours_utc restricted to the permitted hour [8]. Its complete hours array differs from the known diagnostic's [8,12,16], so it is a related new variant rather than an exact duplicate. The cited 2021 replication evidence ID is known, and no explicit unavailable source requirement is present. The full-hours rule's temporal failure does not establish failure of this hour-specific variant. Review is exploratory only under the catalog's no-independent-window policy, not a confirmatory pass, admission, or economic evidence.",
+              "reasons": [
+                "SUPPORTED_CATALOG"
+              ]
+            },
+            "authority": "process_assessment_only",
+            "evaluator_measurement": false,
+            "research_answer": {
+              "confidence": 0.99,
+              "disposition": "REVIEW",
+              "explanation": "Applying the proposal defaults, the diagnostic retains the catalog's EURUSD instrument, momentum rule, lookback, horizon, version, and prohibition on orders, with hours_utc restricted to the permitted hour [8]. Its complete hours array differs from the known diagnostic's [8,12,16], so it is a related new variant rather than an exact duplicate. The cited 2021 replication evidence ID is known, and no explicit unavailable source requirement is present. The full-hours rule's temporal failure does not establish failure of this hour-specific variant. Review is exploratory only under the catalog's no-independent-window policy, not a confirmatory pass, admission, or economic evidence.",
+              "reasons": [
+                "SUPPORTED_CATALOG"
+              ]
+            }
+          }
+        }
+      ],
+      "reserved_micro_usd": 636225,
+      "input_tokens": 2604,
+      "output_tokens": 195,
+      "current_integrity": {
+        "status": "UNCHANGED",
+        "invalidated_dependencies": []
+      },
+      "reference_match": true
+    },
+    {
+      "task": {
+        "arm": "critic",
+        "case_id": "bounded_variant",
+        "context_revision": "exact_diagnostic_identity/2",
+        "economic_evaluation": false,
+        "evidence_mode": "correction_on_exposed_process_tasks",
+        "feedback": "structured",
+        "parent_suite_sha256": "07cae64f35382811d907b12b38ed89b4b7d55a03ddb2a37b286b6915e37b245a",
+        "proposal": {
+          "admissibility_probability": 0.5,
+          "contrary_evidence": [
+            "The earlier full-day rule failed temporal validation."
+          ],
+          "data_requirements": [],
+          "diagnostic": {
+            "hours_utc": [
+              8
+            ]
+          },
+          "evidence_ids": [
+            "eurusd_four_hour_direction_2021_replication_v1"
+          ],
+          "falsifier": "No improvement against the frozen baseline on new evidence.",
+          "mechanism": "Test whether the registered price rule differs by decision hour.",
+          "predicted_failure": "TEMPORAL_FAILURE",
+          "support": [
+            "The released rule did not transport to 2021."
+          ],
+          "title": "bounded_variant"
+        },
+        "repetition": 0,
+        "split": "audit",
+        "suite_sha256": "a9c3d2ffe1bb8a14002372601720d82f8dbdf5985d2755e4457f097bbcc0a4db"
+      },
+      "run_id": "c19fe5f5-16b3-43f2-bb9a-5f82d6199499",
+      "events": [
+        {
+          "kind": "CAPABILITY_VERIFIED",
+          "detail": {
+            "capability": "bounded_typed_function_calling",
+            "does_not_certify": [
+              "factual_correctness",
+              "calibration",
+              "economic_value"
+            ],
+            "invocation_id": "4b8bee3d-67f4-4e4b-8500-3a295ea7eff8",
+            "model_profile_sha256": "d942a79610562abf8b510f47de0881cf78905f134cdc0ae7c5623b20e94abee7"
+          }
+        },
+        {
+          "kind": "PROCESS_RESULT",
+          "detail": {
+            "answer": {
+              "confidence": 0.99,
+              "disposition": "REVIEW",
+              "explanation": "Independent critic review supports REVIEW. With the supplied defaults, this is the catalog-supported EURUSD momentum diagnostic restricted to the permitted hour [8], retaining its four-hour horizon, one-hour lookback and no-orders restriction. Its complete hours array differs from [8,12,16], so it is a related variant, not an exact duplicate. The cited 2021 replication evidence ID is known. No explicit unavailable source requirement is present; data_requirements is empty. The supplied temporal failure concerns the earlier aggregate diagnostic and does not establish an hour-specific result for this variant. Conversely, the variant has no demonstrated improvement or independent validation in the supplied evidence. Review must remain exploratory under NO_INDEPENDENT_WINDOW and the one-candidate, no-optimization policy. This is a process classification only, not admission, evidence of predictive success, or economic validation.",
+              "reasons": [
+                "SUPPORTED_CATALOG"
+              ]
+            },
+            "authority": "process_assessment_only",
+            "evaluator_measurement": false,
+            "research_answer": {
+              "confidence": 0.99,
+              "disposition": "REVIEW",
+              "explanation": "Applying proposal defaults, the diagnostic retains the catalog's EURUSD instrument, candidate rule, four-hour horizon, one-hour lookback and no-orders restriction, with hours_utc overridden to [8], a permitted hour. The complete hours array differs from the known diagnostic's [8,12,16], so this is a related variant rather than an exact duplicate. The cited 2021 replication evidence ID is known, and data_requirements is empty, with no explicit unavailable source requirement. The earlier diagnostic's temporal failure does not establish failure of this hour-specific variant. Review is exploratory only under NO_INDEPENDENT_WINDOW; this process assessment is neither admission nor predictive or economic validation.",
+              "reasons": [
+                "SUPPORTED_CATALOG"
+              ]
+            }
+          }
+        }
+      ],
+      "reserved_micro_usd": 1018813,
+      "input_tokens": 5221,
+      "output_tokens": 406,
+      "current_integrity": {
+        "status": "UNCHANGED",
+        "invalidated_dependencies": []
+      },
+      "reference_match": true
+    },
+    {
+      "task": {
+        "arm": "single",
+        "case_id": "missing_news",
+        "context_revision": "exact_diagnostic_identity/2",
+        "economic_evaluation": false,
+        "evidence_mode": "correction_on_exposed_process_tasks",
+        "feedback": "structured",
+        "parent_suite_sha256": "07cae64f35382811d907b12b38ed89b4b7d55a03ddb2a37b286b6915e37b245a",
+        "proposal": {
+          "admissibility_probability": 0.5,
+          "contrary_evidence": [
+            "The earlier full-day rule failed temporal validation."
+          ],
+          "data_requirements": [
+            {
+              "reactivation_condition": "Register a PIT news source and a reviewed event-conditioned catalog.",
+              "reason": "Event conditioning requires timestamped source observations.",
+              "source": "raw_news"
+            }
+          ],
+          "diagnostic": {
+            "hours_utc": [
+              12
+            ]
+          },
+          "evidence_ids": [
+            "eurusd_four_hour_direction_2021_replication_v1"
+          ],
+          "falsifier": "No improvement against the frozen baseline on new evidence.",
+          "mechanism": "Test whether the registered price rule differs by decision hour.",
+          "predicted_failure": "TEMPORAL_FAILURE",
+          "support": [
+            "The released rule did not transport to 2021."
+          ],
+          "title": "missing_news"
+        },
+        "repetition": 0,
+        "split": "audit",
+        "suite_sha256": "a9c3d2ffe1bb8a14002372601720d82f8dbdf5985d2755e4457f097bbcc0a4db"
+      },
+      "run_id": "34a456c1-eb94-4f0f-8f57-7fe30b128411",
+      "events": [
+        {
+          "kind": "CAPABILITY_VERIFIED",
+          "detail": {
+            "capability": "bounded_typed_function_calling",
+            "does_not_certify": [
+              "factual_correctness",
+              "calibration",
+              "economic_value"
+            ],
+            "invocation_id": "bc25edf2-3054-40ba-bda3-ec4106e6078b",
+            "model_profile_sha256": "d942a79610562abf8b510f47de0881cf78905f134cdc0ae7c5623b20e94abee7"
+          }
+        },
+        {
+          "kind": "PROCESS_RESULT",
+          "detail": {
+            "answer": {
+              "confidence": 0.97,
+              "disposition": "BLOCKED_DATA_REQUIREMENT",
+              "explanation": "Applying the proposal defaults, the diagnostic is the registered EURUSD prior-hour midquote momentum rule with a four-hour horizon, no orders, and hours_utc [12]. This is a supported hour subset and is not an exact duplicate of [8,12,16]. The cited 2021 replication evidence ID is known. However, the proposal explicitly requires raw_news and identifies registration of a PIT news source and a reviewed event-conditioned catalog as its reactivation condition, so it is blocked on that unavailable source requirement. This does not authorize event conditioning under the current catalog. The source gap is not a measured economic failure, and the earlier rule's temporal failure does not establish failure of this hour-specific variant. This is a process-test classification only, not admission or new evidence.",
+              "reasons": [
+                "SUPPORTED_CATALOG",
+                "SOURCE_UNAVAILABLE"
+              ]
+            },
+            "authority": "process_assessment_only",
+            "evaluator_measurement": false,
+            "research_answer": {
+              "confidence": 0.97,
+              "disposition": "BLOCKED_DATA_REQUIREMENT",
+              "explanation": "Applying the proposal defaults, the diagnostic is the registered EURUSD prior-hour midquote momentum rule with a four-hour horizon, no orders, and hours_utc [12]. This is a supported hour subset and is not an exact duplicate of [8,12,16]. The cited 2021 replication evidence ID is known. However, the proposal explicitly requires raw_news and identifies registration of a PIT news source and a reviewed event-conditioned catalog as its reactivation condition, so it is blocked on that unavailable source requirement. This does not authorize event conditioning under the current catalog. The source gap is not a measured economic failure, and the earlier rule's temporal failure does not establish failure of this hour-specific variant. This is a process-test classification only, not admission or new evidence.",
+              "reasons": [
+                "SUPPORTED_CATALOG",
+                "SOURCE_UNAVAILABLE"
+              ]
+            }
+          }
+        }
+      ],
+      "reserved_micro_usd": 638713,
+      "input_tokens": 2636,
+      "output_tokens": 255,
+      "current_integrity": {
+        "status": "UNCHANGED",
+        "invalidated_dependencies": []
+      },
+      "reference_match": true
+    }
+  ]
+}

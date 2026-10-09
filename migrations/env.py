@@ -1,13 +1,14 @@
-"""Alembic environment for the initial market capture schema."""
+"""Alembic environment for market capture and bounded research schemas."""
 
 from alembic import context
 from sqlalchemy import create_engine
 
 from ledgerquant.capture.settings import database_url_from_environment
 from ledgerquant.capture.storage import metadata
+from ledgerquant.research.tables import metadata as research_metadata
 
 
-target_metadata = metadata
+target_metadata = [metadata, research_metadata]
 
 
 def run_migrations_online() -> None:

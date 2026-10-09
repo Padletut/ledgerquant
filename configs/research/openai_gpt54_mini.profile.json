@@ -1,0 +1,16 @@
+{
+  "provider": "openai",
+  "endpoint": "https://api.openai.com/v1/responses",
+  "model": "gpt-5.4-mini",
+  "max_output_tokens": 4096,
+  "max_request_bytes": 80000,
+  "timeout_seconds": 180,
+  "max_steps_per_agent": 6,
+  "reasoning_effort": "medium",
+  "input_usd_per_million": 0.75,
+  "cache_write_usd_per_million": 0,
+  "output_usd_per_million": 4.5,
+  "max_run_usd": 12,
+  "price_basis": "OpenAI standard pricing checked 2026-10-09: https://developers.openai.com/api/docs/models/gpt-5.4-mini; cached input is USD 0.075/M but reservations charge all input at USD 0.75/M; no separate cache-write charge is listed; no built-in tools or regional processing.",
+  "knowledge_exposure": "Published knowledge cutoff 2025-08-31. Training exposure to 2020/2021 is unknown; this is retrospective engineering research, not a clean historical LLM simulation."
+}

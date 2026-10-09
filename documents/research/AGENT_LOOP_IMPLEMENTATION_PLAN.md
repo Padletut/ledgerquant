@@ -2,9 +2,9 @@
 
 **Date:** 09 October 2026
 
-**Revision:** 1.1 — evidence-informed review; aligned with architecture 2.9.3.
+**Revision:** 1.2 — bounded implementation and first execution; aligned with architecture 2.10.1. The configured next-run model is now `gpt-5.4-mini`; historical Astra executions retain their original identities.
 
-**Status:** Implementation sequence for the first Research/Discovery–Critic workflow. No agent runtime, MCP server, structured research registry or enforced holdout boundary exists in the repository yet. The workflow can be built now; a fresh economic result remains conditional on source, cost and independent-window evidence.
+**Status:** The bounded Research/Discovery–Critic workflow, append-only registry, restricted worker, operator admission and fixed-catalog development path are implemented. OpenAI Astra has completed a real proposal/critique run. A small contract-triage process suite accompanies it. New independent economic evaluation, broad research-quality benchmarking, MCP, RAG and promotion remain pending. See the [execution record](evaluations/agent_loop_bootstrap_20261009/REPORT.md) and [operations guide](../operations/RESEARCH.md).
 
 This plan implements the first product slice in [ARCHITECTURE.md](../ARCHITECTURE.md), Section 14. Its outcome is an actual model-driven proposal, a separately recorded critique, a contract decision and evaluator-owned evidence. The agents generate and challenge research ideas; the registry and evaluator determine what was proposed and measured. The [Research Kernel plan](RESEARCH_KERNEL_PLAN.md) owns the source measurements and the two completed EURUSD diagnostics. The [data-availability record](../data/DATA_AVAILABILITY.md) owns unresolved source and broker-quote questions.
 
@@ -166,6 +166,21 @@ Check temporal boundaries using each case's full feature and outcome intervals. 
 **Research-evidence acceptance:** increments 6–7 require an actually eligible frozen proposal, an independent newly allocated window, evaluator-owned evidence and a later agent run that consumes the released result without promoting its lesson to measured truth. This milestone can remain pending while engineering acceptance is complete; `BLOCKED_DATA_REQUIREMENT`, data-quality failures and `NO_INDEPENDENT_WINDOW` are honest outcomes, not reasons to fabricate a passing candidate. A positive trading result is not required. Further model providers, RAG/memory policies, MCP and frontend breadth follow their own demonstrated need and gates.
 
 **Concrete first work item:** inspect and extract the existing diagnostic's supported semantics into a versioned domain catalog with focused acceptance/rejection tests. Define the design-freeze, candidate-lock and import contracts against the existing artifact hashes. Keep unsupported horizons, source types and economic payoffs explicit until code and tests implement them. Then build increment 1 around those contracts. No new historical performance scan, prompt optimizer, vector database, fine-tuning, generic agent framework or sequential-testing engine is needed to start. Statistical computation for new confirmatory claims is a gate at increment 6; its contract and accounting must be representable from the beginning.
+
+### Implemented slice and acceptance limits
+
+The first 36-run process comparison was invalidated after a flat duplicate-hour
+list was found to misrepresent the service's exact-diagnostic equality rule.
+The context was versioned and repaired; three remaining, explicitly corrective
+checks passed on already exposed tasks. The original comparison is not evidence
+of agent quality, and no full corrected comparison was run after the campaign's
+40-run stopping point. The execution record preserves both the defect and repair.
+
+Increments 0–4 are implemented for the finite `eurusd_direction/1` catalog. The operator command supports design freeze → deterministic development → candidate lock; its admission, rejection, blocked-source and correction paths are tested with a disposable PostgreSQL database. The first real model proposal remains blocked by its own declared broker-cost requirement; it has not been admitted, developed or validated. A Critic recommendation does not override the typed declaration, and this contract inconsistency is retained for review rather than repaired silently.
+
+Increment 5 currently measures **contract triage**, using three frozen synthetic templates, two repeated runs, single/Research+Critic/checklist arms and separate none/structured-feedback contexts. All arms share the same model profile and campaign ceiling; the simpler arms can leave their allowance unused. References are developer-authored contract labels, excluded from provider inputs. The audit split is unseen by the model before execution but shares the same catalog and is not independent evidence of discovery quality. Missing/refused runs remain failures in the process denominator. Novelty, economic false rejection, information gain, general research calibration and transfer to semantic/news hypotheses remain unmeasured. No process-suite result releases a historical holdout or satisfies increments 6–7.
+
+The first execution also exposed a concrete failure mode: a model can describe broker costs as relevant only to a future economic extension while placing them in the current draft's required-data field. Critic can miss that contradiction. The service interprets the typed field as binding and blocks the draft. A corrected proposal must be a separately recorded attempt with the original exposure; narratives cannot erase the earlier requirement or create a passing result.
 
 ## 6. Extend the same loop to Loop A
 
