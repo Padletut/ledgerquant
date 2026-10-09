@@ -77,6 +77,35 @@ services:
       timeout: 3s
       retries: 6
 
+  ingress:
+    image: caddy:2.10.2-alpine@sha256:4c6e91c6ed0e2fa03efd5b44747b625fec79bc9cd06ac5235a779726618e530d
+    restart: unless-stopped
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    tmpfs:
+      - /tmp
+    environment:
+      CAPTURE_INGRESS_HOST: ${LEDGERQUANT_INGEST_HTTPS_HOST:-192.168.10.155}
+    ports:
+      - "${LEDGERQUANT_INGEST_HTTPS_HOST:-192.168.10.155}:${LEDGERQUANT_INGEST_HTTPS_PORT:-18443}:18443"
+    volumes:
+      - ./Caddyfile.capture:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      capture:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://127.0.0.1:2019/config/"]
+      interval: 10s
+      timeout: 3s
+      retries: 6
+
 secrets:
   postgres_password:
     file: ${LEDGERQUANT_POSTGRES_PASSWORD_FILE:-../credentials/postgres.pwd}
@@ -85,3 +114,5 @@ secrets:
 
 volumes:
   postgres_data:
+  caddy_data:
+  caddy_config:

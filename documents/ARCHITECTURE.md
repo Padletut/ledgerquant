@@ -1,8 +1,8 @@
 # LedgerQuant Architecture
 
-**Date:** 08.10.2026
+**Date:** 09.10.2026
 
-**Version:** 2.7.3
+**Version:** 2.7.5
 
 **Status:** Target architecture; implemented bootstrap comprises the read-only history probe and the isolated live-capture stack described in Section 4.2.1
 
@@ -159,7 +159,7 @@ The stream tolerates reconnects, duplicate messages and out-of-order delivery. S
 
 #### 4.2.1 Implemented live-capture bootstrap
 
-The separate `cbots/LedgerQuant.LiveCapture/` project captures the current `Symbol.Sentiment` snapshot and subsequent update events in cTrader Desktop/.NET 6. Optional live bid/ask ticks are disabled by default. This is an observation-only cBot with no order methods or execution credential. It has not yet been run against a live Desktop session; a successful build does not prove source updates or host connectivity. cTrader's sentiment API has no historical backfill and is unavailable in CLI and Cloud, so collection starts only after an operator installs and starts the cBot on the intended account and symbol. [cTrader symbol sentiment](https://help.ctrader.com/ctrader-algo/guides/symbol-sentiment/)
+The separate `cbots/LedgerQuant.LiveCapture/` project captures the current `Symbol.Sentiment` snapshot and subsequent update events in cTrader Desktop/.NET 6. Optional live bid/ask ticks are disabled by default. This is an observation-only cBot with no order calls or execution credential. The current Windows Desktop 5.10.16 instance crashes before `OnStart` when explicit `[Robot(...)]` settings are used, so the bootstrap build uses `[Robot]`; its packaged metadata retains UTC but cTrader CLI reports `FullAccess`. This broader host permission is an explicit bootstrap limitation, and least-privilege packaging must be revalidated before wider deployment. The first live EURUSD sentiment startup snapshot was verified in PostgreSQL for account ACCOUNT_REDACTED at `2026-10-09 06:11:50.104069+00`; continuity and update-event receipt remain unverified. cTrader's sentiment API has no historical backfill and is unavailable in CLI and Cloud, so collection starts only after an operator installs and starts the cBot on the intended account and symbol. [cTrader symbol sentiment](https://help.ctrader.com/ctrader-algo/guides/symbol-sentiment/)
 
 Each cBot instance has a unique feed ID bound to source, broker, demo/live environment, account and symbol. It assigns a new session ID and monotonically increasing sequence per start. The local append-only NDJSON journal is flushed before a record is sent; an acknowledgement cursor advances only after the ingest API confirms a committed batch. Restart and duplicate delivery therefore preserve original message IDs. An unreadable or full journal, mismatched source identity or permanent ingest rejection stops capture visibly. The journal is never silently trimmed; backup and capacity management are operational duties. The cBot uses a bearer credential for the ingest endpoint, with loopback HTTP allowed for a colocated Desktop client and HTTPS required for a remote endpoint.
 
@@ -462,6 +462,7 @@ cbots/
   LedgerQuant.LiveCapture/     # current sentiment and optional live tick capture
 deploy/
   compose.yaml                # current bootstrap; full stack remains a target
+  Caddyfile.capture           # bootstrap HTTPS ingress for remote Desktop capture
 migrations/                   # ordered database migrations
 tests/
   unit/                       # domain rules
@@ -496,7 +497,7 @@ Failures are typed and distinguish `NO_SIGNAL` from inference failure, risk reje
 
 ## 13. Container deployment (Docker Compose / Portainer)
 
-The implemented `deploy/compose.yaml` currently runs only PostgreSQL, an Alembic migration job and the authenticated capture API. It is a capture bootstrap, not the full target stack below. The API binds to host loopback by default at port 18080; remote cTrader Desktop needs an authenticated HTTPS ingress configured separately. PostgreSQL uses a named volume, while the cBot journal lives in cTrader's local Algo file storage. Secret files are kept outside Git and outside the Docker build context. The capture service and migration run with the UID/GID that owns those files. See [CAPTURE.md](CAPTURE.md) for startup, Portainer secret-file paths, monitoring and backup.
+The implemented `deploy/compose.yaml` currently runs PostgreSQL, an Alembic migration job, the authenticated capture API and a small HTTPS ingress. It is a capture bootstrap, not the full target stack below. The API binds to host loopback by default at port 18080; Caddy publishes TLS on the configured LAN address for a separate cTrader Desktop VM and forwards to the internal API. Its local CA key stays in a persistent named volume; the public root must be trusted by the Desktop user. PostgreSQL uses a named volume, while the cBot journal lives in cTrader's local Algo file storage. Secret files are kept outside Git and outside the Docker build context. The capture service and migration run with the UID/GID that owns those files. See [CAPTURE.md](CAPTURE.md) for startup, Portainer secret-file paths, monitoring and backup.
 
 The target deployment uses a versioned Docker Compose definition that can run through `docker compose` or as a Git-backed Portainer stack on a Docker Standalone endpoint. This is a Compose deployment model, not a Docker Swarm deployment. The Compose file and its pinned image versions are reviewed with application changes; Portainer reads the same repository definition rather than becoming a separate configuration source. Configuration values are environment-specific, while service topology and required health contracts stay versioned. [Docker Compose production guidance](https://docs.docker.com/compose/how-tos/production/) · [Portainer stacks from Git](https://docs.portainer.io/user/docker/stacks/add)
 

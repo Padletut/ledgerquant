@@ -1,0 +1,18 @@
+{
+	skip_install_trust
+	auto_https disable_redirects
+	default_sni {$CAPTURE_INGRESS_HOST}
+}
+
+https://{$CAPTURE_INGRESS_HOST}:18443 {
+	tls internal
+	log {
+		output stdout
+		format filter {
+			request>headers delete
+			wrap json
+		}
+	}
+	log_skip /healthz
+	reverse_proxy capture:8080
+}

@@ -72,7 +72,7 @@ cTrader describes the figures as percentages of accounts expecting a rise or fal
 
 To use this signal, LedgerQuant must start recording observations as updates arrive, including `observed_at`, `ingested_at`, `available_at`, symbol, source and validity status. Today's percentage cannot reconstruct observations from before collection began. Evaluations requiring this feature must start with the first reliable recorded observation unless a separate archive is documented.
 
-The capture bootstrap in [CAPTURE.md](CAPTURE.md) was deployed locally on 8 October 2026, but its PostgreSQL table contained **zero broker observations** at verification time. The cBot has built successfully but has not been started in cTrader Desktop. Therefore no prospective sentiment history has been confirmed yet; the first real observation must be verified after Desktop startup.
+The capture bootstrap in [CAPTURE.md](CAPTURE.md) was deployed locally on 8 October 2026. Its first verified live sentiment row is a EURUSD startup snapshot from IC Markets EU Ltd account ACCOUNT_REDACTED, with `observed_at=2026-10-09 06:11:50.104069+00`, received and committed on 9 October 2026. At the 06:13 UTC check, the table contained one sentiment row, no update events and no tick rows. This is the earliest **recorded** observation for that feed, not proof that the feed has remained continuous since then. Earlier sentiment cannot be reconstructed from this collector; any research window using it requires measured subsequent coverage and gaps.
 
 ### News data and news-derived sentiment
 

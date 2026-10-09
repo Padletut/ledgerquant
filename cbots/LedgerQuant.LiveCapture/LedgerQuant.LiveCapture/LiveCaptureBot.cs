@@ -6,10 +6,10 @@ using cAlgo.API;
 
 namespace LedgerQuant.LiveCapture;
 
-[Robot(TimeZone = TimeZones.UTC, AccessRights = AccessRights.None)]
+[Robot]
 public sealed class LiveCaptureBot : Robot
 {
-    private const string CaptureVersion = "capture-0.1.0";
+    private const string CaptureVersion = "capture-0.1.2";
     private const int MaximumBatchRecords = 250;
     private const int MaximumBatchBytes = 512_000;
 
@@ -19,7 +19,7 @@ public sealed class LiveCaptureBot : Robot
     [Parameter("Ingest URL", DefaultValue = "http://127.0.0.1:18080/v1/capture/batches")]
     public string IngestUrl { get; set; } = string.Empty;
 
-    [Parameter("Collector token", DefaultValue = "")]
+    [Parameter("Collector token", DefaultValue = "", IsValueVisibleInTitle = false)]
     public string CollectorToken { get; set; } = string.Empty;
 
     [Parameter("Collect ticks", DefaultValue = false)]
@@ -40,6 +40,7 @@ public sealed class LiveCaptureBot : Robot
 
     protected override void OnStart()
     {
+        Print("CAPTURE_BOOT version={0}", CaptureVersion);
         try
         {
             if (FeedId.Length is < 1 or > 100 ||
