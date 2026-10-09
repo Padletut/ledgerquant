@@ -2,13 +2,13 @@
 
 **Date:** 09.10.2026
 
-**Version:** 2.8.3
+**Version:** 2.9.0
 
 **Status:** Target architecture; implemented bootstrap comprises the read-only history probe, the bounded historical tick exporter and the isolated live-capture stack described in Section 4.2, plus the offline EURUSD research case audits, candidate freezes and historical validations described in Section 6.1
 
 ## 1. Purpose and design rules
 
-LedgerQuant is an auditable, configurable platform for research, decision support and controlled execution of CFD trading strategies. A Next.js/TypeScript console lets operators inspect the system and manage agents, research, portfolios, accounts and deployments through supported workflows. Every trading decision must retain the exact configuration and information that produced it.
+LedgerQuant is an agent-driven, auditable platform for discovering and testing economic decisions, then deploying supported decisions under controlled execution. Research/Discovery agents propose hypotheses, Critic agents challenge them, and Executor agents make bounded decisions. Independent evaluation and broker/account controls determine what those proposals and decisions are allowed to become. A Next.js/TypeScript console lets operators inspect and manage the system through supported workflows. Every agent run and trading decision must retain the exact configuration and information that produced it.
 
 - **Explicit ownership:** agent, portfolio, account, market data, decision and execution concepts have distinct owners and contracts.
 - **Single source of truth (SSOT):** versioned configuration and audit history live in the registry and ledger; immutable source artifacts have authoritative references there. Committed tick chunks in durable archive storage, indexed by PostgreSQL manifests, are the historical market-data record. Current broker positions, balances and fills come from the broker and are reconciled into the ledger. Redis streams, search indexes and cached views are bounded runtime projections.
@@ -50,6 +50,22 @@ The boxes are logical responsibilities, not a requirement for one service per bo
 
 The control plane manages definitions and deployment intent. The data plane ingests observations and builds point-in-time context. The decision plane runs configured agents. The execution plane owns order authorization, dispatch and reconciliation. A research plane reads permitted snapshots and proposes hypotheses; an independent evaluator writes measured evidence, and promotion remains a controlled registry transition. The research plane has no direct path to the broker. A component accesses another component's state through its contract; it does not bypass ownership with ad hoc cross-module database writes.
 
+The first agent-driven vertical path is research, ahead of the full trading stack:
+
+```text
+Released evidence + permitted development data → Research/Discovery proposal
+                                                   ↓
+                                             Critic review
+                                                   ↓
+                                      contract validation and freeze
+                                                   ↓
+                              independent evaluator → evidence record
+                                                   ↓
+                                  released results → later agent runs
+```
+
+The agent runtime schedules and records bounded runs; it does not own proposal acceptance, validation outcomes or promotion. This path can run with one conformance-tested model provider and a small tool set before live execution, broad broker integrations or the complete console exist. Agents may learn from released failures, including the 2021 EURUSD temporal failure, but inspected 2020–2021 outcomes cannot become untouched validation for a revised hypothesis.
+
 ## 3. Domain model and sources of truth
 
 | Entity | Identity and versioning | Owner and purpose |
@@ -90,6 +106,8 @@ DRAFT → VALIDATED → CANDIDATE → APPROVED → ACTIVE → PAUSED → RETIRED
 - **Remove a draft:** allow deletion only before it has been referenced by an event or published version.
 
 An agent may emit `NO_SIGNAL`, a typed candidate action or a structured failure. Output validation occurs before signal creation. An Executor is a decision capability. Critic/Research and Discovery are research capabilities: they may propose improvements or new payoff hypotheses, but cannot choose validation results, activate deployments or change capital limits. Additional capabilities use the same lifecycle and typed interfaces; their behavior is not encoded in a growing role-specific switch statement.
+
+The first research runner uses versioned instructions, model bindings, tool permissions and resource budgets. Every model invocation and tool call records exact inputs or immutable references, outputs, hashes, versions, timestamps, errors and the parent run ID. Research tools initially expose scoped reads of source coverage, permitted development material and released evidence, plus typed draft submission and review requests. A small MCP server may expose these same application-service operations to compatible agent hosts; MCP is a tool transport, while application services remain the owners of authorization, data filtering and audit. The MCP surface does not grant generic SQL, unrestricted file access, broker execution, evidence writes or promotion. Tool schemas and annotations assist clients, but server-side scope checks enforce the boundary. [MCP architecture](https://modelcontextprotocol.io/specification/2025-11-25/architecture) · [MCP tools](https://modelcontextprotocol.io/specification/2025-11-25/server/tools)
 
 ### 3.2 Portfolio profiles and account allocations
 
@@ -531,19 +549,16 @@ Only necessary ingress endpoints are published. Internal services use isolated n
 
 ## 14. Implementation sequence
 
-The live-capture bootstrap is an early data-preservation step ahead of this sequence. It must not be mistaken for completion of the target market ingestion and archive work in item 4. A separate, bounded historical-data readiness and offline Research Kernel track now starts before the broader platform sequence: measure source coverage and gaps, freeze one hypothesis with its information and data-sufficiency requirements, assemble an eligible source-backed dataset for its decision and payoff windows, then test it through independent evaluation. A complete multi-year tick archive is a reusable target, not a blanket prerequisite for every research question. This preparatory track has no trading or promotion authority; its concrete gates are in [RESEARCH_KERNEL_PLAN.md](research/RESEARCH_KERNEL_PLAN.md). The later items below still describe the full operational platform and agent-driven research workflows.
+The live-capture bootstrap and offline EURUSD audits preserve source data and test the evaluator path. The 2021 temporal failure shows why agent proposals and independent evidence must be developed together. The first three items below form one research-agent product slice; they do not depend on live trading. A complete multi-year tick archive is useful for reuse but follows each frozen hypothesis's information requirements. The exact research gates are in [RESEARCH_KERNEL_PLAN.md](research/RESEARCH_KERNEL_PLAN.md).
 
-1. Establish domain IDs, typed API/wire contracts, migrations, provider and broker ports, and registries for agents, model profiles, portfolios, accounts, feeds, allocations and deployments.
-2. Build the Next.js/TypeScript console shell with authentication, typed API client and the first real overview/account/feed status flows as their read models become available.
-3. Bring in the existing execution cBot and adapt its account routing, idempotency, risk checks, event reporting and reconciliation to the new contracts.
-4. Build the separate market-data cBot and authenticated ingestion path with source identity, symbol mapping, canonical observations, a durable ingress journal, Redis consumer groups, immutable tick chunks, archive manifests, feed-health reporting and point-in-time visibility.
-5. Complete one vertical path with a conformance-tested model provider: broker observation, pinned agent and model-profile versions, validated decision, account reservation, durable dispatch, execution cBot response and broker reconciliation. Show that path and its failures in the console.
-6. Make that path restart-safe with outbox/inbox idempotency, account serialization, journal and stream replay, archive checkpoint recovery, feed-gap recovery, broker-state recovery and contract tests. Define and validate the Compose/Portainer deployment, health checks and backup/restore procedure when the deployable services and storage contracts exist.
-7. Add recorded-output replay and versioned evaluation suites; deliver Agents, Evaluations, Deployments and Execution screens against real query and command contracts.
-8. Add source-backed RAG and episodic memory with point-in-time replay checks, then Research, Portfolios and Market Data screens as their contracts are complete.
-9. Add the structured hypothesis/evidence registry and independent temporal, cost and breadth evaluations before automating research proposals.
-10. Add shadow mode, prospective evaluation and controlled promotion; introduce Loop A prompt, question-set and policy candidates and Loop B Discovery candidates only after these gates work.
-11. Complete the remaining conformance-tested OpenAI, Claude, TypeSafe Jev, Ollama, LM Studio and local Llama-runtime adapters, plus broker API, MT4, MT5 and NinjaTrader integrations as each reaches its required capability gate.
-12. Scale the API, frontend and workers independently when measured load or isolation needs require it.
+1. Build the minimal agent foundation: stable agent/run IDs, immutable versions of instructions and model bindings, one conformance-tested model provider, typed proposal outputs, bounded tool permissions and budgets, and an append-only invocation/tool-call ledger. Expose the first research operations through application-service ports and a narrow MCP adapter when an agent host needs that protocol.
+2. Give the research path real authority boundaries: a structured hypothesis/trial/evidence registry, source-backed development views, access-controlled validation data, contract freeze, an independent evaluator and explicit release of measured results. Preserve the existing 2020 and 2021 attempts as known family evidence; neither is a fresh holdout.
+3. Run the first multi-agent Loop B workflow: Research/Discovery proposes a new decision or payoff from permitted evidence, Critic checks assumptions and data sufficiency, the contract service freezes an approved candidate, and the evaluator alone measures it against an untouched registered window. Record every proposed, rejected and evaluated attempt. Provide a small typed control API and Next.js view for agent runs, hypotheses and evidence.
+4. Add market-knowledge and research-knowledge retrieval, then eligible episodic memory, as versioned and evaluated tool/context policies. Keep actual and hypothetical `available_at` modes distinct. Start Loop A comparisons when an existing Executor decision contract and baseline exist; freeze each change and compare it through the evaluator.
+5. Complete the separate market-data cBot and authenticated ingestion path with source identity, symbol mapping, canonical observations, a durable ingress journal, Redis consumer groups, immutable tick chunks, archive manifests, feed-health reporting and point-in-time visibility. Continue prospective collection while the research-agent slice is built.
+6. Introduce an Executor in research and shadow modes using pinned agent/model versions, typed decisions, source-backed context and recorded-output replay. Measure its decisions without granting order authority. Expand the console with real Agents, Evaluations, Market Data and Deployments views as the corresponding API contracts exist.
+7. Adapt the existing execution cBot and establish account, portfolio, allocation, reservation, risk and reconciliation contracts. Complete the observation-to-order vertical path in demo mode before live eligibility; keep broker-side protective behavior and account-scoped authorization independent of the agent runtime.
+8. Make the trading path restart-safe with outbox/inbox idempotency, account serialization, journal and stream replay, archive checkpoint recovery, feed-gap recovery and broker-state recovery. Validate the Compose/Portainer deployment, health checks, backup/restore and full Execution/Accounts/Portfolios views. Add prospective gates and controlled promotion before live activation.
+9. Add further conformance-tested OpenAI, Claude, TypeSafe Jev, Ollama, LM Studio and local Llama-runtime adapters, plus broker API, MT4, MT5 and NinjaTrader integrations as each reaches its required capability gate. Scale API, frontend and workers independently when measured load or isolation requires it.
 
 The first release does not need every possible agent capability or a separate service for every module. It does need complete lifecycle and identity handling for each object it exposes. Future adaptability comes from stable contracts, versioned composition and safe deployment transitions, rather than from unbounded configuration or a growing collection of special cases.
