@@ -1,0 +1,8 @@
+Info | CBot instance [probe, EURUSD, h1] started.
+31/12/2019 00:00:00.460 | Info | TICK_PROBE_START symbol=EURUSD account=ACCOUNT_REDACTED target_utc=2020-01-01T00:00:00.0000000Z server_first_reported_utc=2019-07-08T00:00:00.0000000Z load_older_history=False
+03/01/2020 21:56:58.353 | Info | TICK_PROBE_DAY symbol=EURUSD account=ACCOUNT_REDACTED date_utc=2019-12-31 ticks=26382 first_utc=2019-12-31T00:00:01.4210000Z last_utc=2019-12-31T18:59:48.6470000Z invalid_quotes=0
+03/01/2020 21:56:58.353 | Info | TICK_PROBE_DAY symbol=EURUSD account=ACCOUNT_REDACTED date_utc=2020-01-01 ticks=1545 first_utc=2020-01-01T22:01:00.3000000Z last_utc=2020-01-01T23:59:54.3570000Z invalid_quotes=0
+03/01/2020 21:56:58.353 | Info | TICK_PROBE_DAY symbol=EURUSD account=ACCOUNT_REDACTED date_utc=2020-01-02 ticks=30656 first_utc=2020-01-02T00:00:00.4710000Z last_utc=2020-01-02T23:59:57.7260000Z invalid_quotes=0
+03/01/2020 21:56:58.353 | Info | TICK_PROBE_DAY symbol=EURUSD account=ACCOUNT_REDACTED date_utc=2020-01-03 ticks=36323 first_utc=2020-01-03T00:00:01.6430000Z last_utc=2020-01-03T21:56:58.3530000Z invalid_quotes=0
+03/01/2020 21:56:58.353 | Info | TICK_PROBE_RESULT symbol=EURUSD account=ACCOUNT_REDACTED target_utc=2020-01-01T00:00:00.0000000Z server_first_reported_utc=2019-07-08T00:00:00.0000000Z history_status=NOT_REQUESTED history_batches=0 history_ticks_added=0 earliest_retrieved_utc=null observed_ticks=94906 observed_first_utc=2019-12-31T00:00:01.4210000Z observed_last_utc=2020-01-03T21:56:58.3530000Z invalid_quotes=0 duplicate_timestamps=0 reversed_timestamps=0 largest_observed_gap_seconds=97271.653
+Info | CBot instance [probe, EURUSD, h1] stopped.

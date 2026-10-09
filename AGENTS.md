@@ -4,7 +4,7 @@ This file defines repository-wide operating rules for coding agents.
 
 Before changing a contract, domain model or component boundary, read the relevant
 sections of `documents/ARCHITECTURE.md`. Use
-`documents/DATA_AVAILABILITY.md` for current evidence and unresolved questions
+`documents/data/DATA_AVAILABILITY.md` for current evidence and unresolved questions
 about market, news and sentiment data.
 
 Architecture documents describe target state. Do not infer that a documented

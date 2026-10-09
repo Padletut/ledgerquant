@@ -1,0 +1,8 @@
+Info | CBot instance [probe, GBPUSD, h1] started.
+31/12/2019 00:00:00.490 | Info | TICK_PROBE_START symbol=GBPUSD account=ACCOUNT_REDACTED target_utc=2020-01-01T00:00:00.0000000Z server_first_reported_utc=2019-07-08T00:00:00.0000000Z load_older_history=False
+03/01/2020 21:56:56.736 | Info | TICK_PROBE_DAY symbol=GBPUSD account=ACCOUNT_REDACTED date_utc=2019-12-31 ticks=60158 first_utc=2019-12-31T00:00:02.0030000Z last_utc=2019-12-31T18:59:59.8300000Z invalid_quotes=0
+03/01/2020 21:56:56.736 | Info | TICK_PROBE_DAY symbol=GBPUSD account=ACCOUNT_REDACTED date_utc=2020-01-01 ticks=2852 first_utc=2020-01-01T22:01:00.3000000Z last_utc=2020-01-01T23:59:59.5980000Z invalid_quotes=0
+03/01/2020 21:56:56.736 | Info | TICK_PROBE_DAY symbol=GBPUSD account=ACCOUNT_REDACTED date_utc=2020-01-02 ticks=80762 first_utc=2020-01-02T00:00:00.2810000Z last_utc=2020-01-02T23:59:57.7040000Z invalid_quotes=0
+03/01/2020 21:56:56.736 | Info | TICK_PROBE_DAY symbol=GBPUSD account=ACCOUNT_REDACTED date_utc=2020-01-03 ticks=83067 first_utc=2020-01-03T00:00:00.1700000Z last_utc=2020-01-03T21:56:56.7360000Z invalid_quotes=0
+03/01/2020 21:56:56.736 | Info | TICK_PROBE_RESULT symbol=GBPUSD account=ACCOUNT_REDACTED target_utc=2020-01-01T00:00:00.0000000Z server_first_reported_utc=2019-07-08T00:00:00.0000000Z history_status=NOT_REQUESTED history_batches=0 history_ticks_added=0 earliest_retrieved_utc=null observed_ticks=226839 observed_first_utc=2019-12-31T00:00:02.0030000Z observed_last_utc=2020-01-03T21:56:56.7360000Z invalid_quotes=0 duplicate_timestamps=0 reversed_timestamps=0 largest_observed_gap_seconds=97260.47
+Info | CBot instance [probe, GBPUSD, h1] stopped.

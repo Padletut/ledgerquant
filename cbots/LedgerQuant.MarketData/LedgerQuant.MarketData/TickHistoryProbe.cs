@@ -56,7 +56,8 @@ public sealed class TickHistoryProbe : Robot
         if (_ticks is null)
             return;
 
-        _observed.Add(_ticks.LastTick);
+        var tick = _ticks.LastTick;
+        _observed.Add(tick.Time, tick.Bid, tick.Ask);
     }
 
     protected override void OnTimer()
@@ -113,6 +114,13 @@ public sealed class TickHistoryProbe : Robot
 
     protected override void OnStop()
     {
+        foreach (var day in _observed.Days)
+        {
+            Print("TICK_PROBE_DAY symbol={0} account={1} date_utc={2:yyyy-MM-dd} ticks={3} first_utc={4:O} last_utc={5:O} invalid_quotes={6}",
+                SymbolName, Account.Number, day.DateUtc, day.Count, day.FirstTime,
+                day.LastTime, day.InvalidQuotes);
+        }
+
         Print("TICK_PROBE_RESULT symbol={0} account={1} target_utc={2:O} server_first_reported_utc={3:O} history_status={4} history_batches={5} history_ticks_added={6} earliest_retrieved_utc={7:O} observed_ticks={8} observed_first_utc={9:O} observed_last_utc={10:O} invalid_quotes={11} duplicate_timestamps={12} reversed_timestamps={13} largest_observed_gap_seconds={14}",
             SymbolName, Account.Number, _target, _reportedServerFirst, _historyStatus,
             _historyBatches, _loadedTicks, _retrievedFirst, _observed.Count,

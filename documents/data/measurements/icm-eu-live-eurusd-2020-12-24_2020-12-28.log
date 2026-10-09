@@ -1,0 +1,7 @@
+Info | CBot instance [probe, EURUSD, h1] started.
+24/12/2020 00:00:00.268 | Info | TICK_PROBE_START symbol=EURUSD account=ACCOUNT_REDACTED target_utc=2020-01-01T00:00:00.0000000Z server_first_reported_utc=2019-07-08T00:00:00.0000000Z load_older_history=False
+28/12/2020 23:59:46.478 | Info | TICK_PROBE_DAY symbol=EURUSD account=ACCOUNT_REDACTED date_utc=2020-12-24 ticks=38654 first_utc=2020-12-24T00:00:00.4730000Z last_utc=2020-12-24T18:59:59.7230000Z invalid_quotes=0
+28/12/2020 23:59:46.478 | Info | TICK_PROBE_DAY symbol=EURUSD account=ACCOUNT_REDACTED date_utc=2020-12-27 ticks=2150 first_utc=2020-12-27T22:16:51.4790000Z last_utc=2020-12-27T23:59:59.6960000Z invalid_quotes=0
+28/12/2020 23:59:46.478 | Info | TICK_PROBE_DAY symbol=EURUSD account=ACCOUNT_REDACTED date_utc=2020-12-28 ticks=62245 first_utc=2020-12-28T00:00:00.4320000Z last_utc=2020-12-28T23:59:46.4780000Z invalid_quotes=0
+28/12/2020 23:59:46.478 | Info | TICK_PROBE_RESULT symbol=EURUSD account=ACCOUNT_REDACTED target_utc=2020-01-01T00:00:00.0000000Z server_first_reported_utc=2019-07-08T00:00:00.0000000Z history_status=NOT_REQUESTED history_batches=0 history_ticks_added=0 earliest_retrieved_utc=null observed_ticks=103049 observed_first_utc=2020-12-24T00:00:00.4730000Z observed_last_utc=2020-12-28T23:59:46.4780000Z invalid_quotes=0 duplicate_timestamps=0 reversed_timestamps=0 largest_observed_gap_seconds=271011.756
+Info | CBot instance [probe, EURUSD, h1] stopped.

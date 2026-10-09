@@ -2,7 +2,7 @@
 
 **Date:** 09.10.2026
 
-**Version:** 2.7.6
+**Version:** 2.7.8
 
 **Status:** Target architecture; implemented bootstrap comprises the read-only history probe and the isolated live-capture stack described in Section 4.2.1
 
@@ -151,7 +151,7 @@ Transport uses TLS, scoped and revocable credentials, rotation, rate limits and 
 
 ### 4.2 Market-data cBot ingestion contract
 
-The separate market-data cBot reads broker market events and publishes versioned observations to an authenticated ingestion adapter, which admits them to the market stream. Its envelope includes protocol version, message ID, feed ID and send time. The payload covers instrument identity, broker symbol, quote/bar/event type, bid/ask or other applicable values, broker event timestamp, cBot observation timestamp, source sequence, cBot build version and symbol-map version. If the broker supplies no sequence, the cBot emits a boot/session ID and monotonic local sequence; repeated equal prices are not deduplicated solely by content hash. The ingestion adapter records its receive and journal-commit times, validates units and schema, and assigns canonical observation IDs. A feed is registered with an explicit source contract before it can supply Executor context. The cBot uses the ingestion contract rather than holding general Redis credentials. The current `cbots/LedgerQuant.MarketData/` project contains a read-only `TickHistoryProbe` for measuring broker history; the publishing contract remains a target. Its initial results are in [DATA_AVAILABILITY.md](DATA_AVAILABILITY.md).
+The separate market-data cBot reads broker market events and publishes versioned observations to an authenticated ingestion adapter, which admits them to the market stream. Its envelope includes protocol version, message ID, feed ID and send time. The payload covers instrument identity, broker symbol, quote/bar/event type, bid/ask or other applicable values, broker event timestamp, cBot observation timestamp, source sequence, cBot build version and symbol-map version. If the broker supplies no sequence, the cBot emits a boot/session ID and monotonic local sequence; repeated equal prices are not deduplicated solely by content hash. The ingestion adapter records its receive and journal-commit times, validates units and schema, and assigns canonical observation IDs. A feed is registered with an explicit source contract before it can supply Executor context. The cBot uses the ingestion contract rather than holding general Redis credentials. The current `cbots/LedgerQuant.MarketData/` project contains a read-only `TickHistoryProbe` for measuring broker history; the publishing contract remains a target. Its initial results are in [DATA_AVAILABILITY.md](data/DATA_AVAILABILITY.md).
 
 The market-data cBot has no order command handler, execution credentials or route to the execution coordinator. It is deployed and monitored independently from the execution cBot. Authentication scopes allow publishing observations only for its registered feed. Where the broker platform cannot provide physically separate privileges, the code and inbound protocol still expose no trading operation; contract tests verify this boundary.
 
@@ -165,7 +165,7 @@ Each monitored symbol has a unique feed ID bound to source, broker, demo/live en
 
 `src/ledgerquant/capture/` implements a small authenticated batch API. PostgreSQL `market.capture_observations` is an append-only raw-capture store with unique message IDs and `(feed_id, session_id, sequence)` identity, payload hashes, immutable feed bindings and mutation-rejecting triggers. A successful API response is sent only after the database transaction commits. Tick source event time and local observed time remain separate; sentiment has an observed time but no invented source event time. Server receive and ingest times are recorded independently. A zero sentiment percentage is marked `ZERO_AMBIGUOUS`, because zero can mean unavailable source data. The bootstrap's `available_at` is assigned during the insert transaction, before commit; it is an ingest-time estimate, **not an exact durable-visibility timestamp for historical decision replay**. Before any captured record enters Executor context or a strict point-in-time evaluation, a later canonicalization stage must derive a conservative post-commit availability bound and preserve this raw timestamp.
 
-This bootstrap writes optional ticks as PostgreSQL rows to start collection early. It has no Redis stream, archive writer, immutable tick chunks, control API, feed-health service or execution path. It is deliberately a small capture store, not the target historical market-data architecture in Section 4.3. Capacity, backups, restore tests, feed gaps, clock quality and a migration into the durable archive are required before it becomes the long-term tick history or an Executor feed. The operating procedure is in [CAPTURE.md](CAPTURE.md).
+This bootstrap writes optional ticks as PostgreSQL rows to start collection early. It has no Redis stream, archive writer, immutable tick chunks, control API, feed-health service or execution path. It is deliberately a small capture store, not the target historical market-data architecture in Section 4.3. Capacity, backups, restore tests, feed gaps, clock quality and a migration into the durable archive are required before it becomes the long-term tick history or an Executor feed. The operating procedure is in [CAPTURE.md](operations/CAPTURE.md).
 
 ### 4.3 Redis stream and durable tick archive
 
@@ -409,9 +409,14 @@ The following is the **target layout**, not a claim about files already implemen
 
 ```text
 documents/
-  ARCHITECTURE.md
-  DATA_AVAILABILITY.md
-  CAPTURE.md                  # live-capture bootstrap runbook
+  ARCHITECTURE.md             # canonical architecture and entry point
+  data/
+    DATA_AVAILABILITY.md      # source coverage and unresolved questions
+    measurements/             # retained probe logs
+  operations/
+    CAPTURE.md                # live-capture bootstrap runbook
+  research/
+    RESEARCH_KERNEL_PLAN.md   # data-first implementation sequence
   decisions/                  # architecture decisions and migrations of intent
 contracts/                    # OpenAPI, events and broker wire schemas
 src/ledgerquant/
@@ -497,7 +502,7 @@ Failures are typed and distinguish `NO_SIGNAL` from inference failure, risk reje
 
 ## 13. Container deployment (Docker Compose / Portainer)
 
-The implemented `deploy/compose.yaml` currently runs PostgreSQL, an Alembic migration job, the authenticated capture API and a small HTTPS ingress. It is a capture bootstrap, not the full target stack below. The API binds to host loopback by default at port 18080; Caddy publishes TLS on the configured LAN address for a separate cTrader Desktop VM and forwards to the internal API. Its local CA key stays in a persistent named volume; the public root must be trusted by the Desktop user. PostgreSQL uses a named volume, while the cBot journal lives in cTrader's local Algo file storage. Secret files are kept outside Git and outside the Docker build context. The capture service and migration run with the UID/GID that owns those files. See [CAPTURE.md](CAPTURE.md) for startup, Portainer secret-file paths, monitoring and backup.
+The implemented `deploy/compose.yaml` currently runs PostgreSQL, an Alembic migration job, the authenticated capture API and a small HTTPS ingress. It is a capture bootstrap, not the full target stack below. The API binds to host loopback by default at port 18080; Caddy publishes TLS on the configured LAN address for a separate cTrader Desktop VM and forwards to the internal API. Its local CA key stays in a persistent named volume; the public root must be trusted by the Desktop user. PostgreSQL uses a named volume, while the cBot journal lives in cTrader's local Algo file storage. Secret files are kept outside Git and outside the Docker build context. The capture service and migration run with the UID/GID that owns those files. See [CAPTURE.md](operations/CAPTURE.md) for startup, Portainer secret-file paths, monitoring and backup.
 
 The target deployment uses a versioned Docker Compose definition that can run through `docker compose` or as a Git-backed Portainer stack on a Docker Standalone endpoint. This is a Compose deployment model, not a Docker Swarm deployment. The Compose file and its pinned image versions are reviewed with application changes; Portainer reads the same repository definition rather than becoming a separate configuration source. Configuration values are environment-specific, while service topology and required health contracts stay versioned. [Docker Compose production guidance](https://docs.docker.com/compose/how-tos/production/) · [Portainer stacks from Git](https://docs.portainer.io/user/docker/stacks/add)
 
@@ -509,7 +514,7 @@ Only necessary ingress endpoints are published. Internal services use isolated n
 
 ## 14. Implementation sequence
 
-The live-capture bootstrap is an early data-preservation step ahead of this sequence. It must not be mistaken for completion of the target market ingestion and archive work in item 4.
+The live-capture bootstrap is an early data-preservation step ahead of this sequence. It must not be mistaken for completion of the target market ingestion and archive work in item 4. A separate, bounded historical-data readiness and offline Research Kernel track now starts before the broader platform sequence: measure and archive the chosen broker ticks, resolve calendar gaps, freeze an eligible dataset, then test one preregistered hypothesis through independent evaluation. This preparatory track has no trading or promotion authority; its concrete gates are in [RESEARCH_KERNEL_PLAN.md](research/RESEARCH_KERNEL_PLAN.md). The later items below still describe the full operational platform and agent-driven research workflows.
 
 1. Establish domain IDs, typed API/wire contracts, migrations, provider and broker ports, and registries for agents, model profiles, portfolios, accounts, feeds, allocations and deployments.
 2. Build the Next.js/TypeScript console shell with authentication, typed API client and the first real overview/account/feed status flows as their read models become available.
