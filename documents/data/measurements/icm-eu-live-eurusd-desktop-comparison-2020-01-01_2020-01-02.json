@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "measured_on_utc_date": "2026-10-09",
+  "method": "streamed_canonical_row_comparison",
+  "desktop_source": {
+    "path": "data/ctrader_tick_exports/desktop_reference/LedgerQuant.LiveCapture EURUSD t1 20180522-20261008.csv",
+    "bytes": 4734455043,
+    "sha256": "446d6fd78f61ebb54af9b38c4c44b41273cdbda0fca73e28a6af06783a9e571f",
+    "first_record": "2018-05-22,16:00:00.000",
+    "last_record": "2026-10-08,23:59:58.643",
+    "format": "headerless date,time,bid,ask CSV; millisecond timestamps; no timezone or account metadata embedded",
+    "operator_confirmed": {
+      "broker": "IC Markets EU Ltd",
+      "account_number": null,
+      "environment": "live",
+      "symbol": "EURUSD",
+      "desktop_version": "5.10.16",
+      "mode": "Tick data from server"
+    }
+  },
+  "pre_2020_pattern": {
+    "start_record": "2018-05-22,16:00:00.000",
+    "end_record": "2019-12-31,17:00:00.003",
+    "rows": 39996,
+    "distinct_observed_hours": 9999,
+    "rows_per_observed_hour": 4,
+    "within_hour_offsets_ms": [0, 1, 2, 3],
+    "rows_with_equal_bid_ask": 39996,
+    "first_record_outside_pattern": "2019-12-31,18:00:00.067",
+    "quality_decision": "Do not treat the four-record hourly sequence as observed tick-level history; its generation method is unverified."
+  },
+  "comparisons": [
+    {
+      "interval_start_utc": "2020-01-01T00:00:00Z",
+      "interval_end_exclusive_utc": "2020-01-02T00:00:00Z",
+      "desktop_rows": 1545,
+      "desktop_slice_sha256": "541c4531cf1ba221b816c2fc02a3eb96914c426bd661497992f048b4838662bb",
+      "cli_run_id": "eurusd_20200101_cli510",
+      "cli_data_sha256": "21971932e8ddca1afe1abf85f750ffc1e14e750ba12bae07b6367b66387f8e05",
+      "exact_timestamp_bid_ask_matches_in_source_order": 1545,
+      "unmatched_or_mismatched_rows": 0,
+      "equal_bid_ask_rows": 240,
+      "first_record": "2020-01-01,22:01:00.300",
+      "last_record": "2020-01-01,23:59:54.357"
+    },
+    {
+      "interval_start_utc": "2020-01-02T00:00:00Z",
+      "interval_end_exclusive_utc": "2020-01-03T00:00:00Z",
+      "desktop_rows": 30656,
+      "desktop_slice_sha256": "1cf521be4dc349b27bd1790b73d8a4f68b430711780cff50174753b29709d555",
+      "cli_run_id": "eurusd_20200102_c",
+      "cli_data_sha256": "2bed8330341946c72e2e12afe3903e40d417887bafa3ac26b6ad1c9fe8ab83e2",
+      "exact_timestamp_bid_ask_matches_in_source_order": 30656,
+      "unmatched_or_mismatched_rows": 0,
+      "equal_bid_ask_rows": 28912,
+      "first_record": "2020-01-02,00:00:00.471",
+      "last_record": "2020-01-02,23:59:57.726"
+    }
+  ],
+  "boundary_observation": {
+    "month_start_backtest_2020_01_01_rows": 1544,
+    "month_start_backtest_first_record": "2020-01-01,22:01:18.882",
+    "warmup_backtest_2020_01_01_rows": 1545,
+    "warmup_backtest_first_record": "2020-01-01,22:01:00.300",
+    "desktop_matches_warmup_rows": true
+  },
+  "limitations": [
+    "The Desktop CSV lacks embedded account, source-mode and timezone metadata; these are operator-confirmed and aligned with CLI UTC by exact row matches.",
+    "Desktop and CLI may use the same cTrader server history. Matching rows validate extraction consistency, not independent broker quote fidelity or executable cost.",
+    "The compared days do not establish continuous coverage from 2020 onward."
+  ]
+}

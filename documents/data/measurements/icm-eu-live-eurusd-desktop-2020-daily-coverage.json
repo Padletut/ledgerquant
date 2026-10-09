@@ -1,0 +1,2844 @@
+{
+  "schema_version": 1,
+  "measured_on_utc_date": "2026-10-09",
+  "source_file": "data/ctrader_tick_exports/desktop_reference/LedgerQuant.LiveCapture EURUSD t1 20180522-20261008.csv",
+  "source_sha256": "446d6fd78f61ebb54af9b38c4c44b41273cdbda0fca73e28a6af06783a9e571f",
+  "source_account_basis": "operator_confirmed_live_ACCOUNT_REDACTED",
+  "time_zone_basis": "2020-01-01_02_rows_match_UTC_CLI_exactly",
+  "year": 2020,
+  "coverage_status": "UNVERIFIED",
+  "quote_quality_status": "UNVERIFIED",
+  "observed_dates": 313,
+  "rows": 17504350,
+  "zero_spread_rows": 11416519,
+  "missing_weekdays_with_no_rows": [
+    "2020-12-25"
+  ],
+  "sundays_with_rows": 52,
+  "saturdays_with_rows": 0,
+  "malformed_rows": 0,
+  "reversed_dates": 0,
+  "noncontiguous_repeated_dates": 0,
+  "reversed_timestamps_within_day": 0,
+  "duplicate_timestamps_within_day": 0,
+  "invalid_quotes": 0,
+  "days": {
+    "2020-01-01": {
+      "rows": 1545,
+      "first_time": "22:01:00.300",
+      "last_time": "23:59:54.357",
+      "zero_spread_rows": 240,
+      "max_within_day_gap_ms": 141830,
+      "max_gap_start_time": "23:33:43.444",
+      "max_gap_end_time": "23:36:05.274"
+    },
+    "2020-01-02": {
+      "rows": 30656,
+      "first_time": "00:00:00.471",
+      "last_time": "23:59:57.726",
+      "zero_spread_rows": 28912,
+      "max_within_day_gap_ms": 265619,
+      "max_gap_start_time": "22:40:03.849",
+      "max_gap_end_time": "22:44:29.468"
+    },
+    "2020-01-03": {
+      "rows": 36323,
+      "first_time": "00:00:01.643",
+      "last_time": "21:56:58.353",
+      "zero_spread_rows": 34008,
+      "max_within_day_gap_ms": 176418,
+      "max_gap_start_time": "00:45:36.049",
+      "max_gap_end_time": "00:48:32.467"
+    },
+    "2020-01-05": {
+      "rows": 2710,
+      "first_time": "22:01:00.073",
+      "last_time": "23:59:59.348",
+      "zero_spread_rows": 1313,
+      "max_within_day_gap_ms": 151249,
+      "max_gap_start_time": "22:53:05.890",
+      "max_gap_end_time": "22:55:37.139"
+    },
+    "2020-01-06": {
+      "rows": 30416,
+      "first_time": "00:00:00.268",
+      "last_time": "23:59:56.602",
+      "zero_spread_rows": 28866,
+      "max_within_day_gap_ms": 201405,
+      "max_gap_start_time": "21:03:23.506",
+      "max_gap_end_time": "21:06:44.911"
+    },
+    "2020-01-07": {
+      "rows": 36233,
+      "first_time": "00:00:04.279",
+      "last_time": "23:59:53.629",
+      "zero_spread_rows": 32433,
+      "max_within_day_gap_ms": 247792,
+      "max_gap_start_time": "05:36:37.648",
+      "max_gap_end_time": "05:40:45.440"
+    },
+    "2020-01-08": {
+      "rows": 48085,
+      "first_time": "00:00:00.092",
+      "last_time": "23:59:17.820",
+      "zero_spread_rows": 42789,
+      "max_within_day_gap_ms": 129373,
+      "max_gap_start_time": "21:37:50.835",
+      "max_gap_end_time": "21:40:00.208"
+    },
+    "2020-01-09": {
+      "rows": 30339,
+      "first_time": "00:00:00.712",
+      "last_time": "23:59:52.133",
+      "zero_spread_rows": 28801,
+      "max_within_day_gap_ms": 220117,
+      "max_gap_start_time": "22:50:24.434",
+      "max_gap_end_time": "22:54:04.551"
+    },
+    "2020-01-10": {
+      "rows": 28312,
+      "first_time": "00:00:00.257",
+      "last_time": "21:56:50.236",
+      "zero_spread_rows": 25629,
+      "max_within_day_gap_ms": 193961,
+      "max_gap_start_time": "03:51:49.525",
+      "max_gap_end_time": "03:55:03.486"
+    },
+    "2020-01-12": {
+      "rows": 1324,
+      "first_time": "22:01:00.106",
+      "last_time": "23:59:54.866",
+      "zero_spread_rows": 330,
+      "max_within_day_gap_ms": 140183,
+      "max_gap_start_time": "23:43:10.584",
+      "max_gap_end_time": "23:45:30.767"
+    },
+    "2020-01-13": {
+      "rows": 24217,
+      "first_time": "00:00:00.930",
+      "last_time": "23:59:30.589",
+      "zero_spread_rows": 22768,
+      "max_within_day_gap_ms": 284819,
+      "max_gap_start_time": "21:30:48.891",
+      "max_gap_end_time": "21:35:33.710"
+    },
+    "2020-01-14": {
+      "rows": 29159,
+      "first_time": "00:00:16.225",
+      "last_time": "23:59:56.955",
+      "zero_spread_rows": 27441,
+      "max_within_day_gap_ms": 201534,
+      "max_gap_start_time": "05:02:16.828",
+      "max_gap_end_time": "05:05:38.362"
+    },
+    "2020-01-15": {
+      "rows": 27443,
+      "first_time": "00:00:00.288",
+      "last_time": "23:59:44.217",
+      "zero_spread_rows": 25106,
+      "max_within_day_gap_ms": 207374,
+      "max_gap_start_time": "05:02:34.135",
+      "max_gap_end_time": "05:06:01.509"
+    },
+    "2020-01-16": {
+      "rows": 27084,
+      "first_time": "00:00:25.705",
+      "last_time": "23:59:58.509",
+      "zero_spread_rows": 25349,
+      "max_within_day_gap_ms": 179994,
+      "max_gap_start_time": "22:21:37.028",
+      "max_gap_end_time": "22:24:37.022"
+    },
+    "2020-01-17": {
+      "rows": 24973,
+      "first_time": "00:00:00.455",
+      "last_time": "21:56:59.590",
+      "zero_spread_rows": 22966,
+      "max_within_day_gap_ms": 346203,
+      "max_gap_start_time": "20:27:48.947",
+      "max_gap_end_time": "20:33:35.150"
+    },
+    "2020-01-19": {
+      "rows": 2009,
+      "first_time": "22:01:00.089",
+      "last_time": "23:59:49.927",
+      "zero_spread_rows": 381,
+      "max_within_day_gap_ms": 132627,
+      "max_gap_start_time": "23:12:29.273",
+      "max_gap_end_time": "23:14:41.900"
+    },
+    "2020-01-20": {
+      "rows": 20043,
+      "first_time": "00:00:00.962",
+      "last_time": "23:59:58.967",
+      "zero_spread_rows": 15823,
+      "max_within_day_gap_ms": 265484,
+      "max_gap_start_time": "05:01:06.992",
+      "max_gap_end_time": "05:05:32.476"
+    },
+    "2020-01-21": {
+      "rows": 25535,
+      "first_time": "00:00:00.688",
+      "last_time": "23:59:59.221",
+      "zero_spread_rows": 23733,
+      "max_within_day_gap_ms": 236115,
+      "max_gap_start_time": "22:15:08.391",
+      "max_gap_end_time": "22:19:04.506"
+    },
+    "2020-01-22": {
+      "rows": 24023,
+      "first_time": "00:00:00.772",
+      "last_time": "23:59:56.267",
+      "zero_spread_rows": 21428,
+      "max_within_day_gap_ms": 276046,
+      "max_gap_start_time": "04:15:17.565",
+      "max_gap_end_time": "04:19:53.611"
+    },
+    "2020-01-23": {
+      "rows": 29522,
+      "first_time": "00:00:02.111",
+      "last_time": "23:59:58.787",
+      "zero_spread_rows": 27550,
+      "max_within_day_gap_ms": 244032,
+      "max_gap_start_time": "22:19:08.271",
+      "max_gap_end_time": "22:23:12.303"
+    },
+    "2020-01-24": {
+      "rows": 24698,
+      "first_time": "00:00:00.546",
+      "last_time": "21:56:59.811",
+      "zero_spread_rows": 22499,
+      "max_within_day_gap_ms": 217663,
+      "max_gap_start_time": "21:21:03.951",
+      "max_gap_end_time": "21:24:41.614"
+    },
+    "2020-01-26": {
+      "rows": 4314,
+      "first_time": "22:01:00.121",
+      "last_time": "23:59:59.595",
+      "zero_spread_rows": 1143,
+      "max_within_day_gap_ms": 60964,
+      "max_gap_start_time": "22:28:31.027",
+      "max_gap_end_time": "22:29:31.991"
+    },
+    "2020-01-27": {
+      "rows": 25220,
+      "first_time": "00:00:00.253",
+      "last_time": "23:59:56.603",
+      "zero_spread_rows": 22941,
+      "max_within_day_gap_ms": 224937,
+      "max_gap_start_time": "23:28:48.179",
+      "max_gap_end_time": "23:32:33.116"
+    },
+    "2020-01-28": {
+      "rows": 22537,
+      "first_time": "00:00:00.901",
+      "last_time": "23:59:57.042",
+      "zero_spread_rows": 20790,
+      "max_within_day_gap_ms": 264089,
+      "max_gap_start_time": "00:11:10.305",
+      "max_gap_end_time": "00:15:34.394"
+    },
+    "2020-01-29": {
+      "rows": 23347,
+      "first_time": "00:00:02.538",
+      "last_time": "23:59:56.623",
+      "zero_spread_rows": 19369,
+      "max_within_day_gap_ms": 228249,
+      "max_gap_start_time": "03:42:25.108",
+      "max_gap_end_time": "03:46:13.357"
+    },
+    "2020-01-30": {
+      "rows": 27659,
+      "first_time": "00:00:00.646",
+      "last_time": "23:59:52.324",
+      "zero_spread_rows": 25023,
+      "max_within_day_gap_ms": 258891,
+      "max_gap_start_time": "05:10:16.715",
+      "max_gap_end_time": "05:14:35.606"
+    },
+    "2020-01-31": {
+      "rows": 28403,
+      "first_time": "00:00:00.267",
+      "last_time": "21:56:57.047",
+      "zero_spread_rows": 27131,
+      "max_within_day_gap_ms": 219970,
+      "max_gap_start_time": "03:53:50.382",
+      "max_gap_end_time": "03:57:30.352"
+    },
+    "2020-02-02": {
+      "rows": 2456,
+      "first_time": "22:01:00.073",
+      "last_time": "23:59:57.937",
+      "zero_spread_rows": 579,
+      "max_within_day_gap_ms": 184840,
+      "max_gap_start_time": "22:16:51.671",
+      "max_gap_end_time": "22:19:56.511"
+    },
+    "2020-02-03": {
+      "rows": 27777,
+      "first_time": "00:00:00.246",
+      "last_time": "23:59:48.450",
+      "zero_spread_rows": 25671,
+      "max_within_day_gap_ms": 273776,
+      "max_gap_start_time": "05:10:27.940",
+      "max_gap_end_time": "05:15:01.716"
+    },
+    "2020-02-04": {
+      "rows": 24931,
+      "first_time": "00:00:04.904",
+      "last_time": "23:59:55.369",
+      "zero_spread_rows": 22953,
+      "max_within_day_gap_ms": 230812,
+      "max_gap_start_time": "22:22:50.250",
+      "max_gap_end_time": "22:26:41.062"
+    },
+    "2020-02-05": {
+      "rows": 26671,
+      "first_time": "00:00:00.455",
+      "last_time": "23:59:43.397",
+      "zero_spread_rows": 23750,
+      "max_within_day_gap_ms": 195742,
+      "max_gap_start_time": "04:15:15.824",
+      "max_gap_end_time": "04:18:31.566"
+    },
+    "2020-02-06": {
+      "rows": 23003,
+      "first_time": "00:00:01.395",
+      "last_time": "23:59:56.994",
+      "zero_spread_rows": 21770,
+      "max_within_day_gap_ms": 213697,
+      "max_gap_start_time": "23:54:03.638",
+      "max_gap_end_time": "23:57:37.335"
+    },
+    "2020-02-07": {
+      "rows": 27965,
+      "first_time": "00:00:00.229",
+      "last_time": "21:56:57.870",
+      "zero_spread_rows": 24445,
+      "max_within_day_gap_ms": 237341,
+      "max_gap_start_time": "01:55:22.983",
+      "max_gap_end_time": "01:59:20.324"
+    },
+    "2020-02-09": {
+      "rows": 1659,
+      "first_time": "22:01:00.094",
+      "last_time": "23:59:47.210",
+      "zero_spread_rows": 830,
+      "max_within_day_gap_ms": 138279,
+      "max_gap_start_time": "22:27:41.974",
+      "max_gap_end_time": "22:30:00.253"
+    },
+    "2020-02-10": {
+      "rows": 22946,
+      "first_time": "00:00:00.290",
+      "last_time": "23:59:21.847",
+      "zero_spread_rows": 21061,
+      "max_within_day_gap_ms": 164131,
+      "max_gap_start_time": "21:15:20.684",
+      "max_gap_end_time": "21:18:04.815"
+    },
+    "2020-02-11": {
+      "rows": 24876,
+      "first_time": "00:00:02.197",
+      "last_time": "23:59:55.268",
+      "zero_spread_rows": 22576,
+      "max_within_day_gap_ms": 186831,
+      "max_gap_start_time": "06:07:59.729",
+      "max_gap_end_time": "06:11:06.560"
+    },
+    "2020-02-12": {
+      "rows": 26271,
+      "first_time": "00:00:00.239",
+      "last_time": "23:59:57.847",
+      "zero_spread_rows": 23536,
+      "max_within_day_gap_ms": 165561,
+      "max_gap_start_time": "23:10:40.059",
+      "max_gap_end_time": "23:13:25.620"
+    },
+    "2020-02-13": {
+      "rows": 26896,
+      "first_time": "00:00:02.190",
+      "last_time": "23:59:59.673",
+      "zero_spread_rows": 24108,
+      "max_within_day_gap_ms": 207673,
+      "max_gap_start_time": "02:30:01.993",
+      "max_gap_end_time": "02:33:29.666"
+    },
+    "2020-02-14": {
+      "rows": 23899,
+      "first_time": "00:00:00.519",
+      "last_time": "21:56:59.843",
+      "zero_spread_rows": 20203,
+      "max_within_day_gap_ms": 290900,
+      "max_gap_start_time": "04:35:45.068",
+      "max_gap_end_time": "04:40:35.968"
+    },
+    "2020-02-16": {
+      "rows": 1858,
+      "first_time": "22:01:00.102",
+      "last_time": "23:59:54.764",
+      "zero_spread_rows": 333,
+      "max_within_day_gap_ms": 91627,
+      "max_gap_start_time": "23:26:00.450",
+      "max_gap_end_time": "23:27:32.077"
+    },
+    "2020-02-17": {
+      "rows": 17810,
+      "first_time": "00:00:00.236",
+      "last_time": "23:59:57.013",
+      "zero_spread_rows": 13537,
+      "max_within_day_gap_ms": 167447,
+      "max_gap_start_time": "04:34:23.076",
+      "max_gap_end_time": "04:37:10.523"
+    },
+    "2020-02-18": {
+      "rows": 28191,
+      "first_time": "00:00:00.245",
+      "last_time": "23:59:45.205",
+      "zero_spread_rows": 25520,
+      "max_within_day_gap_ms": 166933,
+      "max_gap_start_time": "05:45:58.049",
+      "max_gap_end_time": "05:48:44.982"
+    },
+    "2020-02-19": {
+      "rows": 26441,
+      "first_time": "00:00:00.241",
+      "last_time": "23:59:59.031",
+      "zero_spread_rows": 23982,
+      "max_within_day_gap_ms": 221640,
+      "max_gap_start_time": "05:38:15.558",
+      "max_gap_end_time": "05:41:57.198"
+    },
+    "2020-02-20": {
+      "rows": 34021,
+      "first_time": "00:00:00.245",
+      "last_time": "23:58:59.812",
+      "zero_spread_rows": 31312,
+      "max_within_day_gap_ms": 235765,
+      "max_gap_start_time": "22:15:18.084",
+      "max_gap_end_time": "22:19:13.849"
+    },
+    "2020-02-21": {
+      "rows": 33011,
+      "first_time": "00:00:00.610",
+      "last_time": "21:56:58.039",
+      "zero_spread_rows": 28710,
+      "max_within_day_gap_ms": 145355,
+      "max_gap_start_time": "04:42:22.758",
+      "max_gap_end_time": "04:44:48.113"
+    },
+    "2020-02-23": {
+      "rows": 5625,
+      "first_time": "22:01:00.177",
+      "last_time": "23:59:52.805",
+      "zero_spread_rows": 749,
+      "max_within_day_gap_ms": 49792,
+      "max_gap_start_time": "22:35:02.755",
+      "max_gap_end_time": "22:35:52.547"
+    },
+    "2020-02-24": {
+      "rows": 47092,
+      "first_time": "00:00:00.249",
+      "last_time": "23:59:59.216",
+      "zero_spread_rows": 39843,
+      "max_within_day_gap_ms": 267293,
+      "max_gap_start_time": "22:07:01.126",
+      "max_gap_end_time": "22:11:28.419"
+    },
+    "2020-02-25": {
+      "rows": 49128,
+      "first_time": "00:00:01.114",
+      "last_time": "23:59:59.894",
+      "zero_spread_rows": 44371,
+      "max_within_day_gap_ms": 213219,
+      "max_gap_start_time": "04:49:16.392",
+      "max_gap_end_time": "04:52:49.611"
+    },
+    "2020-02-26": {
+      "rows": 55810,
+      "first_time": "00:00:00.247",
+      "last_time": "23:59:58.609",
+      "zero_spread_rows": 47964,
+      "max_within_day_gap_ms": 145557,
+      "max_gap_start_time": "22:11:15.675",
+      "max_gap_end_time": "22:13:41.232"
+    },
+    "2020-02-27": {
+      "rows": 66519,
+      "first_time": "00:00:00.251",
+      "last_time": "23:59:59.426",
+      "zero_spread_rows": 57787,
+      "max_within_day_gap_ms": 120332,
+      "max_gap_start_time": "21:58:59.855",
+      "max_gap_end_time": "22:01:00.187"
+    },
+    "2020-02-28": {
+      "rows": 85565,
+      "first_time": "00:00:00.464",
+      "last_time": "21:56:59.419",
+      "zero_spread_rows": 66059,
+      "max_within_day_gap_ms": 71512,
+      "max_gap_start_time": "00:32:33.217",
+      "max_gap_end_time": "00:33:44.729"
+    },
+    "2020-03-01": {
+      "rows": 4458,
+      "first_time": "22:01:00.103",
+      "last_time": "23:59:56.853",
+      "zero_spread_rows": 1574,
+      "max_within_day_gap_ms": 86129,
+      "max_gap_start_time": "22:46:11.660",
+      "max_gap_end_time": "22:47:37.789"
+    },
+    "2020-03-02": {
+      "rows": 94384,
+      "first_time": "00:00:00.239",
+      "last_time": "23:59:57.737",
+      "zero_spread_rows": 70435,
+      "max_within_day_gap_ms": 121058,
+      "max_gap_start_time": "21:58:59.241",
+      "max_gap_end_time": "22:01:00.299"
+    },
+    "2020-03-03": {
+      "rows": 89678,
+      "first_time": "00:00:00.581",
+      "last_time": "23:59:53.755",
+      "zero_spread_rows": 58956,
+      "max_within_day_gap_ms": 220452,
+      "max_gap_start_time": "22:54:43.679",
+      "max_gap_end_time": "22:58:24.131"
+    },
+    "2020-03-04": {
+      "rows": 65053,
+      "first_time": "00:00:00.241",
+      "last_time": "23:59:58.918",
+      "zero_spread_rows": 46086,
+      "max_within_day_gap_ms": 214513,
+      "max_gap_start_time": "22:07:46.886",
+      "max_gap_end_time": "22:11:21.399"
+    },
+    "2020-03-05": {
+      "rows": 63797,
+      "first_time": "00:00:00.551",
+      "last_time": "23:59:58.038",
+      "zero_spread_rows": 41334,
+      "max_within_day_gap_ms": 201499,
+      "max_gap_start_time": "04:23:37.820",
+      "max_gap_end_time": "04:26:59.319"
+    },
+    "2020-03-06": {
+      "rows": 104405,
+      "first_time": "00:00:00.644",
+      "last_time": "21:56:58.121",
+      "zero_spread_rows": 50524,
+      "max_within_day_gap_ms": 57793,
+      "max_gap_start_time": "05:32:51.399",
+      "max_gap_end_time": "05:33:49.192"
+    },
+    "2020-03-08": {
+      "rows": 11270,
+      "first_time": "21:01:00.088",
+      "last_time": "23:59:52.245",
+      "zero_spread_rows": 148,
+      "max_within_day_gap_ms": 147954,
+      "max_gap_start_time": "21:36:10.296",
+      "max_gap_end_time": "21:38:38.250"
+    },
+    "2020-03-09": {
+      "rows": 150008,
+      "first_time": "00:00:00.202",
+      "last_time": "23:59:59.773",
+      "zero_spread_rows": 23991,
+      "max_within_day_gap_ms": 1099728,
+      "max_gap_start_time": "17:39:16.990",
+      "max_gap_end_time": "17:57:36.718"
+    },
+    "2020-03-10": {
+      "rows": 143315,
+      "first_time": "00:00:00.457",
+      "last_time": "23:59:57.408",
+      "zero_spread_rows": 48780,
+      "max_within_day_gap_ms": 120211,
+      "max_gap_start_time": "20:58:59.996",
+      "max_gap_end_time": "21:01:00.207"
+    },
+    "2020-03-11": {
+      "rows": 111055,
+      "first_time": "00:00:00.225",
+      "last_time": "23:59:59.082",
+      "zero_spread_rows": 40153,
+      "max_within_day_gap_ms": 198494,
+      "max_gap_start_time": "00:14:37.204",
+      "max_gap_end_time": "00:17:55.698"
+    },
+    "2020-03-12": {
+      "rows": 143737,
+      "first_time": "00:00:01.347",
+      "last_time": "23:59:59.923",
+      "zero_spread_rows": 27412,
+      "max_within_day_gap_ms": 170552,
+      "max_gap_start_time": "21:11:46.331",
+      "max_gap_end_time": "21:14:36.883"
+    },
+    "2020-03-13": {
+      "rows": 133109,
+      "first_time": "00:00:00.329",
+      "last_time": "20:56:59.556",
+      "zero_spread_rows": 30697,
+      "max_within_day_gap_ms": 30198,
+      "max_gap_start_time": "02:11:09.599",
+      "max_gap_end_time": "02:11:39.797"
+    },
+    "2020-03-15": {
+      "rows": 16058,
+      "first_time": "21:01:00.221",
+      "last_time": "23:59:59.977",
+      "zero_spread_rows": 5,
+      "max_within_day_gap_ms": 66861,
+      "max_gap_start_time": "21:45:25.595",
+      "max_gap_end_time": "21:46:32.456"
+    },
+    "2020-03-16": {
+      "rows": 158460,
+      "first_time": "00:00:00.179",
+      "last_time": "23:59:58.432",
+      "zero_spread_rows": 23741,
+      "max_within_day_gap_ms": 276287,
+      "max_gap_start_time": "21:27:29.824",
+      "max_gap_end_time": "21:32:06.111"
+    },
+    "2020-03-17": {
+      "rows": 142598,
+      "first_time": "00:00:00.247",
+      "last_time": "23:59:59.860",
+      "zero_spread_rows": 37910,
+      "max_within_day_gap_ms": 124772,
+      "max_gap_start_time": "20:58:55.303",
+      "max_gap_end_time": "21:01:00.075"
+    },
+    "2020-03-18": {
+      "rows": 158264,
+      "first_time": "00:00:00.085",
+      "last_time": "23:59:59.901",
+      "zero_spread_rows": 38876,
+      "max_within_day_gap_ms": 279429,
+      "max_gap_start_time": "21:55:20.741",
+      "max_gap_end_time": "22:00:00.170"
+    },
+    "2020-03-19": {
+      "rows": 166624,
+      "first_time": "00:00:00.112",
+      "last_time": "23:59:59.677",
+      "zero_spread_rows": 21060,
+      "max_within_day_gap_ms": 121422,
+      "max_gap_start_time": "20:58:58.856",
+      "max_gap_end_time": "21:01:00.278"
+    },
+    "2020-03-20": {
+      "rows": 174092,
+      "first_time": "00:00:00.080",
+      "last_time": "20:56:58.696",
+      "zero_spread_rows": 20200,
+      "max_within_day_gap_ms": 21109,
+      "max_gap_start_time": "00:10:59.896",
+      "max_gap_end_time": "00:11:21.005"
+    },
+    "2020-03-22": {
+      "rows": 14982,
+      "first_time": "21:01:00.076",
+      "last_time": "23:59:59.662",
+      "zero_spread_rows": 24,
+      "max_within_day_gap_ms": 214694,
+      "max_gap_start_time": "21:01:00.076",
+      "max_gap_end_time": "21:04:34.770"
+    },
+    "2020-03-23": {
+      "rows": 158123,
+      "first_time": "00:00:00.289",
+      "last_time": "23:59:59.717",
+      "zero_spread_rows": 21534,
+      "max_within_day_gap_ms": 214579,
+      "max_gap_start_time": "21:12:14.862",
+      "max_gap_end_time": "21:15:49.441"
+    },
+    "2020-03-24": {
+      "rows": 147739,
+      "first_time": "00:00:00.194",
+      "last_time": "23:59:59.331",
+      "zero_spread_rows": 6597,
+      "max_within_day_gap_ms": 123202,
+      "max_gap_start_time": "20:58:57.071",
+      "max_gap_end_time": "21:01:00.273"
+    },
+    "2020-03-25": {
+      "rows": 128860,
+      "first_time": "00:00:00.148",
+      "last_time": "23:59:59.953",
+      "zero_spread_rows": 41885,
+      "max_within_day_gap_ms": 995653,
+      "max_gap_start_time": "02:11:45.786",
+      "max_gap_end_time": "02:28:21.439"
+    },
+    "2020-03-26": {
+      "rows": 137450,
+      "first_time": "00:00:00.160",
+      "last_time": "23:59:56.423",
+      "zero_spread_rows": 33558,
+      "max_within_day_gap_ms": 175191,
+      "max_gap_start_time": "21:15:45.574",
+      "max_gap_end_time": "21:18:40.765"
+    },
+    "2020-03-27": {
+      "rows": 120111,
+      "first_time": "00:00:00.222",
+      "last_time": "20:56:59.029",
+      "zero_spread_rows": 42132,
+      "max_within_day_gap_ms": 27588,
+      "max_gap_start_time": "05:49:16.748",
+      "max_gap_end_time": "05:49:44.336"
+    },
+    "2020-03-29": {
+      "rows": 7457,
+      "first_time": "21:01:00.107",
+      "last_time": "23:59:58.926",
+      "zero_spread_rows": 214,
+      "max_within_day_gap_ms": 391908,
+      "max_gap_start_time": "21:47:21.691",
+      "max_gap_end_time": "21:53:53.599"
+    },
+    "2020-03-30": {
+      "rows": 115275,
+      "first_time": "00:00:00.268",
+      "last_time": "23:59:59.617",
+      "zero_spread_rows": 25455,
+      "max_within_day_gap_ms": 388079,
+      "max_gap_start_time": "21:17:56.976",
+      "max_gap_end_time": "21:24:25.055"
+    },
+    "2020-03-31": {
+      "rows": 128438,
+      "first_time": "00:00:00.166",
+      "last_time": "23:59:59.376",
+      "zero_spread_rows": 28761,
+      "max_within_day_gap_ms": 225571,
+      "max_gap_start_time": "21:54:12.904",
+      "max_gap_end_time": "21:57:58.475"
+    },
+    "2020-04-01": {
+      "rows": 107326,
+      "first_time": "00:00:00.126",
+      "last_time": "23:59:58.538",
+      "zero_spread_rows": 26062,
+      "max_within_day_gap_ms": 125315,
+      "max_gap_start_time": "20:58:55.019",
+      "max_gap_end_time": "21:01:00.334"
+    },
+    "2020-04-02": {
+      "rows": 105005,
+      "first_time": "00:00:00.248",
+      "last_time": "23:59:59.228",
+      "zero_spread_rows": 45239,
+      "max_within_day_gap_ms": 329116,
+      "max_gap_start_time": "21:40:33.237",
+      "max_gap_end_time": "21:46:02.353"
+    },
+    "2020-04-03": {
+      "rows": 91119,
+      "first_time": "00:00:00.349",
+      "last_time": "20:56:58.414",
+      "zero_spread_rows": 41937,
+      "max_within_day_gap_ms": 41962,
+      "max_gap_start_time": "04:54:46.948",
+      "max_gap_end_time": "04:55:28.910"
+    },
+    "2020-04-05": {
+      "rows": 6739,
+      "first_time": "21:01:00.077",
+      "last_time": "23:59:59.397",
+      "zero_spread_rows": 17,
+      "max_within_day_gap_ms": 281267,
+      "max_gap_start_time": "21:41:17.821",
+      "max_gap_end_time": "21:45:59.088"
+    },
+    "2020-04-06": {
+      "rows": 80693,
+      "first_time": "00:00:00.340",
+      "last_time": "23:59:56.354",
+      "zero_spread_rows": 43530,
+      "max_within_day_gap_ms": 121232,
+      "max_gap_start_time": "21:52:45.123",
+      "max_gap_end_time": "21:54:46.355"
+    },
+    "2020-04-07": {
+      "rows": 82163,
+      "first_time": "00:00:01.889",
+      "last_time": "23:59:59.424",
+      "zero_spread_rows": 52230,
+      "max_within_day_gap_ms": 196419,
+      "max_gap_start_time": "21:33:47.856",
+      "max_gap_end_time": "21:37:04.275"
+    },
+    "2020-04-08": {
+      "rows": 73833,
+      "first_time": "00:00:00.420",
+      "last_time": "23:59:59.235",
+      "zero_spread_rows": 47365,
+      "max_within_day_gap_ms": 120450,
+      "max_gap_start_time": "20:58:59.841",
+      "max_gap_end_time": "21:01:00.291"
+    },
+    "2020-04-09": {
+      "rows": 76852,
+      "first_time": "00:00:00.356",
+      "last_time": "23:59:59.807",
+      "zero_spread_rows": 51660,
+      "max_within_day_gap_ms": 152164,
+      "max_gap_start_time": "21:05:02.049",
+      "max_gap_end_time": "21:07:34.213"
+    },
+    "2020-04-10": {
+      "rows": 39620,
+      "first_time": "00:00:00.013",
+      "last_time": "20:56:58.558",
+      "zero_spread_rows": 1786,
+      "max_within_day_gap_ms": 141647,
+      "max_gap_start_time": "09:16:59.269",
+      "max_gap_end_time": "09:19:20.916"
+    },
+    "2020-04-12": {
+      "rows": 4159,
+      "first_time": "21:01:00.112",
+      "last_time": "23:59:58.110",
+      "zero_spread_rows": 341,
+      "max_within_day_gap_ms": 408833,
+      "max_gap_start_time": "21:16:22.973",
+      "max_gap_end_time": "21:23:11.806"
+    },
+    "2020-04-13": {
+      "rows": 54829,
+      "first_time": "00:00:00.292",
+      "last_time": "23:59:59.899",
+      "zero_spread_rows": 23107,
+      "max_within_day_gap_ms": 120353,
+      "max_gap_start_time": "20:58:59.846",
+      "max_gap_end_time": "21:01:00.199"
+    },
+    "2020-04-14": {
+      "rows": 62352,
+      "first_time": "00:00:00.406",
+      "last_time": "23:59:58.402",
+      "zero_spread_rows": 44104,
+      "max_within_day_gap_ms": 220001,
+      "max_gap_start_time": "21:39:13.174",
+      "max_gap_end_time": "21:42:53.175"
+    },
+    "2020-04-15": {
+      "rows": 63415,
+      "first_time": "00:00:00.346",
+      "last_time": "23:59:59.073",
+      "zero_spread_rows": 46354,
+      "max_within_day_gap_ms": 181922,
+      "max_gap_start_time": "21:41:58.335",
+      "max_gap_end_time": "21:45:00.257"
+    },
+    "2020-04-16": {
+      "rows": 81146,
+      "first_time": "00:00:00.018",
+      "last_time": "23:59:57.104",
+      "zero_spread_rows": 51598,
+      "max_within_day_gap_ms": 120295,
+      "max_gap_start_time": "20:58:59.978",
+      "max_gap_end_time": "21:01:00.273"
+    },
+    "2020-04-17": {
+      "rows": 68116,
+      "first_time": "00:00:00.495",
+      "last_time": "20:56:59.929",
+      "zero_spread_rows": 39013,
+      "max_within_day_gap_ms": 145504,
+      "max_gap_start_time": "04:29:54.405",
+      "max_gap_end_time": "04:32:19.909"
+    },
+    "2020-04-19": {
+      "rows": 3383,
+      "first_time": "21:01:00.103",
+      "last_time": "23:59:59.946",
+      "zero_spread_rows": 257,
+      "max_within_day_gap_ms": 203307,
+      "max_gap_start_time": "21:21:22.628",
+      "max_gap_end_time": "21:24:45.935"
+    },
+    "2020-04-20": {
+      "rows": 56934,
+      "first_time": "00:00:00.244",
+      "last_time": "23:59:51.517",
+      "zero_spread_rows": 32953,
+      "max_within_day_gap_ms": 357191,
+      "max_gap_start_time": "21:11:26.117",
+      "max_gap_end_time": "21:17:23.308"
+    },
+    "2020-04-21": {
+      "rows": 58753,
+      "first_time": "00:00:00.236",
+      "last_time": "23:59:50.788",
+      "zero_spread_rows": 42969,
+      "max_within_day_gap_ms": 194780,
+      "max_gap_start_time": "21:22:35.886",
+      "max_gap_end_time": "21:25:50.666"
+    },
+    "2020-04-22": {
+      "rows": 46108,
+      "first_time": "00:00:00.238",
+      "last_time": "23:59:48.729",
+      "zero_spread_rows": 35624,
+      "max_within_day_gap_ms": 120491,
+      "max_gap_start_time": "20:58:59.796",
+      "max_gap_end_time": "21:01:00.287"
+    },
+    "2020-04-23": {
+      "rows": 68913,
+      "first_time": "00:00:00.243",
+      "last_time": "23:59:58.713",
+      "zero_spread_rows": 43174,
+      "max_within_day_gap_ms": 329266,
+      "max_gap_start_time": "21:33:21.588",
+      "max_gap_end_time": "21:38:50.854"
+    },
+    "2020-04-24": {
+      "rows": 55107,
+      "first_time": "00:00:00.269",
+      "last_time": "20:56:57.333",
+      "zero_spread_rows": 33167,
+      "max_within_day_gap_ms": 188329,
+      "max_gap_start_time": "04:49:00.422",
+      "max_gap_end_time": "04:52:08.751"
+    },
+    "2020-04-26": {
+      "rows": 2216,
+      "first_time": "21:01:00.108",
+      "last_time": "23:59:58.342",
+      "zero_spread_rows": 500,
+      "max_within_day_gap_ms": 420671,
+      "max_gap_start_time": "21:36:12.897",
+      "max_gap_end_time": "21:43:13.568"
+    },
+    "2020-04-27": {
+      "rows": 50981,
+      "first_time": "00:00:00.642",
+      "last_time": "23:59:59.977",
+      "zero_spread_rows": 34508,
+      "max_within_day_gap_ms": 127010,
+      "max_gap_start_time": "20:58:53.266",
+      "max_gap_end_time": "21:01:00.276"
+    },
+    "2020-04-28": {
+      "rows": 49812,
+      "first_time": "00:00:00.446",
+      "last_time": "23:59:53.339",
+      "zero_spread_rows": 37243,
+      "max_within_day_gap_ms": 125380,
+      "max_gap_start_time": "20:58:54.894",
+      "max_gap_end_time": "21:01:00.274"
+    },
+    "2020-04-29": {
+      "rows": 52691,
+      "first_time": "00:00:00.636",
+      "last_time": "23:59:59.603",
+      "zero_spread_rows": 34686,
+      "max_within_day_gap_ms": 176370,
+      "max_gap_start_time": "21:21:47.645",
+      "max_gap_end_time": "21:24:44.015"
+    },
+    "2020-04-30": {
+      "rows": 70037,
+      "first_time": "00:00:00.118",
+      "last_time": "23:59:55.244",
+      "zero_spread_rows": 47873,
+      "max_within_day_gap_ms": 203347,
+      "max_gap_start_time": "21:01:07.644",
+      "max_gap_end_time": "21:04:30.991"
+    },
+    "2020-05-01": {
+      "rows": 51108,
+      "first_time": "00:00:00.238",
+      "last_time": "20:56:59.638",
+      "zero_spread_rows": 29590,
+      "max_within_day_gap_ms": 80430,
+      "max_gap_start_time": "17:55:25.607",
+      "max_gap_end_time": "17:56:46.037"
+    },
+    "2020-05-03": {
+      "rows": 3387,
+      "first_time": "21:01:00.071",
+      "last_time": "23:59:57.941",
+      "zero_spread_rows": 1396,
+      "max_within_day_gap_ms": 429912,
+      "max_gap_start_time": "21:21:42.794",
+      "max_gap_end_time": "21:28:52.706"
+    },
+    "2020-05-04": {
+      "rows": 52649,
+      "first_time": "00:00:00.438",
+      "last_time": "23:59:57.464",
+      "zero_spread_rows": 35815,
+      "max_within_day_gap_ms": 141094,
+      "max_gap_start_time": "23:09:03.129",
+      "max_gap_end_time": "23:11:24.223"
+    },
+    "2020-05-05": {
+      "rows": 54047,
+      "first_time": "00:00:01.089",
+      "last_time": "23:59:59.269",
+      "zero_spread_rows": 38549,
+      "max_within_day_gap_ms": 179665,
+      "max_gap_start_time": "00:15:29.174",
+      "max_gap_end_time": "00:18:28.839"
+    },
+    "2020-05-06": {
+      "rows": 52764,
+      "first_time": "00:00:00.540",
+      "last_time": "23:59:58.259",
+      "zero_spread_rows": 37150,
+      "max_within_day_gap_ms": 208874,
+      "max_gap_start_time": "04:33:49.969",
+      "max_gap_end_time": "04:37:18.843"
+    },
+    "2020-05-07": {
+      "rows": 59910,
+      "first_time": "00:00:03.469",
+      "last_time": "23:59:58.190",
+      "zero_spread_rows": 38182,
+      "max_within_day_gap_ms": 245624,
+      "max_gap_start_time": "21:25:25.269",
+      "max_gap_end_time": "21:29:30.893"
+    },
+    "2020-05-08": {
+      "rows": 45654,
+      "first_time": "00:00:00.237",
+      "last_time": "20:56:52.242",
+      "zero_spread_rows": 28971,
+      "max_within_day_gap_ms": 88938,
+      "max_gap_start_time": "20:27:41.394",
+      "max_gap_end_time": "20:29:10.332"
+    },
+    "2020-05-10": {
+      "rows": 2823,
+      "first_time": "21:01:00.115",
+      "last_time": "23:59:38.317",
+      "zero_spread_rows": 1028,
+      "max_within_day_gap_ms": 265719,
+      "max_gap_start_time": "21:25:36.104",
+      "max_gap_end_time": "21:30:01.823"
+    },
+    "2020-05-11": {
+      "rows": 49180,
+      "first_time": "00:00:00.239",
+      "last_time": "23:59:56.933",
+      "zero_spread_rows": 35584,
+      "max_within_day_gap_ms": 146325,
+      "max_gap_start_time": "21:55:51.556",
+      "max_gap_end_time": "21:58:17.881"
+    },
+    "2020-05-12": {
+      "rows": 52167,
+      "first_time": "00:00:00.265",
+      "last_time": "23:59:58.454",
+      "zero_spread_rows": 38631,
+      "max_within_day_gap_ms": 322666,
+      "max_gap_start_time": "21:24:38.854",
+      "max_gap_end_time": "21:30:01.520"
+    },
+    "2020-05-13": {
+      "rows": 55908,
+      "first_time": "00:00:00.453",
+      "last_time": "23:59:47.482",
+      "zero_spread_rows": 40088,
+      "max_within_day_gap_ms": 198482,
+      "max_gap_start_time": "22:52:06.525",
+      "max_gap_end_time": "22:55:25.007"
+    },
+    "2020-05-14": {
+      "rows": 53405,
+      "first_time": "00:00:00.688",
+      "last_time": "23:59:59.014",
+      "zero_spread_rows": 36026,
+      "max_within_day_gap_ms": 225798,
+      "max_gap_start_time": "21:38:21.057",
+      "max_gap_end_time": "21:42:06.855"
+    },
+    "2020-05-15": {
+      "rows": 47349,
+      "first_time": "00:00:02.041",
+      "last_time": "20:56:59.819",
+      "zero_spread_rows": 32031,
+      "max_within_day_gap_ms": 122927,
+      "max_gap_start_time": "00:44:38.350",
+      "max_gap_end_time": "00:46:41.277"
+    },
+    "2020-05-17": {
+      "rows": 2901,
+      "first_time": "21:01:00.070",
+      "last_time": "23:59:58.520",
+      "zero_spread_rows": 673,
+      "max_within_day_gap_ms": 121138,
+      "max_gap_start_time": "21:37:44.409",
+      "max_gap_end_time": "21:39:45.547"
+    },
+    "2020-05-18": {
+      "rows": 47146,
+      "first_time": "00:00:00.240",
+      "last_time": "23:59:59.676",
+      "zero_spread_rows": 32982,
+      "max_within_day_gap_ms": 126917,
+      "max_gap_start_time": "03:46:40.130",
+      "max_gap_end_time": "03:48:47.047"
+    },
+    "2020-05-19": {
+      "rows": 48735,
+      "first_time": "00:00:00.423",
+      "last_time": "23:59:35.117",
+      "zero_spread_rows": 35587,
+      "max_within_day_gap_ms": 120482,
+      "max_gap_start_time": "20:58:59.792",
+      "max_gap_end_time": "21:01:00.274"
+    },
+    "2020-05-20": {
+      "rows": 47180,
+      "first_time": "00:00:00.244",
+      "last_time": "23:59:49.858",
+      "zero_spread_rows": 33714,
+      "max_within_day_gap_ms": 137539,
+      "max_gap_start_time": "23:44:55.293",
+      "max_gap_end_time": "23:47:12.832"
+    },
+    "2020-05-21": {
+      "rows": 49712,
+      "first_time": "00:00:02.385",
+      "last_time": "23:59:46.318",
+      "zero_spread_rows": 32831,
+      "max_within_day_gap_ms": 191621,
+      "max_gap_start_time": "21:17:05.604",
+      "max_gap_end_time": "21:20:17.225"
+    },
+    "2020-05-22": {
+      "rows": 42199,
+      "first_time": "00:00:00.397",
+      "last_time": "20:56:56.410",
+      "zero_spread_rows": 29091,
+      "max_within_day_gap_ms": 74564,
+      "max_gap_start_time": "17:36:15.292",
+      "max_gap_end_time": "17:37:29.856"
+    },
+    "2020-05-24": {
+      "rows": 1977,
+      "first_time": "21:01:00.108",
+      "last_time": "23:59:59.816",
+      "zero_spread_rows": 519,
+      "max_within_day_gap_ms": 203748,
+      "max_gap_start_time": "21:46:00.242",
+      "max_gap_end_time": "21:49:23.990"
+    },
+    "2020-05-25": {
+      "rows": 30659,
+      "first_time": "00:00:00.120",
+      "last_time": "23:59:57.568",
+      "zero_spread_rows": 17219,
+      "max_within_day_gap_ms": 222751,
+      "max_gap_start_time": "18:24:41.356",
+      "max_gap_end_time": "18:28:24.107"
+    },
+    "2020-05-26": {
+      "rows": 50249,
+      "first_time": "00:00:00.450",
+      "last_time": "23:59:58.442",
+      "zero_spread_rows": 35945,
+      "max_within_day_gap_ms": 121239,
+      "max_gap_start_time": "20:58:59.053",
+      "max_gap_end_time": "21:01:00.292"
+    },
+    "2020-05-27": {
+      "rows": 73077,
+      "first_time": "00:00:00.578",
+      "last_time": "23:59:59.922",
+      "zero_spread_rows": 48447,
+      "max_within_day_gap_ms": 120661,
+      "max_gap_start_time": "20:58:59.636",
+      "max_gap_end_time": "21:01:00.297"
+    },
+    "2020-05-28": {
+      "rows": 67962,
+      "first_time": "00:00:00.191",
+      "last_time": "23:59:56.117",
+      "zero_spread_rows": 46070,
+      "max_within_day_gap_ms": 140744,
+      "max_gap_start_time": "21:03:42.741",
+      "max_gap_end_time": "21:06:03.485"
+    },
+    "2020-05-29": {
+      "rows": 74306,
+      "first_time": "00:00:00.440",
+      "last_time": "20:56:57.021",
+      "zero_spread_rows": 50913,
+      "max_within_day_gap_ms": 83727,
+      "max_gap_start_time": "00:02:52.034",
+      "max_gap_end_time": "00:04:15.761"
+    },
+    "2020-05-31": {
+      "rows": 3846,
+      "first_time": "21:01:00.111",
+      "last_time": "23:59:59.209",
+      "zero_spread_rows": 702,
+      "max_within_day_gap_ms": 246493,
+      "max_gap_start_time": "21:24:35.485",
+      "max_gap_end_time": "21:28:41.978"
+    },
+    "2020-06-01": {
+      "rows": 64614,
+      "first_time": "00:00:00.078",
+      "last_time": "23:59:58.375",
+      "zero_spread_rows": 44402,
+      "max_within_day_gap_ms": 219965,
+      "max_gap_start_time": "21:38:12.915",
+      "max_gap_end_time": "21:41:52.880"
+    },
+    "2020-06-02": {
+      "rows": 70739,
+      "first_time": "00:00:00.363",
+      "last_time": "23:59:57.869",
+      "zero_spread_rows": 51902,
+      "max_within_day_gap_ms": 164967,
+      "max_gap_start_time": "21:52:36.576",
+      "max_gap_end_time": "21:55:21.543"
+    },
+    "2020-06-03": {
+      "rows": 80215,
+      "first_time": "00:00:00.397",
+      "last_time": "23:59:48.440",
+      "zero_spread_rows": 51276,
+      "max_within_day_gap_ms": 167378,
+      "max_gap_start_time": "21:25:42.595",
+      "max_gap_end_time": "21:28:29.973"
+    },
+    "2020-06-04": {
+      "rows": 84305,
+      "first_time": "00:00:00.641",
+      "last_time": "23:59:56.449",
+      "zero_spread_rows": 51636,
+      "max_within_day_gap_ms": 127607,
+      "max_gap_start_time": "20:58:52.686",
+      "max_gap_end_time": "21:01:00.293"
+    },
+    "2020-06-05": {
+      "rows": 80615,
+      "first_time": "00:00:00.241",
+      "last_time": "20:56:59.484",
+      "zero_spread_rows": 49628,
+      "max_within_day_gap_ms": 51803,
+      "max_gap_start_time": "03:59:27.775",
+      "max_gap_end_time": "04:00:19.578"
+    },
+    "2020-06-07": {
+      "rows": 3981,
+      "first_time": "21:01:00.105",
+      "last_time": "23:59:59.469",
+      "zero_spread_rows": 847,
+      "max_within_day_gap_ms": 77997,
+      "max_gap_start_time": "21:16:42.260",
+      "max_gap_end_time": "21:18:00.257"
+    },
+    "2020-06-08": {
+      "rows": 65376,
+      "first_time": "00:00:00.546",
+      "last_time": "23:59:57.108",
+      "zero_spread_rows": 45020,
+      "max_within_day_gap_ms": 222946,
+      "max_gap_start_time": "01:10:22.227",
+      "max_gap_end_time": "01:14:05.173"
+    },
+    "2020-06-09": {
+      "rows": 74886,
+      "first_time": "00:00:00.955",
+      "last_time": "23:59:59.099",
+      "zero_spread_rows": 48853,
+      "max_within_day_gap_ms": 121967,
+      "max_gap_start_time": "21:21:18.269",
+      "max_gap_end_time": "21:23:20.236"
+    },
+    "2020-06-10": {
+      "rows": 84607,
+      "first_time": "00:00:00.233",
+      "last_time": "23:59:59.224",
+      "zero_spread_rows": 49764,
+      "max_within_day_gap_ms": 150827,
+      "max_gap_start_time": "21:02:25.043",
+      "max_gap_end_time": "21:04:55.870"
+    },
+    "2020-06-11": {
+      "rows": 112615,
+      "first_time": "00:00:00.200",
+      "last_time": "23:59:59.973",
+      "zero_spread_rows": 76214,
+      "max_within_day_gap_ms": 121132,
+      "max_gap_start_time": "20:58:59.149",
+      "max_gap_end_time": "21:01:00.281"
+    },
+    "2020-06-12": {
+      "rows": 104007,
+      "first_time": "00:00:00.375",
+      "last_time": "20:56:48.707",
+      "zero_spread_rows": 73934,
+      "max_within_day_gap_ms": 35528,
+      "max_gap_start_time": "04:37:19.077",
+      "max_gap_end_time": "04:37:54.605"
+    },
+    "2020-06-14": {
+      "rows": 6393,
+      "first_time": "21:01:00.109",
+      "last_time": "23:59:59.735",
+      "zero_spread_rows": 1514,
+      "max_within_day_gap_ms": 222649,
+      "max_gap_start_time": "21:26:20.463",
+      "max_gap_end_time": "21:30:03.112"
+    },
+    "2020-06-15": {
+      "rows": 102559,
+      "first_time": "00:00:00.050",
+      "last_time": "23:59:59.930",
+      "zero_spread_rows": 71647,
+      "max_within_day_gap_ms": 122477,
+      "max_gap_start_time": "20:58:57.796",
+      "max_gap_end_time": "21:01:00.273"
+    },
+    "2020-06-16": {
+      "rows": 89038,
+      "first_time": "00:00:00.443",
+      "last_time": "23:59:59.101",
+      "zero_spread_rows": 61302,
+      "max_within_day_gap_ms": 160520,
+      "max_gap_start_time": "21:25:04.478",
+      "max_gap_end_time": "21:27:44.998"
+    },
+    "2020-06-17": {
+      "rows": 88165,
+      "first_time": "00:00:01.055",
+      "last_time": "23:59:58.432",
+      "zero_spread_rows": 59266,
+      "max_within_day_gap_ms": 155975,
+      "max_gap_start_time": "21:51:35.427",
+      "max_gap_end_time": "21:54:11.402"
+    },
+    "2020-06-18": {
+      "rows": 85747,
+      "first_time": "00:00:01.632",
+      "last_time": "23:59:59.922",
+      "zero_spread_rows": 57281,
+      "max_within_day_gap_ms": 141203,
+      "max_gap_start_time": "20:58:39.073",
+      "max_gap_end_time": "21:01:00.276"
+    },
+    "2020-06-19": {
+      "rows": 76444,
+      "first_time": "00:00:00.667",
+      "last_time": "20:56:59.781",
+      "zero_spread_rows": 51931,
+      "max_within_day_gap_ms": 68805,
+      "max_gap_start_time": "04:18:07.588",
+      "max_gap_end_time": "04:19:16.393"
+    },
+    "2020-06-21": {
+      "rows": 3736,
+      "first_time": "21:01:00.071",
+      "last_time": "23:59:59.025",
+      "zero_spread_rows": 741,
+      "max_within_day_gap_ms": 198006,
+      "max_gap_start_time": "21:25:43.023",
+      "max_gap_end_time": "21:29:01.029"
+    },
+    "2020-06-22": {
+      "rows": 68143,
+      "first_time": "00:00:00.227",
+      "last_time": "23:59:59.736",
+      "zero_spread_rows": 47614,
+      "max_within_day_gap_ms": 163646,
+      "max_gap_start_time": "21:02:17.943",
+      "max_gap_end_time": "21:05:01.589"
+    },
+    "2020-06-23": {
+      "rows": 85309,
+      "first_time": "00:00:00.038",
+      "last_time": "23:59:59.515",
+      "zero_spread_rows": 53033,
+      "max_within_day_gap_ms": 120436,
+      "max_gap_start_time": "20:58:59.859",
+      "max_gap_end_time": "21:01:00.295"
+    },
+    "2020-06-24": {
+      "rows": 82324,
+      "first_time": "00:00:00.614",
+      "last_time": "23:59:58.620",
+      "zero_spread_rows": 54391,
+      "max_within_day_gap_ms": 122477,
+      "max_gap_start_time": "20:58:57.791",
+      "max_gap_end_time": "21:01:00.268"
+    },
+    "2020-06-25": {
+      "rows": 80141,
+      "first_time": "00:00:00.251",
+      "last_time": "23:59:58.629",
+      "zero_spread_rows": 55750,
+      "max_within_day_gap_ms": 121658,
+      "max_gap_start_time": "20:58:58.629",
+      "max_gap_end_time": "21:01:00.287"
+    },
+    "2020-06-26": {
+      "rows": 57307,
+      "first_time": "00:00:01.141",
+      "last_time": "20:56:59.551",
+      "zero_spread_rows": 41009,
+      "max_within_day_gap_ms": 73126,
+      "max_gap_start_time": "20:33:44.126",
+      "max_gap_end_time": "20:34:57.252"
+    },
+    "2020-06-28": {
+      "rows": 2408,
+      "first_time": "21:01:00.098",
+      "last_time": "23:59:54.912",
+      "zero_spread_rows": 353,
+      "max_within_day_gap_ms": 89969,
+      "max_gap_start_time": "21:20:20.691",
+      "max_gap_end_time": "21:21:50.660"
+    },
+    "2020-06-29": {
+      "rows": 64498,
+      "first_time": "00:00:00.442",
+      "last_time": "23:59:58.139",
+      "zero_spread_rows": 46508,
+      "max_within_day_gap_ms": 122839,
+      "max_gap_start_time": "20:58:57.451",
+      "max_gap_end_time": "21:01:00.290"
+    },
+    "2020-06-30": {
+      "rows": 64761,
+      "first_time": "00:00:00.662",
+      "last_time": "23:59:59.391",
+      "zero_spread_rows": 48441,
+      "max_within_day_gap_ms": 188500,
+      "max_gap_start_time": "21:25:05.018",
+      "max_gap_end_time": "21:28:13.518"
+    },
+    "2020-07-01": {
+      "rows": 65004,
+      "first_time": "00:00:00.249",
+      "last_time": "23:59:57.508",
+      "zero_spread_rows": 48079,
+      "max_within_day_gap_ms": 131683,
+      "max_gap_start_time": "20:26:18.560",
+      "max_gap_end_time": "20:28:30.243"
+    },
+    "2020-07-02": {
+      "rows": 62403,
+      "first_time": "00:00:00.247",
+      "last_time": "23:59:58.380",
+      "zero_spread_rows": 45242,
+      "max_within_day_gap_ms": 285019,
+      "max_gap_start_time": "21:25:03.625",
+      "max_gap_end_time": "21:29:48.644"
+    },
+    "2020-07-03": {
+      "rows": 57384,
+      "first_time": "00:00:00.217",
+      "last_time": "20:56:54.631",
+      "zero_spread_rows": 30007,
+      "max_within_day_gap_ms": 123166,
+      "max_gap_start_time": "20:50:57.438",
+      "max_gap_end_time": "20:53:00.604"
+    },
+    "2020-07-05": {
+      "rows": 1572,
+      "first_time": "21:01:00.073",
+      "last_time": "23:59:22.815",
+      "zero_spread_rows": 465,
+      "max_within_day_gap_ms": 218873,
+      "max_gap_start_time": "21:19:13.068",
+      "max_gap_end_time": "21:22:51.941"
+    },
+    "2020-07-06": {
+      "rows": 59866,
+      "first_time": "00:00:00.438",
+      "last_time": "23:59:55.340",
+      "zero_spread_rows": 42518,
+      "max_within_day_gap_ms": 125295,
+      "max_gap_start_time": "22:36:47.533",
+      "max_gap_end_time": "22:38:52.828"
+    },
+    "2020-07-07": {
+      "rows": 66964,
+      "first_time": "00:00:00.445",
+      "last_time": "23:59:56.586",
+      "zero_spread_rows": 49876,
+      "max_within_day_gap_ms": 186040,
+      "max_gap_start_time": "21:25:09.278",
+      "max_gap_end_time": "21:28:15.318"
+    },
+    "2020-07-08": {
+      "rows": 64253,
+      "first_time": "00:00:00.441",
+      "last_time": "23:59:58.332",
+      "zero_spread_rows": 46919,
+      "max_within_day_gap_ms": 291020,
+      "max_gap_start_time": "21:10:09.597",
+      "max_gap_end_time": "21:15:00.617"
+    },
+    "2020-07-09": {
+      "rows": 71265,
+      "first_time": "00:00:00.237",
+      "last_time": "23:59:56.953",
+      "zero_spread_rows": 54207,
+      "max_within_day_gap_ms": 197162,
+      "max_gap_start_time": "23:49:01.352",
+      "max_gap_end_time": "23:52:18.514"
+    },
+    "2020-07-10": {
+      "rows": 59899,
+      "first_time": "00:00:00.245",
+      "last_time": "20:56:58.750",
+      "zero_spread_rows": 45093,
+      "max_within_day_gap_ms": 52085,
+      "max_gap_start_time": "18:42:49.882",
+      "max_gap_end_time": "18:43:41.967"
+    },
+    "2020-07-12": {
+      "rows": 2755,
+      "first_time": "21:01:00.069",
+      "last_time": "23:59:55.473",
+      "zero_spread_rows": 761,
+      "max_within_day_gap_ms": 168250,
+      "max_gap_start_time": "21:12:12.032",
+      "max_gap_end_time": "21:15:00.282"
+    },
+    "2020-07-13": {
+      "rows": 60065,
+      "first_time": "00:00:00.640",
+      "last_time": "23:59:57.050",
+      "zero_spread_rows": 41077,
+      "max_within_day_gap_ms": 146248,
+      "max_gap_start_time": "21:37:11.974",
+      "max_gap_end_time": "21:39:38.222"
+    },
+    "2020-07-14": {
+      "rows": 75514,
+      "first_time": "00:00:00.456",
+      "last_time": "23:59:59.829",
+      "zero_spread_rows": 53859,
+      "max_within_day_gap_ms": 275473,
+      "max_gap_start_time": "21:04:11.454",
+      "max_gap_end_time": "21:08:46.927"
+    },
+    "2020-07-15": {
+      "rows": 68010,
+      "first_time": "00:00:00.248",
+      "last_time": "23:59:56.471",
+      "zero_spread_rows": 49867,
+      "max_within_day_gap_ms": 190550,
+      "max_gap_start_time": "21:01:34.501",
+      "max_gap_end_time": "21:04:45.051"
+    },
+    "2020-07-16": {
+      "rows": 66912,
+      "first_time": "00:00:00.254",
+      "last_time": "23:59:53.192",
+      "zero_spread_rows": 49805,
+      "max_within_day_gap_ms": 161979,
+      "max_gap_start_time": "21:26:10.378",
+      "max_gap_end_time": "21:28:52.357"
+    },
+    "2020-07-17": {
+      "rows": 48711,
+      "first_time": "00:00:19.559",
+      "last_time": "20:56:57.194",
+      "zero_spread_rows": 38383,
+      "max_within_day_gap_ms": 90386,
+      "max_gap_start_time": "04:27:10.210",
+      "max_gap_end_time": "04:28:40.596"
+    },
+    "2020-07-19": {
+      "rows": 3765,
+      "first_time": "21:01:00.118",
+      "last_time": "23:59:58.625",
+      "zero_spread_rows": 801,
+      "max_within_day_gap_ms": 212184,
+      "max_gap_start_time": "21:55:28.114",
+      "max_gap_end_time": "21:59:00.298"
+    },
+    "2020-07-20": {
+      "rows": 65096,
+      "first_time": "00:00:02.290",
+      "last_time": "23:59:53.217",
+      "zero_spread_rows": 54617,
+      "max_within_day_gap_ms": 143183,
+      "max_gap_start_time": "21:08:33.990",
+      "max_gap_end_time": "21:10:57.173"
+    },
+    "2020-07-21": {
+      "rows": 70801,
+      "first_time": "00:00:00.307",
+      "last_time": "23:59:58.580",
+      "zero_spread_rows": 62121,
+      "max_within_day_gap_ms": 120424,
+      "max_gap_start_time": "20:58:59.868",
+      "max_gap_end_time": "21:01:00.292"
+    },
+    "2020-07-22": {
+      "rows": 78187,
+      "first_time": "00:00:00.441",
+      "last_time": "23:59:55.752",
+      "zero_spread_rows": 70775,
+      "max_within_day_gap_ms": 127328,
+      "max_gap_start_time": "20:58:52.980",
+      "max_gap_end_time": "21:01:00.308"
+    },
+    "2020-07-23": {
+      "rows": 77296,
+      "first_time": "00:00:00.090",
+      "last_time": "23:59:42.220",
+      "zero_spread_rows": 68420,
+      "max_within_day_gap_ms": 146528,
+      "max_gap_start_time": "21:19:04.256",
+      "max_gap_end_time": "21:21:30.784"
+    },
+    "2020-07-24": {
+      "rows": 74717,
+      "first_time": "00:00:00.454",
+      "last_time": "20:56:52.096",
+      "zero_spread_rows": 61847,
+      "max_within_day_gap_ms": 43041,
+      "max_gap_start_time": "20:26:37.244",
+      "max_gap_end_time": "20:27:20.285"
+    },
+    "2020-07-26": {
+      "rows": 6183,
+      "first_time": "21:01:00.072",
+      "last_time": "23:59:57.372",
+      "zero_spread_rows": 2581,
+      "max_within_day_gap_ms": 130983,
+      "max_gap_start_time": "21:16:39.301",
+      "max_gap_end_time": "21:18:50.284"
+    },
+    "2020-07-27": {
+      "rows": 82767,
+      "first_time": "00:00:00.007",
+      "last_time": "23:59:59.487",
+      "zero_spread_rows": 72881,
+      "max_within_day_gap_ms": 127206,
+      "max_gap_start_time": "21:08:59.846",
+      "max_gap_end_time": "21:11:07.052"
+    },
+    "2020-07-28": {
+      "rows": 81686,
+      "first_time": "00:00:00.235",
+      "last_time": "23:59:58.520",
+      "zero_spread_rows": 72589,
+      "max_within_day_gap_ms": 152462,
+      "max_gap_start_time": "21:27:35.043",
+      "max_gap_end_time": "21:30:07.505"
+    },
+    "2020-07-29": {
+      "rows": 77100,
+      "first_time": "00:00:00.477",
+      "last_time": "23:59:48.345",
+      "zero_spread_rows": 67772,
+      "max_within_day_gap_ms": 134239,
+      "max_gap_start_time": "22:22:44.110",
+      "max_gap_end_time": "22:24:58.349"
+    },
+    "2020-07-30": {
+      "rows": 86705,
+      "first_time": "00:00:00.380",
+      "last_time": "23:59:59.754",
+      "zero_spread_rows": 71846,
+      "max_within_day_gap_ms": 157514,
+      "max_gap_start_time": "21:12:06.638",
+      "max_gap_end_time": "21:14:44.152"
+    },
+    "2020-07-31": {
+      "rows": 96740,
+      "first_time": "00:00:00.107",
+      "last_time": "20:56:59.862",
+      "zero_spread_rows": 82220,
+      "max_within_day_gap_ms": 47278,
+      "max_gap_start_time": "20:15:15.089",
+      "max_gap_end_time": "20:16:02.367"
+    },
+    "2020-08-02": {
+      "rows": 4476,
+      "first_time": "21:01:00.103",
+      "last_time": "23:59:58.417",
+      "zero_spread_rows": 1411,
+      "max_within_day_gap_ms": 222545,
+      "max_gap_start_time": "21:46:00.150",
+      "max_gap_end_time": "21:49:42.695"
+    },
+    "2020-08-03": {
+      "rows": 75328,
+      "first_time": "00:00:00.346",
+      "last_time": "23:59:57.641",
+      "zero_spread_rows": 62778,
+      "max_within_day_gap_ms": 175676,
+      "max_gap_start_time": "21:37:46.739",
+      "max_gap_end_time": "21:40:42.415"
+    },
+    "2020-08-04": {
+      "rows": 74876,
+      "first_time": "00:00:00.487",
+      "last_time": "23:59:57.830",
+      "zero_spread_rows": 63120,
+      "max_within_day_gap_ms": 122321,
+      "max_gap_start_time": "20:58:57.978",
+      "max_gap_end_time": "21:01:00.299"
+    },
+    "2020-08-05": {
+      "rows": 70412,
+      "first_time": "00:00:00.311",
+      "last_time": "23:59:58.360",
+      "zero_spread_rows": 59710,
+      "max_within_day_gap_ms": 154745,
+      "max_gap_start_time": "21:03:12.999",
+      "max_gap_end_time": "21:05:47.744"
+    },
+    "2020-08-06": {
+      "rows": 86249,
+      "first_time": "00:00:00.535",
+      "last_time": "23:59:52.961",
+      "zero_spread_rows": 73585,
+      "max_within_day_gap_ms": 282764,
+      "max_gap_start_time": "20:22:24.928",
+      "max_gap_end_time": "20:27:07.692"
+    },
+    "2020-08-07": {
+      "rows": 82935,
+      "first_time": "00:00:00.067",
+      "last_time": "20:56:59.570",
+      "zero_spread_rows": 67935,
+      "max_within_day_gap_ms": 92374,
+      "max_gap_start_time": "20:17:34.875",
+      "max_gap_end_time": "20:19:07.249"
+    },
+    "2020-08-09": {
+      "rows": 2998,
+      "first_time": "21:01:00.075",
+      "last_time": "23:59:44.229",
+      "zero_spread_rows": 462,
+      "max_within_day_gap_ms": 119749,
+      "max_gap_start_time": "21:44:36.051",
+      "max_gap_end_time": "21:46:35.800"
+    },
+    "2020-08-10": {
+      "rows": 60203,
+      "first_time": "00:00:00.565",
+      "last_time": "23:59:59.883",
+      "zero_spread_rows": 49047,
+      "max_within_day_gap_ms": 192085,
+      "max_gap_start_time": "21:26:00.528",
+      "max_gap_end_time": "21:29:12.613"
+    },
+    "2020-08-11": {
+      "rows": 82109,
+      "first_time": "00:00:00.146",
+      "last_time": "23:59:56.628",
+      "zero_spread_rows": 69096,
+      "max_within_day_gap_ms": 122189,
+      "max_gap_start_time": "20:58:58.087",
+      "max_gap_end_time": "21:01:00.276"
+    },
+    "2020-08-12": {
+      "rows": 81965,
+      "first_time": "00:00:00.373",
+      "last_time": "23:59:58.902",
+      "zero_spread_rows": 66886,
+      "max_within_day_gap_ms": 200811,
+      "max_gap_start_time": "21:26:41.132",
+      "max_gap_end_time": "21:30:01.943"
+    },
+    "2020-08-13": {
+      "rows": 72134,
+      "first_time": "00:00:00.232",
+      "last_time": "23:59:59.942",
+      "zero_spread_rows": 60562,
+      "max_within_day_gap_ms": 144538,
+      "max_gap_start_time": "21:25:45.032",
+      "max_gap_end_time": "21:28:09.570"
+    },
+    "2020-08-14": {
+      "rows": 66934,
+      "first_time": "00:00:00.886",
+      "last_time": "20:56:56.426",
+      "zero_spread_rows": 53233,
+      "max_within_day_gap_ms": 46281,
+      "max_gap_start_time": "03:28:13.218",
+      "max_gap_end_time": "03:28:59.499"
+    },
+    "2020-08-16": {
+      "rows": 2457,
+      "first_time": "21:01:00.075",
+      "last_time": "23:59:59.959",
+      "zero_spread_rows": 473,
+      "max_within_day_gap_ms": 178218,
+      "max_gap_start_time": "21:16:34.028",
+      "max_gap_end_time": "21:19:32.246"
+    },
+    "2020-08-17": {
+      "rows": 59394,
+      "first_time": "00:00:00.287",
+      "last_time": "23:59:30.526",
+      "zero_spread_rows": 47396,
+      "max_within_day_gap_ms": 145659,
+      "max_gap_start_time": "22:16:21.303",
+      "max_gap_end_time": "22:18:46.962"
+    },
+    "2020-08-18": {
+      "rows": 75654,
+      "first_time": "00:00:05.957",
+      "last_time": "23:59:56.691",
+      "zero_spread_rows": 58831,
+      "max_within_day_gap_ms": 121248,
+      "max_gap_start_time": "20:58:59.039",
+      "max_gap_end_time": "21:01:00.287"
+    },
+    "2020-08-19": {
+      "rows": 79156,
+      "first_time": "00:00:00.343",
+      "last_time": "23:59:58.296",
+      "zero_spread_rows": 58749,
+      "max_within_day_gap_ms": 134932,
+      "max_gap_start_time": "20:58:45.357",
+      "max_gap_end_time": "21:01:00.289"
+    },
+    "2020-08-20": {
+      "rows": 82505,
+      "first_time": "00:00:00.275",
+      "last_time": "23:59:59.943",
+      "zero_spread_rows": 63720,
+      "max_within_day_gap_ms": 285970,
+      "max_gap_start_time": "21:34:54.587",
+      "max_gap_end_time": "21:39:40.557"
+    },
+    "2020-08-21": {
+      "rows": 73048,
+      "first_time": "00:00:00.149",
+      "last_time": "20:56:59.317",
+      "zero_spread_rows": 53543,
+      "max_within_day_gap_ms": 68933,
+      "max_gap_start_time": "07:17:55.873",
+      "max_gap_end_time": "07:19:04.806"
+    },
+    "2020-08-23": {
+      "rows": 3228,
+      "first_time": "21:01:00.080",
+      "last_time": "23:59:59.180",
+      "zero_spread_rows": 605,
+      "max_within_day_gap_ms": 192199,
+      "max_gap_start_time": "21:30:21.105",
+      "max_gap_end_time": "21:33:33.304"
+    },
+    "2020-08-24": {
+      "rows": 60970,
+      "first_time": "00:00:00.261",
+      "last_time": "23:59:55.246",
+      "zero_spread_rows": 44540,
+      "max_within_day_gap_ms": 137517,
+      "max_gap_start_time": "21:25:17.572",
+      "max_gap_end_time": "21:27:35.089"
+    },
+    "2020-08-25": {
+      "rows": 75711,
+      "first_time": "00:00:00.299",
+      "last_time": "23:59:57.313",
+      "zero_spread_rows": 55208,
+      "max_within_day_gap_ms": 137025,
+      "max_gap_start_time": "21:20:44.537",
+      "max_gap_end_time": "21:23:01.562"
+    },
+    "2020-08-26": {
+      "rows": 69907,
+      "first_time": "00:00:00.383",
+      "last_time": "23:59:59.661",
+      "zero_spread_rows": 52173,
+      "max_within_day_gap_ms": 131646,
+      "max_gap_start_time": "20:58:48.631",
+      "max_gap_end_time": "21:01:00.277"
+    },
+    "2020-08-27": {
+      "rows": 99010,
+      "first_time": "00:00:00.376",
+      "last_time": "23:59:58.189",
+      "zero_spread_rows": 71928,
+      "max_within_day_gap_ms": 147645,
+      "max_gap_start_time": "21:26:23.141",
+      "max_gap_end_time": "21:28:50.786"
+    },
+    "2020-08-28": {
+      "rows": 89957,
+      "first_time": "00:00:00.262",
+      "last_time": "20:56:56.421",
+      "zero_spread_rows": 67280,
+      "max_within_day_gap_ms": 92449,
+      "max_gap_start_time": "20:22:29.868",
+      "max_gap_end_time": "20:24:02.317"
+    },
+    "2020-08-30": {
+      "rows": 5425,
+      "first_time": "21:01:00.074",
+      "last_time": "23:59:59.063",
+      "zero_spread_rows": 1057,
+      "max_within_day_gap_ms": 186781,
+      "max_gap_start_time": "21:11:59.558",
+      "max_gap_end_time": "21:15:06.339"
+    },
+    "2020-08-31": {
+      "rows": 77697,
+      "first_time": "00:00:00.261",
+      "last_time": "23:59:42.120",
+      "zero_spread_rows": 57871,
+      "max_within_day_gap_ms": 162456,
+      "max_gap_start_time": "21:02:24.170",
+      "max_gap_end_time": "21:05:06.626"
+    },
+    "2020-09-01": {
+      "rows": 92408,
+      "first_time": "00:00:00.522",
+      "last_time": "23:59:59.322",
+      "zero_spread_rows": 67804,
+      "max_within_day_gap_ms": 155391,
+      "max_gap_start_time": "21:23:23.485",
+      "max_gap_end_time": "21:25:58.876"
+    },
+    "2020-09-02": {
+      "rows": 78232,
+      "first_time": "00:00:00.611",
+      "last_time": "23:59:55.059",
+      "zero_spread_rows": 60193,
+      "max_within_day_gap_ms": 130208,
+      "max_gap_start_time": "20:58:50.068",
+      "max_gap_end_time": "21:01:00.276"
+    },
+    "2020-09-03": {
+      "rows": 90158,
+      "first_time": "00:00:00.247",
+      "last_time": "23:59:57.341",
+      "zero_spread_rows": 68249,
+      "max_within_day_gap_ms": 231278,
+      "max_gap_start_time": "21:55:04.960",
+      "max_gap_end_time": "21:58:56.238"
+    },
+    "2020-09-04": {
+      "rows": 91240,
+      "first_time": "00:00:00.258",
+      "last_time": "20:56:51.579",
+      "zero_spread_rows": 66872,
+      "max_within_day_gap_ms": 55302,
+      "max_gap_start_time": "20:25:01.686",
+      "max_gap_end_time": "20:25:56.988"
+    },
+    "2020-09-06": {
+      "rows": 3071,
+      "first_time": "21:01:00.074",
+      "last_time": "23:59:59.836",
+      "zero_spread_rows": 1252,
+      "max_within_day_gap_ms": 128752,
+      "max_gap_start_time": "21:25:54.091",
+      "max_gap_end_time": "21:28:02.843"
+    },
+    "2020-09-07": {
+      "rows": 50519,
+      "first_time": "00:00:00.253",
+      "last_time": "23:59:59.111",
+      "zero_spread_rows": 33579,
+      "max_within_day_gap_ms": 242845,
+      "max_gap_start_time": "18:08:08.204",
+      "max_gap_end_time": "18:12:11.049"
+    },
+    "2020-09-08": {
+      "rows": 88667,
+      "first_time": "00:00:01.398",
+      "last_time": "23:59:59.906",
+      "zero_spread_rows": 69887,
+      "max_within_day_gap_ms": 124115,
+      "max_gap_start_time": "20:58:56.279",
+      "max_gap_end_time": "21:01:00.394"
+    },
+    "2020-09-09": {
+      "rows": 74689,
+      "first_time": "00:00:00.343",
+      "last_time": "23:59:56.522",
+      "zero_spread_rows": 60282,
+      "max_within_day_gap_ms": 451458,
+      "max_gap_start_time": "21:11:55.528",
+      "max_gap_end_time": "21:19:26.986"
+    },
+    "2020-09-10": {
+      "rows": 89551,
+      "first_time": "00:00:00.398",
+      "last_time": "23:59:58.298",
+      "zero_spread_rows": 68199,
+      "max_within_day_gap_ms": 187946,
+      "max_gap_start_time": "21:53:27.822",
+      "max_gap_end_time": "21:56:35.768"
+    },
+    "2020-09-11": {
+      "rows": 64815,
+      "first_time": "00:00:00.298",
+      "last_time": "20:56:59.248",
+      "zero_spread_rows": 52579,
+      "max_within_day_gap_ms": 81740,
+      "max_gap_start_time": "04:19:13.951",
+      "max_gap_end_time": "04:20:35.691"
+    },
+    "2020-09-13": {
+      "rows": 2333,
+      "first_time": "21:01:00.077",
+      "last_time": "23:59:59.842",
+      "zero_spread_rows": 476,
+      "max_within_day_gap_ms": 379465,
+      "max_gap_start_time": "21:09:30.576",
+      "max_gap_end_time": "21:15:50.041"
+    },
+    "2020-09-14": {
+      "rows": 52508,
+      "first_time": "00:00:00.319",
+      "last_time": "23:59:56.107",
+      "zero_spread_rows": 40584,
+      "max_within_day_gap_ms": 121208,
+      "max_gap_start_time": "20:58:59.089",
+      "max_gap_end_time": "21:01:00.297"
+    },
+    "2020-09-15": {
+      "rows": 58122,
+      "first_time": "00:00:00.661",
+      "last_time": "23:59:58.192",
+      "zero_spread_rows": 47075,
+      "max_within_day_gap_ms": 216136,
+      "max_gap_start_time": "21:51:35.997",
+      "max_gap_end_time": "21:55:12.133"
+    },
+    "2020-09-16": {
+      "rows": 76840,
+      "first_time": "00:00:00.265",
+      "last_time": "23:59:57.834",
+      "zero_spread_rows": 57984,
+      "max_within_day_gap_ms": 360092,
+      "max_gap_start_time": "21:31:31.017",
+      "max_gap_end_time": "21:37:31.109"
+    },
+    "2020-09-17": {
+      "rows": 89797,
+      "first_time": "00:00:00.462",
+      "last_time": "23:59:57.813",
+      "zero_spread_rows": 67006,
+      "max_within_day_gap_ms": 124654,
+      "max_gap_start_time": "20:58:55.640",
+      "max_gap_end_time": "21:01:00.294"
+    },
+    "2020-09-18": {
+      "rows": 62696,
+      "first_time": "00:00:00.230",
+      "last_time": "20:56:58.448",
+      "zero_spread_rows": 50383,
+      "max_within_day_gap_ms": 71256,
+      "max_gap_start_time": "04:36:38.945",
+      "max_gap_end_time": "04:37:50.201"
+    },
+    "2020-09-20": {
+      "rows": 3198,
+      "first_time": "21:01:00.123",
+      "last_time": "23:59:59.837",
+      "zero_spread_rows": 531,
+      "max_within_day_gap_ms": 356011,
+      "max_gap_start_time": "21:45:29.940",
+      "max_gap_end_time": "21:51:25.951"
+    },
+    "2020-09-21": {
+      "rows": 76082,
+      "first_time": "00:00:00.291",
+      "last_time": "23:59:55.454",
+      "zero_spread_rows": 59438,
+      "max_within_day_gap_ms": 123832,
+      "max_gap_start_time": "20:58:56.457",
+      "max_gap_end_time": "21:01:00.289"
+    },
+    "2020-09-22": {
+      "rows": 81851,
+      "first_time": "00:00:00.290",
+      "last_time": "23:59:59.915",
+      "zero_spread_rows": 62586,
+      "max_within_day_gap_ms": 120381,
+      "max_gap_start_time": "20:58:59.932",
+      "max_gap_end_time": "21:01:00.313"
+    },
+    "2020-09-23": {
+      "rows": 85575,
+      "first_time": "00:00:00.774",
+      "last_time": "23:59:59.905",
+      "zero_spread_rows": 62678,
+      "max_within_day_gap_ms": 218971,
+      "max_gap_start_time": "21:33:35.763",
+      "max_gap_end_time": "21:37:14.734"
+    },
+    "2020-09-24": {
+      "rows": 88225,
+      "first_time": "00:00:00.510",
+      "last_time": "23:59:38.606",
+      "zero_spread_rows": 62149,
+      "max_within_day_gap_ms": 120291,
+      "max_gap_start_time": "20:58:59.984",
+      "max_gap_end_time": "21:01:00.275"
+    },
+    "2020-09-25": {
+      "rows": 66501,
+      "first_time": "00:00:00.648",
+      "last_time": "20:56:57.921",
+      "zero_spread_rows": 50539,
+      "max_within_day_gap_ms": 66304,
+      "max_gap_start_time": "03:32:35.307",
+      "max_gap_end_time": "03:33:41.611"
+    },
+    "2020-09-27": {
+      "rows": 3029,
+      "first_time": "21:01:00.075",
+      "last_time": "23:59:59.185",
+      "zero_spread_rows": 331,
+      "max_within_day_gap_ms": 146936,
+      "max_gap_start_time": "21:08:04.944",
+      "max_gap_end_time": "21:10:31.880"
+    },
+    "2020-09-28": {
+      "rows": 60860,
+      "first_time": "00:00:00.290",
+      "last_time": "23:59:55.889",
+      "zero_spread_rows": 43818,
+      "max_within_day_gap_ms": 324041,
+      "max_gap_start_time": "21:01:02.651",
+      "max_gap_end_time": "21:06:26.692"
+    },
+    "2020-09-29": {
+      "rows": 60975,
+      "first_time": "00:00:00.302",
+      "last_time": "23:59:52.016",
+      "zero_spread_rows": 46548,
+      "max_within_day_gap_ms": 122746,
+      "max_gap_start_time": "20:58:57.595",
+      "max_gap_end_time": "21:01:00.341"
+    },
+    "2020-09-30": {
+      "rows": 87331,
+      "first_time": "00:00:00.246",
+      "last_time": "23:59:58.181",
+      "zero_spread_rows": 61931,
+      "max_within_day_gap_ms": 130973,
+      "max_gap_start_time": "21:24:31.742",
+      "max_gap_end_time": "21:26:42.715"
+    },
+    "2020-10-01": {
+      "rows": 83307,
+      "first_time": "00:00:00.316",
+      "last_time": "23:59:59.854",
+      "zero_spread_rows": 60364,
+      "max_within_day_gap_ms": 1526433,
+      "max_gap_start_time": "21:24:17.973",
+      "max_gap_end_time": "21:49:44.406"
+    },
+    "2020-10-02": {
+      "rows": 98442,
+      "first_time": "00:00:00.264",
+      "last_time": "20:56:59.623",
+      "zero_spread_rows": 58202,
+      "max_within_day_gap_ms": 129831,
+      "max_gap_start_time": "20:37:14.286",
+      "max_gap_end_time": "20:39:24.117"
+    },
+    "2020-10-04": {
+      "rows": 3250,
+      "first_time": "21:01:00.075",
+      "last_time": "23:59:56.613",
+      "zero_spread_rows": 730,
+      "max_within_day_gap_ms": 353198,
+      "max_gap_start_time": "21:02:18.266",
+      "max_gap_end_time": "21:08:11.464"
+    },
+    "2020-10-05": {
+      "rows": 63759,
+      "first_time": "00:00:00.125",
+      "last_time": "23:59:44.398",
+      "zero_spread_rows": 39712,
+      "max_within_day_gap_ms": 120801,
+      "max_gap_start_time": "20:58:59.474",
+      "max_gap_end_time": "21:01:00.275"
+    },
+    "2020-10-06": {
+      "rows": 72390,
+      "first_time": "00:00:00.530",
+      "last_time": "23:59:59.773",
+      "zero_spread_rows": 53578,
+      "max_within_day_gap_ms": 120428,
+      "max_gap_start_time": "20:58:59.906",
+      "max_gap_end_time": "21:01:00.334"
+    },
+    "2020-10-07": {
+      "rows": 66779,
+      "first_time": "00:00:00.541",
+      "last_time": "23:59:52.923",
+      "zero_spread_rows": 47999,
+      "max_within_day_gap_ms": 454340,
+      "max_gap_start_time": "21:46:03.673",
+      "max_gap_end_time": "21:53:38.013"
+    },
+    "2020-10-08": {
+      "rows": 57423,
+      "first_time": "00:00:00.302",
+      "last_time": "23:59:58.739",
+      "zero_spread_rows": 41648,
+      "max_within_day_gap_ms": 126515,
+      "max_gap_start_time": "22:37:00.318",
+      "max_gap_end_time": "22:39:06.833"
+    },
+    "2020-10-09": {
+      "rows": 54831,
+      "first_time": "00:00:00.308",
+      "last_time": "20:56:57.870",
+      "zero_spread_rows": 40971,
+      "max_within_day_gap_ms": 83256,
+      "max_gap_start_time": "20:20:45.341",
+      "max_gap_end_time": "20:22:08.597"
+    },
+    "2020-10-11": {
+      "rows": 3572,
+      "first_time": "21:01:00.123",
+      "last_time": "23:59:56.583",
+      "zero_spread_rows": 638,
+      "max_within_day_gap_ms": 137087,
+      "max_gap_start_time": "21:43:37.153",
+      "max_gap_end_time": "21:45:54.240"
+    },
+    "2020-10-12": {
+      "rows": 47319,
+      "first_time": "00:00:00.499",
+      "last_time": "23:59:19.534",
+      "zero_spread_rows": 31879,
+      "max_within_day_gap_ms": 169970,
+      "max_gap_start_time": "21:14:12.239",
+      "max_gap_end_time": "21:17:02.209"
+    },
+    "2020-10-13": {
+      "rows": 58824,
+      "first_time": "00:00:01.577",
+      "last_time": "23:59:58.534",
+      "zero_spread_rows": 41119,
+      "max_within_day_gap_ms": 136117,
+      "max_gap_start_time": "20:58:44.180",
+      "max_gap_end_time": "21:01:00.297"
+    },
+    "2020-10-14": {
+      "rows": 60842,
+      "first_time": "00:00:00.250",
+      "last_time": "23:59:37.498",
+      "zero_spread_rows": 43126,
+      "max_within_day_gap_ms": 175461,
+      "max_gap_start_time": "21:22:59.580",
+      "max_gap_end_time": "21:25:55.041"
+    },
+    "2020-10-15": {
+      "rows": 62575,
+      "first_time": "00:00:03.392",
+      "last_time": "23:59:50.437",
+      "zero_spread_rows": 44810,
+      "max_within_day_gap_ms": 147953,
+      "max_gap_start_time": "21:11:56.948",
+      "max_gap_end_time": "21:14:24.901"
+    },
+    "2020-10-16": {
+      "rows": 52925,
+      "first_time": "00:00:00.477",
+      "last_time": "20:56:59.304",
+      "zero_spread_rows": 38443,
+      "max_within_day_gap_ms": 74768,
+      "max_gap_start_time": "17:07:00.026",
+      "max_gap_end_time": "17:08:14.794"
+    },
+    "2020-10-18": {
+      "rows": 2923,
+      "first_time": "21:01:00.113",
+      "last_time": "23:59:45.029",
+      "zero_spread_rows": 307,
+      "max_within_day_gap_ms": 281029,
+      "max_gap_start_time": "21:19:07.969",
+      "max_gap_end_time": "21:23:48.998"
+    },
+    "2020-10-19": {
+      "rows": 55163,
+      "first_time": "00:00:00.484",
+      "last_time": "23:59:58.834",
+      "zero_spread_rows": 39085,
+      "max_within_day_gap_ms": 133241,
+      "max_gap_start_time": "20:58:47.079",
+      "max_gap_end_time": "21:01:00.320"
+    },
+    "2020-10-20": {
+      "rows": 51423,
+      "first_time": "00:00:00.321",
+      "last_time": "23:59:59.597",
+      "zero_spread_rows": 40356,
+      "max_within_day_gap_ms": 149242,
+      "max_gap_start_time": "20:16:16.002",
+      "max_gap_end_time": "20:18:45.244"
+    },
+    "2020-10-21": {
+      "rows": 63615,
+      "first_time": "00:00:00.433",
+      "last_time": "23:59:53.475",
+      "zero_spread_rows": 49481,
+      "max_within_day_gap_ms": 122453,
+      "max_gap_start_time": "20:58:57.833",
+      "max_gap_end_time": "21:01:00.286"
+    },
+    "2020-10-22": {
+      "rows": 54775,
+      "first_time": "00:00:00.158",
+      "last_time": "23:59:55.799",
+      "zero_spread_rows": 41564,
+      "max_within_day_gap_ms": 120533,
+      "max_gap_start_time": "20:58:59.775",
+      "max_gap_end_time": "21:01:00.308"
+    },
+    "2020-10-23": {
+      "rows": 49735,
+      "first_time": "00:00:00.402",
+      "last_time": "20:56:59.139",
+      "zero_spread_rows": 35929,
+      "max_within_day_gap_ms": 87541,
+      "max_gap_start_time": "19:39:53.813",
+      "max_gap_end_time": "19:41:21.354"
+    },
+    "2020-10-25": {
+      "rows": 4862,
+      "first_time": "21:01:00.115",
+      "last_time": "23:59:59.619",
+      "zero_spread_rows": 1028,
+      "max_within_day_gap_ms": 107283,
+      "max_gap_start_time": "21:02:45.596",
+      "max_gap_end_time": "21:04:32.879"
+    },
+    "2020-10-26": {
+      "rows": 51116,
+      "first_time": "00:00:00.292",
+      "last_time": "23:59:17.266",
+      "zero_spread_rows": 37550,
+      "max_within_day_gap_ms": 196690,
+      "max_gap_start_time": "21:17:53.096",
+      "max_gap_end_time": "21:21:09.786"
+    },
+    "2020-10-27": {
+      "rows": 48019,
+      "first_time": "00:00:00.305",
+      "last_time": "23:59:58.688",
+      "zero_spread_rows": 33878,
+      "max_within_day_gap_ms": 121635,
+      "max_gap_start_time": "20:58:58.687",
+      "max_gap_end_time": "21:01:00.322"
+    },
+    "2020-10-28": {
+      "rows": 56730,
+      "first_time": "00:00:00.337",
+      "last_time": "23:59:59.311",
+      "zero_spread_rows": 45587,
+      "max_within_day_gap_ms": 618490,
+      "max_gap_start_time": "21:30:13.414",
+      "max_gap_end_time": "21:40:31.904"
+    },
+    "2020-10-29": {
+      "rows": 62426,
+      "first_time": "00:00:00.349",
+      "last_time": "23:59:59.980",
+      "zero_spread_rows": 49000,
+      "max_within_day_gap_ms": 176597,
+      "max_gap_start_time": "20:24:52.606",
+      "max_gap_end_time": "20:27:49.203"
+    },
+    "2020-10-30": {
+      "rows": 60033,
+      "first_time": "00:00:00.294",
+      "last_time": "20:56:59.989",
+      "zero_spread_rows": 49139,
+      "max_within_day_gap_ms": 93651,
+      "max_gap_start_time": "20:26:24.455",
+      "max_gap_end_time": "20:27:58.106"
+    },
+    "2020-11-01": {
+      "rows": 2173,
+      "first_time": "22:00:03.699",
+      "last_time": "23:59:51.202",
+      "zero_spread_rows": 801,
+      "max_within_day_gap_ms": 132351,
+      "max_gap_start_time": "22:53:14.537",
+      "max_gap_end_time": "22:55:26.888"
+    },
+    "2020-11-02": {
+      "rows": 54462,
+      "first_time": "00:00:00.051",
+      "last_time": "23:59:46.525",
+      "zero_spread_rows": 43357,
+      "max_within_day_gap_ms": 173007,
+      "max_gap_start_time": "21:16:27.954",
+      "max_gap_end_time": "21:19:20.961"
+    },
+    "2020-11-03": {
+      "rows": 51962,
+      "first_time": "00:00:01.392",
+      "last_time": "23:59:59.020",
+      "zero_spread_rows": 40056,
+      "max_within_day_gap_ms": 172964,
+      "max_gap_start_time": "22:02:04.253",
+      "max_gap_end_time": "22:04:57.217"
+    },
+    "2020-11-04": {
+      "rows": 122922,
+      "first_time": "00:00:01.394",
+      "last_time": "23:59:59.163",
+      "zero_spread_rows": 55948,
+      "max_within_day_gap_ms": 120450,
+      "max_gap_start_time": "20:58:59.825",
+      "max_gap_end_time": "21:01:00.275"
+    },
+    "2020-11-05": {
+      "rows": 90576,
+      "first_time": "00:00:00.273",
+      "last_time": "23:59:59.945",
+      "zero_spread_rows": 63236,
+      "max_within_day_gap_ms": 120590,
+      "max_gap_start_time": "20:58:59.693",
+      "max_gap_end_time": "21:01:00.283"
+    },
+    "2020-11-06": {
+      "rows": 76119,
+      "first_time": "00:00:00.186",
+      "last_time": "20:56:55.210",
+      "zero_spread_rows": 55919,
+      "max_within_day_gap_ms": 88940,
+      "max_gap_start_time": "19:26:54.662",
+      "max_gap_end_time": "19:28:23.602"
+    },
+    "2020-11-08": {
+      "rows": 3250,
+      "first_time": "22:00:03.553",
+      "last_time": "23:59:59.633",
+      "zero_spread_rows": 940,
+      "max_within_day_gap_ms": 48368,
+      "max_gap_start_time": "22:43:46.913",
+      "max_gap_end_time": "22:44:35.281"
+    },
+    "2020-11-09": {
+      "rows": 99587,
+      "first_time": "00:00:00.762",
+      "last_time": "23:59:59.686",
+      "zero_spread_rows": 74796,
+      "max_within_day_gap_ms": 120509,
+      "max_gap_start_time": "20:58:59.766",
+      "max_gap_end_time": "21:01:00.275"
+    },
+    "2020-11-10": {
+      "rows": 90538,
+      "first_time": "00:00:00.342",
+      "last_time": "23:59:59.715",
+      "zero_spread_rows": 67105,
+      "max_within_day_gap_ms": 243028,
+      "max_gap_start_time": "22:02:26.742",
+      "max_gap_end_time": "22:06:29.770"
+    },
+    "2020-11-11": {
+      "rows": 55188,
+      "first_time": "00:00:00.179",
+      "last_time": "23:59:55.706",
+      "zero_spread_rows": 43548,
+      "max_within_day_gap_ms": 191511,
+      "max_gap_start_time": "22:10:44.819",
+      "max_gap_end_time": "22:13:56.330"
+    },
+    "2020-11-12": {
+      "rows": 56268,
+      "first_time": "00:00:00.021",
+      "last_time": "23:59:55.853",
+      "zero_spread_rows": 47330,
+      "max_within_day_gap_ms": 207962,
+      "max_gap_start_time": "22:35:06.541",
+      "max_gap_end_time": "22:38:34.503"
+    },
+    "2020-11-13": {
+      "rows": 45508,
+      "first_time": "00:00:00.229",
+      "last_time": "21:58:59.903",
+      "zero_spread_rows": 37248,
+      "max_within_day_gap_ms": 111293,
+      "max_gap_start_time": "17:42:07.908",
+      "max_gap_end_time": "17:43:59.201"
+    },
+    "2020-11-15": {
+      "rows": 2677,
+      "first_time": "22:01:00.242",
+      "last_time": "23:59:59.088",
+      "zero_spread_rows": 474,
+      "max_within_day_gap_ms": 71137,
+      "max_gap_start_time": "22:52:16.320",
+      "max_gap_end_time": "22:53:27.457"
+    },
+    "2020-11-16": {
+      "rows": 53027,
+      "first_time": "00:00:00.443",
+      "last_time": "23:59:36.574",
+      "zero_spread_rows": 42335,
+      "max_within_day_gap_ms": 130436,
+      "max_gap_start_time": "22:20:43.977",
+      "max_gap_end_time": "22:22:54.413"
+    },
+    "2020-11-17": {
+      "rows": 46111,
+      "first_time": "00:00:01.158",
+      "last_time": "23:59:54.111",
+      "zero_spread_rows": 37524,
+      "max_within_day_gap_ms": 149811,
+      "max_gap_start_time": "21:58:30.489",
+      "max_gap_end_time": "22:01:00.300"
+    },
+    "2020-11-18": {
+      "rows": 49877,
+      "first_time": "00:00:00.112",
+      "last_time": "23:59:53.210",
+      "zero_spread_rows": 41437,
+      "max_within_day_gap_ms": 219425,
+      "max_gap_start_time": "22:16:30.303",
+      "max_gap_end_time": "22:20:09.728"
+    },
+    "2020-11-19": {
+      "rows": 53523,
+      "first_time": "00:00:01.196",
+      "last_time": "23:59:59.666",
+      "zero_spread_rows": 41750,
+      "max_within_day_gap_ms": 160545,
+      "max_gap_start_time": "22:34:17.602",
+      "max_gap_end_time": "22:36:58.147"
+    },
+    "2020-11-20": {
+      "rows": 46457,
+      "first_time": "00:00:00.084",
+      "last_time": "21:58:59.274",
+      "zero_spread_rows": 37326,
+      "max_within_day_gap_ms": 105924,
+      "max_gap_start_time": "19:11:57.695",
+      "max_gap_end_time": "19:13:43.619"
+    },
+    "2020-11-22": {
+      "rows": 2055,
+      "first_time": "22:01:00.074",
+      "last_time": "23:59:57.681",
+      "zero_spread_rows": 349,
+      "max_within_day_gap_ms": 87146,
+      "max_gap_start_time": "22:03:00.616",
+      "max_gap_end_time": "22:04:27.762"
+    },
+    "2020-11-23": {
+      "rows": 49336,
+      "first_time": "00:00:00.504",
+      "last_time": "23:59:51.189",
+      "zero_spread_rows": 42104,
+      "max_within_day_gap_ms": 273054,
+      "max_gap_start_time": "22:06:44.835",
+      "max_gap_end_time": "22:11:17.889"
+    },
+    "2020-11-24": {
+      "rows": 52196,
+      "first_time": "00:00:00.611",
+      "last_time": "23:59:47.909",
+      "zero_spread_rows": 42047,
+      "max_within_day_gap_ms": 177753,
+      "max_gap_start_time": "22:39:14.692",
+      "max_gap_end_time": "22:42:12.445"
+    },
+    "2020-11-25": {
+      "rows": 53992,
+      "first_time": "00:00:00.178",
+      "last_time": "23:59:55.679",
+      "zero_spread_rows": 47199,
+      "max_within_day_gap_ms": 218982,
+      "max_gap_start_time": "23:54:24.700",
+      "max_gap_end_time": "23:58:03.682"
+    },
+    "2020-11-26": {
+      "rows": 36093,
+      "first_time": "00:00:00.244",
+      "last_time": "23:59:44.225",
+      "zero_spread_rows": 25900,
+      "max_within_day_gap_ms": 419427,
+      "max_gap_start_time": "20:32:27.694",
+      "max_gap_end_time": "20:39:27.121"
+    },
+    "2020-11-27": {
+      "rows": 41893,
+      "first_time": "00:00:00.281",
+      "last_time": "21:58:55.821",
+      "zero_spread_rows": 29339,
+      "max_within_day_gap_ms": 210454,
+      "max_gap_start_time": "18:34:40.311",
+      "max_gap_end_time": "18:38:10.765"
+    },
+    "2020-11-29": {
+      "rows": 1694,
+      "first_time": "22:01:00.147",
+      "last_time": "23:59:59.784",
+      "zero_spread_rows": 641,
+      "max_within_day_gap_ms": 350521,
+      "max_gap_start_time": "22:30:07.236",
+      "max_gap_end_time": "22:35:57.757"
+    },
+    "2020-11-30": {
+      "rows": 55200,
+      "first_time": "00:00:00.450",
+      "last_time": "23:59:57.956",
+      "zero_spread_rows": 46403,
+      "max_within_day_gap_ms": 121256,
+      "max_gap_start_time": "21:58:59.024",
+      "max_gap_end_time": "22:01:00.280"
+    },
+    "2020-12-01": {
+      "rows": 59160,
+      "first_time": "00:00:00.210",
+      "last_time": "23:59:58.339",
+      "zero_spread_rows": 46105,
+      "max_within_day_gap_ms": 121173,
+      "max_gap_start_time": "21:58:59.102",
+      "max_gap_end_time": "22:01:00.275"
+    },
+    "2020-12-02": {
+      "rows": 62509,
+      "first_time": "00:00:00.258",
+      "last_time": "23:59:54.849",
+      "zero_spread_rows": 50716,
+      "max_within_day_gap_ms": 120405,
+      "max_gap_start_time": "21:58:59.805",
+      "max_gap_end_time": "22:01:00.210"
+    },
+    "2020-12-03": {
+      "rows": 58369,
+      "first_time": "00:00:00.231",
+      "last_time": "23:59:58.970",
+      "zero_spread_rows": 47475,
+      "max_within_day_gap_ms": 192396,
+      "max_gap_start_time": "22:21:32.532",
+      "max_gap_end_time": "22:24:44.928"
+    },
+    "2020-12-04": {
+      "rows": 58311,
+      "first_time": "00:00:00.500",
+      "last_time": "21:58:54.496",
+      "zero_spread_rows": 45751,
+      "max_within_day_gap_ms": 72487,
+      "max_gap_start_time": "21:25:22.739",
+      "max_gap_end_time": "21:26:35.226"
+    },
+    "2020-12-06": {
+      "rows": 2315,
+      "first_time": "22:01:00.079",
+      "last_time": "23:59:51.655",
+      "zero_spread_rows": 391,
+      "max_within_day_gap_ms": 86699,
+      "max_gap_start_time": "22:23:19.068",
+      "max_gap_end_time": "22:24:45.767"
+    },
+    "2020-12-07": {
+      "rows": 55983,
+      "first_time": "00:00:00.324",
+      "last_time": "23:59:59.644",
+      "zero_spread_rows": 47773,
+      "max_within_day_gap_ms": 210080,
+      "max_gap_start_time": "22:48:53.223",
+      "max_gap_end_time": "22:52:23.303"
+    },
+    "2020-12-08": {
+      "rows": 57655,
+      "first_time": "00:00:01.500",
+      "last_time": "23:59:49.701",
+      "zero_spread_rows": 45716,
+      "max_within_day_gap_ms": 166649,
+      "max_gap_start_time": "22:11:29.721",
+      "max_gap_end_time": "22:14:16.370"
+    },
+    "2020-12-09": {
+      "rows": 55891,
+      "first_time": "00:00:00.410",
+      "last_time": "23:59:56.827",
+      "zero_spread_rows": 46573,
+      "max_within_day_gap_ms": 149468,
+      "max_gap_start_time": "22:03:31.758",
+      "max_gap_end_time": "22:06:01.226"
+    },
+    "2020-12-10": {
+      "rows": 65517,
+      "first_time": "00:00:00.328",
+      "last_time": "23:59:59.123",
+      "zero_spread_rows": 52956,
+      "max_within_day_gap_ms": 162727,
+      "max_gap_start_time": "22:22:09.595",
+      "max_gap_end_time": "22:24:52.322"
+    },
+    "2020-12-11": {
+      "rows": 55108,
+      "first_time": "00:00:00.253",
+      "last_time": "21:57:39.391",
+      "zero_spread_rows": 46634,
+      "max_within_day_gap_ms": 99274,
+      "max_gap_start_time": "04:27:57.132",
+      "max_gap_end_time": "04:29:36.406"
+    },
+    "2020-12-13": {
+      "rows": 3026,
+      "first_time": "22:01:00.692",
+      "last_time": "23:59:54.041",
+      "zero_spread_rows": 598,
+      "max_within_day_gap_ms": 69898,
+      "max_gap_start_time": "23:28:50.634",
+      "max_gap_end_time": "23:30:00.532"
+    },
+    "2020-12-14": {
+      "rows": 49490,
+      "first_time": "00:00:00.390",
+      "last_time": "23:59:45.791",
+      "zero_spread_rows": 40835,
+      "max_within_day_gap_ms": 131127,
+      "max_gap_start_time": "22:51:26.797",
+      "max_gap_end_time": "22:53:37.924"
+    },
+    "2020-12-15": {
+      "rows": 52529,
+      "first_time": "00:00:00.228",
+      "last_time": "23:59:59.323",
+      "zero_spread_rows": 39685,
+      "max_within_day_gap_ms": 120313,
+      "max_gap_start_time": "21:58:59.970",
+      "max_gap_end_time": "22:01:00.283"
+    },
+    "2020-12-16": {
+      "rows": 58683,
+      "first_time": "00:00:00.672",
+      "last_time": "23:59:32.182",
+      "zero_spread_rows": 44614,
+      "max_within_day_gap_ms": 120683,
+      "max_gap_start_time": "21:58:59.596",
+      "max_gap_end_time": "22:01:00.279"
+    },
+    "2020-12-17": {
+      "rows": 52602,
+      "first_time": "00:00:00.264",
+      "last_time": "23:59:57.011",
+      "zero_spread_rows": 39724,
+      "max_within_day_gap_ms": 120350,
+      "max_gap_start_time": "21:58:59.927",
+      "max_gap_end_time": "22:01:00.277"
+    },
+    "2020-12-18": {
+      "rows": 46741,
+      "first_time": "00:00:00.441",
+      "last_time": "21:58:58.604",
+      "zero_spread_rows": 37485,
+      "max_within_day_gap_ms": 63209,
+      "max_gap_start_time": "18:24:15.352",
+      "max_gap_end_time": "18:25:18.561"
+    },
+    "2020-12-20": {
+      "rows": 2519,
+      "first_time": "22:01:00.284",
+      "last_time": "23:59:59.685",
+      "zero_spread_rows": 675,
+      "max_within_day_gap_ms": 210934,
+      "max_gap_start_time": "22:18:31.546",
+      "max_gap_end_time": "22:22:02.480"
+    },
+    "2020-12-21": {
+      "rows": 87338,
+      "first_time": "00:00:00.366",
+      "last_time": "23:59:58.502",
+      "zero_spread_rows": 55468,
+      "max_within_day_gap_ms": 140818,
+      "max_gap_start_time": "22:22:44.274",
+      "max_gap_end_time": "22:25:05.092"
+    },
+    "2020-12-22": {
+      "rows": 65820,
+      "first_time": "00:00:00.475",
+      "last_time": "23:59:59.930",
+      "zero_spread_rows": 43517,
+      "max_within_day_gap_ms": 120390,
+      "max_gap_start_time": "21:58:59.891",
+      "max_gap_end_time": "22:01:00.281"
+    },
+    "2020-12-23": {
+      "rows": 66158,
+      "first_time": "00:00:00.135",
+      "last_time": "23:59:54.259",
+      "zero_spread_rows": 35176,
+      "max_within_day_gap_ms": 132316,
+      "max_gap_start_time": "22:36:12.396",
+      "max_gap_end_time": "22:38:24.712"
+    },
+    "2020-12-24": {
+      "rows": 38655,
+      "first_time": "00:00:00.268",
+      "last_time": "18:59:59.723",
+      "zero_spread_rows": 11102,
+      "max_within_day_gap_ms": 70520,
+      "max_gap_start_time": "18:31:27.751",
+      "max_gap_end_time": "18:32:38.271"
+    },
+    "2020-12-27": {
+      "rows": 2150,
+      "first_time": "22:16:51.479",
+      "last_time": "23:59:59.696",
+      "zero_spread_rows": 391,
+      "max_within_day_gap_ms": 209067,
+      "max_gap_start_time": "22:23:07.172",
+      "max_gap_end_time": "22:26:36.239"
+    },
+    "2020-12-28": {
+      "rows": 62245,
+      "first_time": "00:00:00.432",
+      "last_time": "23:59:46.478",
+      "zero_spread_rows": 26799,
+      "max_within_day_gap_ms": 392275,
+      "max_gap_start_time": "22:20:45.114",
+      "max_gap_end_time": "22:27:17.389"
+    },
+    "2020-12-29": {
+      "rows": 55595,
+      "first_time": "00:00:00.293",
+      "last_time": "23:59:55.148",
+      "zero_spread_rows": 31319,
+      "max_within_day_gap_ms": 254513,
+      "max_gap_start_time": "22:39:05.144",
+      "max_gap_end_time": "22:43:19.657"
+    },
+    "2020-12-30": {
+      "rows": 61710,
+      "first_time": "00:00:00.343",
+      "last_time": "23:59:45.662",
+      "zero_spread_rows": 31732,
+      "max_within_day_gap_ms": 137488,
+      "max_gap_start_time": "23:48:35.379",
+      "max_gap_end_time": "23:50:52.867"
+    },
+    "2020-12-31": {
+      "rows": 52013,
+      "first_time": "00:00:00.686",
+      "last_time": "18:59:59.819",
+      "zero_spread_rows": 29553,
+      "max_within_day_gap_ms": 57718,
+      "max_gap_start_time": "04:46:49.278",
+      "max_gap_end_time": "04:47:46.996"
+    }
+  }
+}
