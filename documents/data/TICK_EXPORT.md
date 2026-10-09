@@ -1,6 +1,6 @@
 # Bounded cTrader historical tick export
 
-**Status:** Experimental acquisition procedure, verified on one UTC day for EURUSD and GBPUSD on IC Markets EU Ltd live account ACCOUNT_REDACTED. The output is not a certified research dataset or the durable market archive.
+**Status:** Experimental acquisition procedure, verified on bounded EURUSD and GBPUSD windows on IC Markets EU Ltd live account ACCOUNT_REDACTED. The output is not a certified research dataset or the durable market archive.
 
 ## Contract and limits
 
@@ -50,4 +50,4 @@ EURUSD exports with different warm-up starts were byte-for-byte identical. A run
 
 Retain the unmodified Desktop CSV and its SHA-256, plus the cTrader version, broker account, symbol, backtest data mode and requested interval. Inspect its columns, quote units, timestamp precision and time zone before parsing. Compare only the common declared UTC interval; report row counts, first/last events, exact timestamp-and-quote matches, unmatched rows and any transformations required for comparison. Do not round timestamps or prices until a documented precision difference has been identified, and keep the unrounded mismatch count. A match validates that the cBot exporter reproduces Desktop's downloaded backtest data; both may still depend on the same broker server history. Historical execution costs need a separately documented account commission/spread contract or broker-native quote check.
 
-The [1–2 January EURUSD comparison](measurements/icm-eu-live-eurusd-desktop-comparison-2020-01-01_2020-01-02.json) had zero mismatches. The Desktop file also contained a 2018–2019 prefix with exactly four fixed-time, equal bid/ask records per observed hour. Treat that prefix as unverified generated data, not earlier tick coverage, and filter it out of research snapshots.
+The [1–2 January EURUSD comparison](measurements/icm-eu-live-eurusd-desktop-comparison-2020-01-01_2020-01-02.json) had zero mismatches. A later [1 October gap cross-check](measurements/icm-eu-live-eurusd-2020-intraday-gap-crosscheck.json) also matched all 183 EURUSD rows in its bounded window, including the absence of rows within a 25-minute pause. These checks show cTrader export-path consistency, not historical broker quote fidelity or complete coverage. The Desktop file also contained a 2018–2019 prefix with exactly four fixed-time, equal bid/ask records per observed hour. Treat that prefix as unverified generated data, not earlier tick coverage, and filter it out of research snapshots.

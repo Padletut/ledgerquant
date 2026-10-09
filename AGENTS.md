@@ -46,7 +46,11 @@ Preserve identity and provenance through every boundary.
 
 - Keep source event time, observed time, received time, ingested time and
   `available_at` distinct where the source contract defines them.
-- Historical context may contain only information eligible under `available_at`.
+- Recorded historical replay context may contain only information eligible under
+  actual `available_at`.
+- A retrospective simulation may use a declared hypothetical source-visibility
+  rule for backfilled observations; keep actual `available_at` intact and never
+  describe that simulation as historical replay.
 - Never introduce future outcomes, later revisions, later memories or future
   evaluation results into historical decision context.
 - Record exact effective versions of models, prompts/question sets, decision
@@ -126,6 +130,8 @@ Before independent validation, freeze:
 - feature/source contract;
 - payoff and settlement contract;
 - cost/execution contract;
+- data-sufficiency policy for decision inputs, outcome observations, cost evidence,
+  temporal resolution, staleness and missing cases;
 - development window;
 - validation windows;
 - instrument universe;
@@ -234,6 +240,12 @@ Measure coverage; do not infer it.
 - Do not assume cTrader sentiment is historically backfillable.
 - External historical data may support research, but a source change must remain
   explicit and execution/cost assumptions must be validated separately.
+- Judge gaps against each frozen hypothesis's required decision, entry, path and
+  settlement windows. Do not impose one universal tick-completeness threshold or
+  silently discard affected cases after seeing outcomes.
+- Raw historical news and later semantic interpretations have separate
+  availability. A current model's output on historical text is retrospective
+  inference, with possible knowledge of later events, not a historical observation.
 - Start prospective collection early for data that cannot be reconstructed.
 
 ## 12. Frontend

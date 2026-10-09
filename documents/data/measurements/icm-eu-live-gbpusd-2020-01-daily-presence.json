@@ -1,0 +1,200 @@
+{
+  "schema_version": 1,
+  "measured_on_utc_date": "2026-10-09",
+  "method": "ctrader_cli_read_only_tick_callback_daily_probe",
+  "source_log": "documents/data/measurements/icm-eu-live-gbpusd-2020-01.log",
+  "source_log_sha256": "425feae4cf6569092e3ca80e0880140c1980d41435ac1154bc6a3f0ba0ed4a65",
+  "algo_artifact": "data/ctrader_tick_exports/2020-01-gbpusd-probe/LedgerQuant.MarketData.algo",
+  "algo_sha256": "089758190aad19b1ec753a3f3aca201b8a799ffa8117201722e3e7bed3aba3b1",
+  "cli_image_digest": "sha256:285484fad431e0ffa4ca96662e82ea66cead93c97cf0e3c46006e80cab4734ba",
+  "broker": "IC Markets EU Ltd",
+  "broker_name_basis": "authenticated_cli_account_listing",
+  "account_number": null,
+  "account_environment": "live",
+  "symbol": "GBPUSD",
+  "data_mode": "ctrader_cli_server_ticks",
+  "cli_start_argument_utc": "2019-12-31T00:00:00Z",
+  "cli_end_argument_utc": "2020-01-31T00:00:00Z",
+  "observed_tick_rows_including_2019_12_31_warmup": 1501816,
+  "observed_2020_01_dates": 27,
+  "observed_2020_01_rows": 1441658,
+  "missing_2020_01_weekdays_with_no_rows": [],
+  "observed_2020_01_sundays": 4,
+  "observed_2020_01_saturdays": 0,
+  "invalid_quotes": 0,
+  "duplicate_timestamps": 0,
+  "reversed_timestamps": 0,
+  "reported_server_first_utc": "2019-07-08T00:00:00Z",
+  "trades": 0,
+  "coverage_status": "UNVERIFIED",
+  "days": {
+    "2020-01-01": {
+      "rows": 2852,
+      "first_event_utc": "2020-01-01T22:01:00.3000000Z",
+      "last_event_utc": "2020-01-01T23:59:59.5980000Z",
+      "invalid_quotes": 0
+    },
+    "2020-01-02": {
+      "rows": 80762,
+      "first_event_utc": "2020-01-02T00:00:00.2810000Z",
+      "last_event_utc": "2020-01-02T23:59:57.7040000Z",
+      "invalid_quotes": 0
+    },
+    "2020-01-03": {
+      "rows": 83067,
+      "first_event_utc": "2020-01-03T00:00:00.1700000Z",
+      "last_event_utc": "2020-01-03T21:56:56.7360000Z",
+      "invalid_quotes": 0
+    },
+    "2020-01-05": {
+      "rows": 3145,
+      "first_event_utc": "2020-01-05T22:01:00.0730000Z",
+      "last_event_utc": "2020-01-05T23:59:59.3700000Z",
+      "invalid_quotes": 0
+    },
+    "2020-01-06": {
+      "rows": 70726,
+      "first_event_utc": "2020-01-06T00:00:00.1440000Z",
+      "last_event_utc": "2020-01-06T23:59:59.9770000Z",
+      "invalid_quotes": 0
+    },
+    "2020-01-07": {
+      "rows": 74332,
+      "first_event_utc": "2020-01-07T00:00:00.2800000Z",
+      "last_event_utc": "2020-01-07T23:59:41.5890000Z",
+      "invalid_quotes": 0
+    },
+    "2020-01-08": {
+      "rows": 83129,
+      "first_event_utc": "2020-01-08T00:00:03.3860000Z",
+      "last_event_utc": "2020-01-08T23:59:53.2190000Z",
+      "invalid_quotes": 0
+    },
+    "2020-01-09": {
+      "rows": 70930,
+      "first_event_utc": "2020-01-09T00:00:00.9430000Z",
+      "last_event_utc": "2020-01-09T23:59:56.0420000Z",
+      "invalid_quotes": 0
+    },
+    "2020-01-10": {
+      "rows": 63715,
+      "first_event_utc": "2020-01-10T00:00:00.2540000Z",
+      "last_event_utc": "2020-01-10T21:56:38.7960000Z",
+      "invalid_quotes": 0
+    },
+    "2020-01-12": {
+      "rows": 1936,
+      "first_event_utc": "2020-01-12T22:01:00.1060000Z",
+      "last_event_utc": "2020-01-12T23:59:59.2040000Z",
+      "invalid_quotes": 0
+    },
+    "2020-01-13": {
+      "rows": 63809,
+      "first_event_utc": "2020-01-13T00:00:00.1810000Z",
+      "last_event_utc": "2020-01-13T23:59:57.6150000Z",
+      "invalid_quotes": 0
+    },
+    "2020-01-14": {
+      "rows": 82928,
+      "first_event_utc": "2020-01-14T00:00:00.2450000Z",
+      "last_event_utc": "2020-01-14T23:59:59.4540000Z",
+      "invalid_quotes": 0
+    },
+    "2020-01-15": {
+      "rows": 68586,
+      "first_event_utc": "2020-01-15T00:00:00.6990000Z",
+      "last_event_utc": "2020-01-15T23:59:58.2880000Z",
+      "invalid_quotes": 0
+    },
+    "2020-01-16": {
+      "rows": 66282,
+      "first_event_utc": "2020-01-16T00:00:00.4640000Z",
+      "last_event_utc": "2020-01-16T23:59:59.0080000Z",
+      "invalid_quotes": 0
+    },
+    "2020-01-17": {
+      "rows": 63577,
+      "first_event_utc": "2020-01-17T00:00:01.1750000Z",
+      "last_event_utc": "2020-01-17T21:56:44.9480000Z",
+      "invalid_quotes": 0
+    },
+    "2020-01-19": {
+      "rows": 2151,
+      "first_event_utc": "2020-01-19T22:01:00.0890000Z",
+      "last_event_utc": "2020-01-19T23:59:59.3020000Z",
+      "invalid_quotes": 0
+    },
+    "2020-01-20": {
+      "rows": 47650,
+      "first_event_utc": "2020-01-20T00:00:00.2670000Z",
+      "last_event_utc": "2020-01-20T23:59:59.8910000Z",
+      "invalid_quotes": 0
+    },
+    "2020-01-21": {
+      "rows": 60744,
+      "first_event_utc": "2020-01-21T00:00:01.0140000Z",
+      "last_event_utc": "2020-01-21T23:59:39.6780000Z",
+      "invalid_quotes": 0
+    },
+    "2020-01-22": {
+      "rows": 62862,
+      "first_event_utc": "2020-01-22T00:00:00.2780000Z",
+      "last_event_utc": "2020-01-22T23:59:59.2480000Z",
+      "invalid_quotes": 0
+    },
+    "2020-01-23": {
+      "rows": 55043,
+      "first_event_utc": "2020-01-23T00:00:00.7490000Z",
+      "last_event_utc": "2020-01-23T23:59:59.4820000Z",
+      "invalid_quotes": 0
+    },
+    "2020-01-24": {
+      "rows": 59129,
+      "first_event_utc": "2020-01-24T00:00:00.3550000Z",
+      "last_event_utc": "2020-01-24T21:56:59.6060000Z",
+      "invalid_quotes": 0
+    },
+    "2020-01-26": {
+      "rows": 2723,
+      "first_event_utc": "2020-01-26T22:01:00.1210000Z",
+      "last_event_utc": "2020-01-26T23:59:57.7190000Z",
+      "invalid_quotes": 0
+    },
+    "2020-01-27": {
+      "rows": 52515,
+      "first_event_utc": "2020-01-27T00:00:00.2340000Z",
+      "last_event_utc": "2020-01-27T23:59:58.4820000Z",
+      "invalid_quotes": 0
+    },
+    "2020-01-28": {
+      "rows": 53334,
+      "first_event_utc": "2020-01-28T00:00:00.7970000Z",
+      "last_event_utc": "2020-01-28T23:59:35.2380000Z",
+      "invalid_quotes": 0
+    },
+    "2020-01-29": {
+      "rows": 44711,
+      "first_event_utc": "2020-01-29T00:00:00.3670000Z",
+      "last_event_utc": "2020-01-29T23:59:51.2740000Z",
+      "invalid_quotes": 0
+    },
+    "2020-01-30": {
+      "rows": 61892,
+      "first_event_utc": "2020-01-30T00:00:00.2440000Z",
+      "last_event_utc": "2020-01-30T23:59:52.3200000Z",
+      "invalid_quotes": 0
+    },
+    "2020-01-31": {
+      "rows": 59128,
+      "first_event_utc": "2020-01-31T00:00:00.2640000Z",
+      "last_event_utc": "2020-01-31T21:56:57.6520000Z",
+      "invalid_quotes": 0
+    }
+  },
+  "limitations": [
+    "Daily callback counts do not certify intraday completeness or historical trading hours.",
+    "The probe retained day summaries, not all GBPUSD tick rows for the month.",
+    "The reported server-first date is not the earliest tick proven retrievable through this method.",
+    "The backtest end argument is not an independently verified exclusive event-time bound."
+  ]
+}

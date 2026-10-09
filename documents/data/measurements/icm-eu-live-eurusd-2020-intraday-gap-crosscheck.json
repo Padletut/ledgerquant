@@ -1,0 +1,140 @@
+{
+  "schema_version": 1,
+  "measured_on_utc_date": "2026-10-09",
+  "source_file": "data/ctrader_tick_exports/desktop_reference/LedgerQuant.LiveCapture EURUSD t1 20180522-20261008.csv",
+  "source_sha256": "446d6fd78f61ebb54af9b38c4c44b41273cdbda0fca73e28a6af06783a9e571f",
+  "source_identity_basis": "operator_confirmed_IC_Markets_EU_live_ACCOUNT_REDACTED_Desktop_5.10.16_server_ticks",
+  "scope_utc": "2020-01-01T00:00:00Z/2021-01-01T00:00:00Z",
+  "candidate_rule": "consecutive EURUSD CSV rows on the same UTC date separated by at least 600000 ms",
+  "candidate_threshold_ms": 600000,
+  "candidate_count": 5,
+  "gbpusd_source": "cTrader CLI server-tick backtests on IC Markets EU live account ACCOUNT_REDACTED",
+  "cli_image_digest": "sha256:285484fad431e0ffa4ca96662e82ea66cead93c97cf0e3c46006e80cab4734ba",
+  "exporter_algo_artifact": "data/ctrader_tick_exports/gap_checks/LedgerQuant.TickExport.algo",
+  "exporter_algo_sha256": "34441400da926c636b087b31f304a1f3cbb436c00d5be0fa7f946a9425a2299f",
+  "candidates": [
+    {
+      "date_utc": "2020-03-09",
+      "start_time_utc": "17:39:16.990",
+      "end_time_utc": "17:57:36.718",
+      "duration_ms": 1099728,
+      "schedule_status": "SCHEDULE_UNVERIFIED",
+      "gbpusd_crosscheck": {
+        "run_id": "gbpusd_20200309_1730_1810",
+        "window_start_utc": "2020-03-09T17:30:00.0000000Z",
+        "window_end_exclusive_utc": "2020-03-09T18:10:00.0000000Z",
+        "window_rows": 2424,
+        "rows_inside_eurusd_gap": 0,
+        "first_inside_utc": null,
+        "last_inside_utc": null,
+        "data_sha256": "2e246682ae7be29e387a7a898fd02eb6111818e18441340ee995ec7731135d17",
+        "manifest_sha256": "722e82e82ade667b1f0855a76770c2cfc05fefed71a77a36982aefea227f4f98",
+        "cli_log_sha256": "5187427a5d8e47784f3aef5b9a87d4ee3684b6e6e51d8c32afc98b313146d2ae",
+        "trades": 0
+      }
+    },
+    {
+      "date_utc": "2020-03-25",
+      "start_time_utc": "02:11:45.786",
+      "end_time_utc": "02:28:21.439",
+      "duration_ms": 995653,
+      "schedule_status": "SCHEDULE_UNVERIFIED",
+      "gbpusd_crosscheck": {
+        "run_id": "gbpusd_20200325_0200_0240",
+        "window_start_utc": "2020-03-25T02:00:00.0000000Z",
+        "window_end_exclusive_utc": "2020-03-25T02:40:00.0000000Z",
+        "window_rows": 1320,
+        "rows_inside_eurusd_gap": 0,
+        "first_inside_utc": null,
+        "last_inside_utc": null,
+        "data_sha256": "aad6fe28320bc22739354359e1b9371b4c6f158abe91a514e94c5bf89c27a962",
+        "manifest_sha256": "b36c9209fefc2d860108ae1922ada71c4ec41cabd29281b72859f5940a1e6989",
+        "cli_log_sha256": "c83784d7f0d6cea7755d40377a869f938778d14b499474b775f0a4de3962a2f5",
+        "trades": 0
+      }
+    },
+    {
+      "date_utc": "2020-03-25",
+      "start_time_utc": "20:15:21.719",
+      "end_time_utc": "20:25:38.083",
+      "duration_ms": 616364,
+      "schedule_status": "SCHEDULE_UNVERIFIED",
+      "gbpusd_crosscheck": {
+        "run_id": "gbpusd_20200325_2000_2040",
+        "window_start_utc": "2020-03-25T20:00:00.0000000Z",
+        "window_end_exclusive_utc": "2020-03-25T20:40:00.0000000Z",
+        "window_rows": 1573,
+        "rows_inside_eurusd_gap": 0,
+        "first_inside_utc": null,
+        "last_inside_utc": null,
+        "data_sha256": "3a8cf235c3af23e5b5c4dcf4bea0d759cedfb0a2675976cdc70dcb65e3eee6f9",
+        "manifest_sha256": "5566b559e487e266562b17d0e5ee60d97dc3dde8532515a8b1404ad5180417d5",
+        "cli_log_sha256": "3b35a30d48b0f07b51de53956cad8060c3ad59c766263d21959028635ba89806",
+        "trades": 0
+      }
+    },
+    {
+      "date_utc": "2020-10-01",
+      "start_time_utc": "21:24:17.973",
+      "end_time_utc": "21:49:44.406",
+      "duration_ms": 1526433,
+      "schedule_status": "SCHEDULE_UNVERIFIED",
+      "gbpusd_crosscheck": {
+        "run_id": "gbpusd_20201001_2110_2205",
+        "window_start_utc": "2020-10-01T21:10:00.0000000Z",
+        "window_end_exclusive_utc": "2020-10-01T22:05:00.0000000Z",
+        "window_rows": 310,
+        "rows_inside_eurusd_gap": 19,
+        "first_inside_utc": "2020-10-01T21:25:13.4170000Z",
+        "last_inside_utc": "2020-10-01T21:48:38.1240000Z",
+        "data_sha256": "9d09776c0ffa8fdb47281887ea6d0d03a02cfe744b456dccb2e1ce4bf4f65d6a",
+        "manifest_sha256": "3cfdd9d9fb9300ba474f8becab58dd75361d8d410cdafcf6029228b6ee206036",
+        "cli_log_sha256": "8ea97839c9202a8b12c26e21effdb3f72360bf3551dbb9444a9ca4deb0b14e5f",
+        "trades": 0
+      }
+    },
+    {
+      "date_utc": "2020-10-28",
+      "start_time_utc": "21:30:13.414",
+      "end_time_utc": "21:40:31.904",
+      "duration_ms": 618490,
+      "schedule_status": "SCHEDULE_UNVERIFIED",
+      "gbpusd_crosscheck": {
+        "run_id": "gbpusd_20201028_2115_2200",
+        "window_start_utc": "2020-10-28T21:15:00.0000000Z",
+        "window_end_exclusive_utc": "2020-10-28T22:00:00.0000000Z",
+        "window_rows": 156,
+        "rows_inside_eurusd_gap": 1,
+        "first_inside_utc": "2020-10-28T21:30:25.4240000Z",
+        "last_inside_utc": "2020-10-28T21:30:25.4240000Z",
+        "data_sha256": "8d2927a5ce22c58745cf675371f81aa406c2a8aa841143bcb9a1b9a3be3fecd7",
+        "manifest_sha256": "02b876b6241ece73f661a10016220c4f307a26f4c449b8f3017be9e9f5c6847d",
+        "cli_log_sha256": "196f6a5a17dc5afa70a0b56407ea4ad2681f514333de5a7a1de90bfeed51b2b4",
+        "trades": 0
+      }
+    }
+  ],
+  "eurusd_cli_october_crosscheck": {
+    "run_id": "eurusd_20201001_2110_2205",
+    "window_start_utc": "2020-10-01T21:10:00.0000000Z",
+    "window_end_exclusive_utc": "2020-10-01T22:05:00.0000000Z",
+    "desktop_rows": 183,
+    "cli_rows": 183,
+    "exact_timestamp_bid_ask_matches_in_source_order": 183,
+    "mismatches": 0,
+    "data_sha256": "4043ab9c44fe55feb26889ccffec07ddf5265aeae4108b5552879836253c1d02",
+    "manifest_sha256": "f06373a98cfa5126fc8ef7d0a55484ce3f8bb621cc10f364efea21a71ec2f126",
+    "cli_log_sha256": "63e1f02b3c5e4243c30ed73a77f2d1ad7f14cee00766dd17b6cdf2c1226b8fe3",
+    "trades": 0
+  },
+  "contextual_current_broker_hours_url": "https://www.icmarkets.eu/en/trading-pricing/trading-hours",
+  "historical_2020_broker_schedule_verified": false,
+  "coverage_status": "UNVERIFIED",
+  "limitations": [
+    "The threshold identifies candidates, not missing ticks or closed market intervals.",
+    "The GBPUSD comparison uses the same cTrader historical server path and is not an independent broker archive.",
+    "Current published IC Markets EU hours do not certify the account-specific schedule in 2020.",
+    "Cross-symbol rows do not prove that EURUSD was open or executable at that instant.",
+    "The scan excludes cross-date pauses, including weekends and holidays; those need separate schedule evidence."
+  ]
+}
