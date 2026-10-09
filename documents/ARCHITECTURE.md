@@ -2,7 +2,7 @@
 
 **Date:** 09.10.2026
 
-**Version:** 2.9.0
+**Version:** 2.9.1
 
 **Status:** Target architecture; implemented bootstrap comprises the read-only history probe, the bounded historical tick exporter and the isolated live-capture stack described in Section 4.2, plus the offline EURUSD research case audits, candidate freezes and historical validations described in Section 6.1
 
@@ -251,7 +251,7 @@ Each decision or research run records the query hash, retrieval domain and snaps
 
 ### 5.2 Episodic memory
 
-Episodic memory stores selected, auditable experiences from prior runs: the decision, cited evidence, subsequent execution outcome, reconciliation status and lessons or summaries derived from those records. The immutable episode references its original event IDs. Model-written summaries are separate, versioned derivatives with their own `available_at`, authoring model/instruction identity, validation status and source references. A memory writer records an episode only after its required outcome is observed and reconciled; it does not turn an unverified model assertion into a fact.
+Episodic memory stores selected, auditable experiences from prior runs: the decision, cited evidence, subsequent execution outcome, reconciliation status and lessons or summaries derived from those records. A research episode may instead link a proposal, critique and evaluator result after that result is released; a blocked or unmeasured proposal has no outcome lesson. The immutable episode references its original event IDs. Model-written summaries are separate, versioned derivatives with their own `available_at`, authoring model/instruction identity, validation status and source references. A memory writer records an execution episode only after the outcome is observed and reconciled, or a research episode only after the evaluator has released its result; it does not turn an unverified model assertion into a fact.
 
 Every episode has an `available_at` no earlier than the time it was actually written and all evidence and outcomes used to form it. Memory retrieval respects that timestamp during replay, plus environment, agent, portfolio and account permissions. Cross-account or research-to-live reuse requires an explicit policy. Selection has relevance, quality, deduplication, retention and context-budget rules; the selected episode IDs, order and content hashes are recorded with the decision. Retiring or correcting a memory adds a new status event; the original evidence remains auditable. Summaries are regenerated from source episodes when their contract changes.
 
@@ -289,14 +289,15 @@ Each hypothesis receives a stable `hypothesis_id`, optional `parent_hypothesis_i
 - `decision_contract`: eligible instruments and events, event-selection rule, decision time after required inference, action space, entry/exit rules, holding horizon and baseline;
 - `feature_contract`: source IDs, transformations, publication delays, `available_at` semantics and missing-data behavior;
 - `payoff_contract`: outcome calculation, settlement horizon, units, success metrics, risk metrics, minimum gates and comparator;
+- `dependence_contract`: independent unit (decision, day, event, meeting or regime), overlapping-case treatment, block/cluster uncertainty method and minimum independent support;
 - `cost_contract`: spread, commissions, financing, slippage, rejection and fill assumptions, with their source and version;
 - `data_sufficiency_policy`: required decision-time information, actual replay versus retrospective visibility mode and its source-specific basis, temporal resolution and maximum staleness, price/label sampling and tolerance, path-dependence, allowable gaps, missing-case handling and the evidence required for economic cost claims;
 - `development_window` and `validation_windows`: fixed temporal boundaries, instrument scope, data snapshots, evaluation suite and minimum sample size;
-- research family and trial budget: all related searches and attempts counted for multiple-testing review.
+- research family, resource budget and stopping rule: all related searches and attempts counted for multiple-testing review, with predeclared limits on proposals, revisions, trials, model/tool use and independent-window exposure.
 
 The policy makes data quality hypothesis-dependent. A fixed-horizon directional question may need a time-bounded predecision price state, source-backed news and a valid outcome observation near settlement, without requiring every intervening tick. A stop/limit-order or short-horizon execution claim needs the path and quote fidelity required by its order and cost contract. Generate the candidate event set by the frozen source and selection rules without looking at later prices. A source gap outside the registered input, entry, path or settlement windows is reported but does not automatically invalidate a case. A gap inside a required window follows the frozen abstention, exclusion or failure rule; no future quote is carried backward or missing return set to zero. Report eligibility counts and missingness by period and instrument so selective loss of difficult events remains visible. Price-direction diagnostics with unresolved execution costs may be reported as predictive evidence, never as net economic payoff or promotion evidence.
 
-Contracts are registered and frozen before the independent evaluator exposes validation outcomes. The proposer cannot edit the payoff definition, metric, threshold, data-sufficiency policy or validation window after seeing those outcomes. Any changed definition becomes a child hypothesis with a new ID and a new untouched validation plan. Related child attempts stay in one research family; exhausted holdout windows cannot be reused as fresh evidence. Loop A preserves the parent's payoff contract; a payoff change is routed to Loop B.
+Contracts are registered and frozen before the independent evaluator exposes validation outcomes. The proposer cannot edit the payoff definition, metric, threshold, data-sufficiency policy or validation window after seeing those outcomes. Any changed definition becomes a child hypothesis with a new ID and a new untouched validation plan. The contract service, with independent review for ambiguous cases, assigns authoritative family and exposure lineage from normalized contract signatures; the proposing agent may suggest but cannot choose its own independent family. Related child attempts stay in one research family, and related families retain cross-family exposure links. The family budget and stopping rule are frozen before search; exhaustion does not turn each blocked or rejected idea into a measured economic failure. Exhausted holdout windows cannot be reused as fresh evidence. Loop A preserves the parent's payoff contract; a payoff change is routed to Loop B.
 
 The implemented offline bootstrap in `src/ledgerquant/research/` audits frozen EURUSD price-direction diagnostics. It verifies the contract and source hashes, streams the operator-confirmed cTrader Desktop CSV, validates quote order and fields, generates calendar anchors before assigning source rows, and publishes decision inputs with midquotes and source references, plus separate evaluator-facing settlement-presence metadata. These artifacts are hashed and retain every scheduled anchor; neither contains predictions, settlement prices or payoff measurements. A development-only selection step then records every development case, freezes the constant-direction baseline and all validation predictions, and publishes a hashed selection record before the offline evaluator resolves validation outcomes. The evaluator publishes hashed case-level evidence and the frozen predictive gate decision. The original July–December 2020 diagnostic narrowly passed its predictive gate; a child contract with the same rule failed full-year 2021 temporal validation. Both outcomes remain visible. This is a logical phase boundary in one local repository: the raw CSV remains accessible, so it is not enforced holdout access isolation, a production evidence registry or a complete Research Kernel. Source visibility remains retrospective, and no execution-cost or promotion claim follows from either result. The [plan and measured evaluations](research/RESEARCH_KERNEL_PLAN.md) describe the exact scope and limitations.
 
@@ -307,14 +308,17 @@ The evidence registry stores typed, queryable facts rather than treating a narra
 ```text
 hypothesis_id
 parent_hypothesis_id
+research_family_id
 loop_type
 decision_contract
 feature_contract
 payoff_contract
+dependence_contract
 cost_contract
 data_sufficiency_policy
 development_window
 validation_windows
+research_budget_contract
 pair_breadth
 temporal_breadth
 net_expectancy
@@ -324,19 +328,25 @@ failure_reason
 status
 ```
 
-Fields through `validation_windows` are frozen proposal metadata. Breadth and performance fields are computed per evaluation run, with units, sample counts, uncertainty, market window, data and code versions, baseline, cost assumptions and provenance. `pair_breadth` counts covered instrument pairs under the registered universe; `temporal_breadth` records independent windows or regimes that passed. `failure_reason` is typed, so transport failure, insufficient data, temporal instability and cost failure remain distinguishable. A current hypothesis view joins immutable contracts, append-only result records and status events; no agent edits measured fields.
+Contract, window and research-budget fields are frozen proposal metadata. Breadth and performance fields are computed per evaluation run, with units, raw case and independent cluster counts, frozen dependence/block rule, uncertainty, market window, data and code versions, baseline, cost assumptions and provenance. `pair_breadth` counts covered instrument pairs under the registered universe; `temporal_breadth` records independent windows or regimes that passed. `failure_reason` is typed, so transport failure, insufficient data, temporal instability and cost failure remain distinguishable. An untestable but plausible proposal may have `BLOCKED_DATA_REQUIREMENT` with a reactivation condition; it is not a negative payoff measurement. A current hypothesis view joins immutable contracts, append-only result records and status events; no agent edits measured fields.
 
 ```text
-PROPOSED → DEVELOPMENT_SURVIVOR → SHADOW_ELIGIBLE → PROSPECTIVE → PROMOTED
-       └→ REJECTED            ├→ TEMPORAL_FAILED
-                             └→ COST_FAILED
+PROPOSED
+├→ REJECTED
+├→ BLOCKED_DATA_REQUIREMENT (reactivation is a new status event)
+└→ DEVELOPMENT_SURVIVOR
+   ├→ TEMPORAL_FAILED
+   ├→ COST_FAILED
+   └→ SHADOW_ELIGIBLE → PROSPECTIVE → PROMOTED
 ```
 
-Status transitions are validated against required evidence and written as events with actor, time, rule version and evaluation references. A `DEVELOPMENT_SURVIVOR` is only a candidate for independent validation. `SHADOW_ELIGIBLE` requires temporal and cost gates. `PROMOTED` requires prospective evidence and explicit approval; promotion then creates a new versioned deployment epoch. Failed or abandoned trials remain visible, including child and sibling hypotheses, to prevent selective reporting.
+Status transitions are validated against required evidence and written as events with actor, time, rule version and evaluation references. A `DEVELOPMENT_SURVIVOR` is only a candidate for independent validation. `SHADOW_ELIGIBLE` requires temporal and cost gates. `PROMOTED` requires prospective evidence and explicit approval; promotion then creates a new versioned deployment epoch. `EXHAUSTED` is a research-family budget state, not a result label for each member hypothesis. Failed or abandoned trials remain visible, including child and sibling hypotheses, to prevent selective reporting.
 
 ### 6.3 Separation of discovery, explanation and judgment
 
-Research knowledge RAG helps agents find methods and explain reports. The structured evidence registry is authoritative for hypothesis contracts, measured results and status. An agent may cite a report, but a claim that a payoff survived validation must resolve to evidence records and the evaluator's gate decision. Access to frozen holdout outcomes is reserved for the independent evaluator and reviewers after candidate selection. Research agents see development evidence and only released validation summaries; they cannot choose a new success definition in response to a failed validation.
+Research knowledge RAG helps agents find methods and explain reports. The structured evidence registry is authoritative for hypothesis contracts, measured results and status. A proposal retains its pre-outcome, testable rationale and any scoped forecasts; a later lesson is a derived explanation linked to the original proposal, critique and released evaluator evidence. Retrieval groups multiple lessons by root evidence so repeated narratives do not appear as independent results. An agent may cite a report, but a claim that a payoff survived validation must resolve to evidence records and the evaluator's gate decision. Access to frozen holdout outcomes is reserved for the independent evaluator and reviewers after candidate selection. Research agents see development evidence and only released validation summaries; they cannot choose a new success definition in response to a failed validation.
+
+Research-agent quality is not validation pass rate alone: evaluate falsifiability, lineage-aware novelty, information value, cost and calibration of ex-ante forecasts on matched tasks and budgets. Critic objections are recorded before review and audited separately, including a bounded sample of rejected proposals, so excessive rejection is not treated as success. Unmeasured/rejected proposals have censored outcome labels. Hosted model aliases may change behavior; retain exact invocation records and canary results, and distinguish recorded-output replay from fresh inference. The [agent-loop implementation plan](research/AGENT_LOOP_IMPLEMENTATION_PLAN.md) defines the first supported slice, engineering acceptance and later independent-evidence gate.
 
 Evaluation reports show the number of related trials, all preregistered windows, results by pair and period, net costs, drawdown, calibration, uncertainty and failure reasons. A promising isolated backtest is insufficient for `SHADOW_ELIGIBLE`. Prospective evidence is collected after registration under the same decision and payoff definitions. Any exceptional override is recorded with its reason and approver; it does not rewrite the original result.
 
