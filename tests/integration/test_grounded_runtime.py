@@ -25,10 +25,10 @@ from tests.unit.test_agent_catalog import proposal_payload
 
 
 class GroundedTransport(Scripted):
-    def __init__(self, profile, *, revision=False, misattribute=False, fact_citation=False):
+    def __init__(self, profile, *, revision=False, misattribute=False, fact_citation=False, hours=None):
         super().__init__(profile, {})
         self.revision, self.misattribute = revision, misattribute
-        self.fact_citation = fact_citation
+        self.fact_citation, self.hours = fact_citation, hours
 
     def invoke(self, request):
         if self.count == 4:
@@ -37,6 +37,8 @@ class GroundedTransport(Scripted):
             context["facts"] = next(item["facts"] for item in results if "facts" in item)
             payload = grounded_payload(context)
             payload["evidence_ids"] = sorted({fact["evidence_id"] for fact in context["facts"].values()})
+            if self.hours:
+                payload["diagnostic"]["hours_utc"] = list(self.hours)
             if self.misattribute:
                 payload["evidence_claims"][0]["applies_to"] = "PROPOSED_CONTRACT"
             if self.revision:
@@ -79,11 +81,16 @@ def test_corrected_revision_keeps_parent_and_can_freeze_develop_and_lock(registe
     original = next(e["detail"] for e in old["events"] if e["kind"] == "CONTRACT_REVIEW")
     correction = ReviewCorrection(draft_id=parent["id"], draft_sha256=parent["artifact_id"], original_review_sha256=digest(original),
         classification="BLOCKED_CONTRACT_DEFECT", reason="Binding v1 cost declaration contradicted diagnostic scope.", actor="test_operator")
-    assert correct_review(registry, correction)["admission_granted"] is False
+    corrected = correct_review(registry, correction)
+    assert corrected["admission_granted"] is False
     assert registry.report(parent["run_id"])["current_integrity"]["status"] == "REVIEW_REQUIRED"
     config = register_v3(registry, provider.profile)
-    task = {"submission_policy": "revision_only", "revision_authorizations": [{"parent_draft_id": parent["id"], "parent_draft_sha256": parent["artifact_id"],
-        "scope_changes": [{"requirement_index": 0, "scope": "future_economic"}], "reason": "Correct only cost scope."}]}
+    task = {"submission_policy": "revision_only", "repair_policy": "exposed_corrected_attempt",
+            "revision_authorizations": [{"parent_draft_id": parent["id"], "parent_draft_sha256": parent["artifact_id"],
+                "scope_changes": [{"requirement_index": 0, "scope": "future_economic"}], "reason": "Correct only cost scope.",
+                "defect_reference": {"kind": "CONTRACT_REVIEW_CORRECTION", "sha256": corrected["correction_sha256"],
+                                     "classification": "BLOCKED_CONTRACT_DEFECT"},
+                "reviewer": "test_operator", "reviewer_outcome_exposure": "EXPOSED"}]}
     model = GroundedTransport(provider.profile, revision=True, fact_citation=True)
     report = Runner(registry, model).run(config, "revision-" + uuid4().hex, task)
     assert report["events"][-1]["detail"]["status"] == "AWAITING_OPERATOR_REVIEW"
@@ -100,6 +107,11 @@ def test_corrected_revision_keeps_parent_and_can_freeze_develop_and_lock(registe
     assert lock["status"] == "NO_INDEPENDENT_WINDOW"
     assert admit(registry, command) == lock
     assert registry.read(parent["artifact_id"]) == provider.proposal
+    eligibility = context["revision_parents"][parent["id"]]["repair_eligibility"]
+    assert eligibility["decision"] == "EXPOSED_CORRECTED_ATTEMPT" and eligibility["exposure"] == "EXPOSED"
+    freeze = registry.read(registry.get(t.commitments, draft["id"] + ":DESIGN_FREEZE")["artifact_id"])
+    assert freeze["repair_eligibility"]["decision"] == "EXPOSED_CORRECTED_ATTEMPT"
+    assert registry.read(registry.get(t.commitments, draft["id"] + ":REPAIR_ELIGIBILITY_RECHECK")["artifact_id"])["exposure"] == "EXPOSED"
     with registry.engine.connect() as c:
         assert len(c.execute(select(t.drafts)).all()) == 2
         assert all(row.state == "CONSUMED" for row in c.execute(select(t.windows)))

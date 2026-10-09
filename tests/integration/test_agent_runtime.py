@@ -20,8 +20,9 @@ from tests.unit.test_agent_catalog import proposal_payload
 
 
 class Scripted:
-    def __init__(self, profile, proposal, *, timeout=False):
+    def __init__(self, profile, proposal, *, timeout=False, development_page=None):
         self.profile, self.proposal, self.timeout = profile, proposal, timeout
+        self.development_page = development_page or {}
         self.count = 0
 
     def prepare(self, instructions, conversation, tools):
@@ -43,7 +44,7 @@ class Scripted:
             step = (self.count - 2) % 4
             names = ["read_source_coverage", "read_released_evidence", "read_development_snapshot"]
             if step < 3:
-                name, arguments = names[step], {}
+                name, arguments = names[step], (self.development_page if step == 2 else {})
             elif self.count == 5:
                 name, arguments = "submit_hypothesis_draft", self.proposal
             else:

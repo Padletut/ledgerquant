@@ -1,6 +1,6 @@
 # Same research idea, corrected contract attempt
 
-**Date:** 09 October 2026. **Architecture:** 2.11.1.
+**Date:** 09 October 2026. **Architecture at execution:** working revision 2.11.1, consolidated into [2.12](../../../ARCHITECTURE.md) in commit `79cbbae`. The working revision was not committed separately; the additional planned 2.12 feedback/exposure gates were not part of this execution.
 **Mode:** exposed process regression and retrospective development diagnostic.
 
 ## Implemented distinction
@@ -90,8 +90,9 @@ records this change after the engineering failure and before the recovery call.
 The recovery completed the correct revision and Critic review. Initial service
 review nevertheless returned `UNKNOWN_EVIDENCE`: Critic cited two valid scoped
 fact hashes alongside the source-record IDs, while that checker accepted only
-record IDs. The exact proposal and critique were retained. Architecture 2.11.1
-introduces deterministic policy `scoped_registry_references/1`, which resolves
+record IDs. The exact proposal and critique were retained. Working revision
+2.11.1 introduced deterministic policy `scoped_registry_references/1`, first
+committed with architecture 2.12 in `79cbbae`. This policy resolves
 only content-verified facts in the run's authorized frozen context. Unknown
 hashes remain rejected. A regression reproduced the defect before the fix.
 

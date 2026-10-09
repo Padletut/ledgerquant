@@ -1,5 +1,7 @@
 """Apply an operator-authorized scope patch without redefining the market idea."""
 
+from typing import Literal
+
 from pydantic import Field
 
 from .grounded_proposals import GroundingDeclaration, ProposalV3, RevisionLink, ScopeChange
@@ -7,11 +9,21 @@ from .proposals import Proposal
 from .types import Record, digest
 
 
+class DefectReference(Record):
+    """The reviewed record that established the contract defect being repaired."""
+    kind: Literal["CONTRACT_REVIEW_CORRECTION", "CONTRACT_REVIEW"]
+    sha256: str = Field(pattern=r"^[a-f0-9]{64}$")
+    classification: Literal["BLOCKED_CONTRACT_DEFECT"]
+
+
 class RevisionAuthorization(Record):
     parent_draft_id: str = Field(min_length=1, max_length=128)
     parent_draft_sha256: str = Field(pattern=r"^[a-f0-9]{64}$")
     scope_changes: tuple[ScopeChange, ...] = Field(min_length=1, max_length=3)
     reason: str = Field(min_length=1, max_length=2000)
+    defect_reference: DefectReference
+    reviewer: str = Field(min_length=1, max_length=120)
+    reviewer_outcome_exposure: Literal["NONE_DECLARED", "EXPOSED", "UNKNOWN"]
 
 
 class RevisionSubmission(GroundingDeclaration):
@@ -46,6 +58,8 @@ def resolve_revision(submission: RevisionSubmission, context):
         raise ValueError("REVISION_NOT_AUTHORIZED")
     if parent["draft_sha256"] != submission.parent_draft_sha256 or digest(parent["proposal"]) != submission.parent_draft_sha256:
         raise ValueError("REVISION_PARENT_HASH_MISMATCH")
+    if eligibility_errors(parent):
+        raise ValueError("REPAIR_EXPOSURE_DENIED")
     fields = corrected_fields(parent["proposal"], parent["scope_changes"])
     fields["admissibility_probability"] = submission.admissibility_probability
     grounding = {key: getattr(submission, key) for key in GroundingDeclaration.model_fields}
@@ -65,9 +79,19 @@ def revision_errors(proposal: ProposalV3, context):
         return ["REVISION_PARENT_HASH_MISMATCH"]
     if [item.model_dump(mode="json") for item in link.scope_changes] != parent["scope_changes"]:
         return ["REVISION_PATCH_MISMATCH"]
+    if eligibility_errors(parent):
+        return eligibility_errors(parent)
     expected = corrected_fields(parent["proposal"], parent["scope_changes"])
     expected["admissibility_probability"] = proposal.admissibility_probability
     actual = proposal.model_dump(mode="json")
     if any(actual[key] != expected[key] for key in expected):
         return ["REVISION_CHANGED_OTHER_FIELDS"]
+    return []
+
+
+def eligibility_errors(parent):
+    """A recorded exposure denial blocks the authorized route; historical contexts carry no record."""
+    recorded = parent.get("repair_eligibility")
+    if recorded is not None and recorded["decision"] == "DENIED":
+        return ["REPAIR_EXPOSURE_DENIED"]
     return []

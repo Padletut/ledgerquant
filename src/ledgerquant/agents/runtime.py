@@ -4,9 +4,10 @@ import json
 
 from ledgerquant.research import tables as t
 from ledgerquant.research.registry import BudgetExceeded, RegistryError
+from ledgerquant.research.repair_exposure import RepairDenied
 from ledgerquant.research.types import canonical, digest
 from .definitions import definition
-from .tools import ResearchTools, schemas
+from .tools import ResearchTools
 
 
 PROBE = {"name": "capability_probe", "description": "Return the requested typed conformance answer.",
@@ -42,8 +43,9 @@ class Runner:
             decision = ResearchTools(self.registry, run["id"], "critic").review()
             self.registry.event(run["id"], "FINISHED", decision)
         except (RegistryError, ValueError) as exc:
-            self.registry.event(run["id"], "STOPPED", {"reason": str(exc),
-                "kind": "BUDGET_EXHAUSTED" if isinstance(exc, BudgetExceeded) else "ENGINEERING_FAILURE",
+            kind = ("BUDGET_EXHAUSTED" if isinstance(exc, BudgetExceeded) else
+                    "REPAIR_EXPOSURE_DENIED" if isinstance(exc, RepairDenied) else "ENGINEERING_FAILURE")
+            self.registry.event(run["id"], "STOPPED", {"reason": str(exc), "kind": kind,
                 "economic_failure": False, "retry_policy": "new_command_new_attempt"})
         return self.registry.report(run["id"])
 
@@ -85,7 +87,7 @@ class Runner:
         conversation = [self.provider.user_message(canonical(task))]
         tools = ResearchTools(self.registry, run["id"], role)
         for _ in range(self.provider.profile.max_steps_per_agent):
-            invocation, result = self._invoke(run, role, spec["instructions"], conversation, schemas(role, tools.contract_version))
+            invocation, result = self._invoke(run, role, spec["instructions"], conversation, tools.schemas())
             conversation.extend(result.continuation)
             call = result.calls[0]
             try:

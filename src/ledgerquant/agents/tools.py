@@ -11,6 +11,7 @@ from ledgerquant.research.proposals import Critique, Proposal, review
 from ledgerquant.research.scoped_proposals import contract_types, parse_proposal, parse_critique, REQUIREMENT_RULES
 from ledgerquant.research.grounding import recorded_context
 from ledgerquant.research.contract_revisions import RevisionSubmission, resolve_revision
+from ledgerquant.research.repair_exposure import OUTCOME_READS, TOOL_POLICIES
 from ledgerquant.research.registry import RegistryError, append, artifact, now, value
 from ledgerquant.research.types import Record, digest
 
@@ -60,20 +61,35 @@ class ResearchTools:
         self.contract_version = binding.get("research_contract_version", 1)
         self.operations = operations(self.contract_version)
         self.submission_policy = registry.read(run["task_id"]).get("submission_policy", "proposal_or_authorized_revision")
+        # The outcome-free policy comes only from the frozen, service-validated v3
+        # grounding context; a raw task field can never relax the required reads.
+        self.prohibited = set()
+        if self.contract_version == 3:
+            with registry.engine.connect() as c:
+                if recorded_context(c, run_id).get("tool_policy") == TOOL_POLICIES["premeasurement_repair"]:
+                    self.prohibited = set(OUTCOME_READS)
+        self.required_reads = REQUIRED_READS - self.prohibited
         snapshot = registry.get(t.snapshots, run["snapshot_id"])
         self.manifest = registry.read(snapshot["manifest_id"])
         self.reads = set()
         self.submitted = False
+
+    def schemas(self):
+        return [{"name": name, "description": description, "parameters": schema.model_json_schema()}
+                for name, (schema, roles, description) in self.operations.items()
+                if self.role in roles and name not in self.prohibited]
 
     def execute(self, invocation_id, name, arguments):
         invocation = self.registry.get(t.invocations, invocation_id)
         run = self.registry.get(t.runs, self.run_id)
         if invocation["run_id"] != self.run_id or invocation["agent_version"] != run[f"{self.role}_version"]:
             raise RegistryError("TOOL_CALLER_MISMATCH")
-        allowed = name in self.operations and self.role in self.operations[name][1]
+        allowed = name in self.operations and self.role in self.operations[name][1] and name not in self.prohibited
         with self.registry.engine.begin() as c:
             try:
                 with c.begin_nested():
+                    if name in self.prohibited:
+                        raise RegistryError("OUTCOME_READ_PROHIBITED")
                     if not allowed:
                         raise RegistryError("ROLE_DENIED")
                     parsed = self.operations[name][0].model_validate(arguments)
@@ -116,6 +132,8 @@ class ResearchTools:
                 context = recorded_context(c, self.run_id)
                 result["prior_inventory"] = {key: context[key] for key in
                     ("version", "cutoff_at", "prior_groups", "unused_catalog_hours", "revision_parents", "exposure", "independence")}
+                result["prior_inventory"]["repair_policy"] = context.get("repair_policy")
+                result["prior_inventory"]["tool_policy"] = context.get("tool_policy", "research_tools/1")
             return result
         if name == "read_released_evidence":
             evidence = self._released(c)
@@ -134,7 +152,7 @@ class ResearchTools:
                     "start": snapshot["start_inclusive_utc"], "end": snapshot["end_exclusive_utc"],
                     "total_cases": len(cases), "offset": arguments.offset,
                     "cases": cases[arguments.offset:arguments.offset + arguments.limit]}
-        if name.startswith("submit_") and not REQUIRED_READS <= self.reads:
+        if name.startswith("submit_") and not self.required_reads <= self.reads:
             raise RegistryError("REQUIRED_EVIDENCE_NOT_READ")
         if self.contract_version == 3 and self.submission_policy == "revision_only" and name == "submit_hypothesis_draft":
             raise RegistryError("AUTHORIZED_REVISION_REQUIRED")

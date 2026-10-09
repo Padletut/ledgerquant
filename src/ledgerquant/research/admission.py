@@ -12,6 +12,7 @@ from .scoped_proposals import parse_proposal, parse_critique
 from .grounded_proposals import ProposalV3
 from .grounding import recorded_context
 from .registry import RegistryError, append, artifact, now, value
+from .repair_exposure import POLICY_VERSION, RepairDenied, participant_runs, recheck, registry_findings
 from .types import Record, digest
 
 
@@ -25,6 +26,7 @@ class Admission(Record):
 
 
 def admit(registry, command: Admission):
+    denied = None
     with registry.engine.begin() as c:
         draft = c.execute(select(t.drafts).where(t.drafts.c.id == command.draft_id).with_for_update()).mappings().one()
         if draft["artifact_id"] != command.draft_sha256:
@@ -54,22 +56,32 @@ def admit(registry, command: Admission):
             required = {str(i) for i, objection in enumerate(critique.objections) if objection.severity != "advisory"}
             if not required <= set(command.objection_resolutions) or any(not text.strip() for text in command.objection_resolutions.values()):
                 raise RegistryError("UNRESOLVED_CRITIC_OBJECTION")
-        if isinstance(proposal, ProposalV3):
-            _commit(c, draft["id"], command.actor, "CONTRACT_REVIEW_ASSESSMENT", {
-                "proposal_sha256": draft["artifact_id"], "critique_sha256": critique_id,
-                "decision": decision.model_dump(mode="json")})
-        _commit(c, draft["id"], command.actor, "OPERATOR_DECISION", command)
-        if command.action == "REJECT":
-            return {"status": "REJECTED", "economic_failure": False}
-        freeze = value(c, frozen) if frozen else {"proposal_id": draft["artifact_id"], "catalog": CATALOG, "catalog_sha256": digest(CATALOG),
-                  "snapshot_id": run["snapshot_id"], "development_id": manifest["development_id"],
-                  "family_id": draft["family_id"], "campaign_id": run["campaign_id"],
-                  "registered_at": draft["created_at"].isoformat(), "confirmatory_tests": 0,
-                  "validation_status": "NO_INDEPENDENT_WINDOW"}
-        if isinstance(proposal, ProposalV3) and proposal.revision is not None:
-            freeze = {**freeze, "revision": proposal.revision.model_dump(mode="json"),
-                      "idea_relation": "SAME_RESEARCH_IDEA", "attempt_kind": "CORRECTED_REVISION"}
-        _commit(c, draft["id"], command.actor, "DESIGN_FREEZE", freeze)
+        repair = None
+        if isinstance(proposal, ProposalV3) and proposal.revision is not None and command.action == "ADMIT_DEVELOPMENT":
+            repair = _repair_recheck(c, draft, run, manifest, proposal, command.actor)
+        if repair is not None and repair["decision"] == "DENIED":
+            # The denial is committed as an append-only record before the command is refused.
+            denied = repair
+        else:
+            if isinstance(proposal, ProposalV3):
+                _commit(c, draft["id"], command.actor, "CONTRACT_REVIEW_ASSESSMENT", {
+                    "proposal_sha256": draft["artifact_id"], "critique_sha256": critique_id,
+                    "decision": decision.model_dump(mode="json")})
+            _commit(c, draft["id"], command.actor, "OPERATOR_DECISION", command)
+            if command.action == "REJECT":
+                return {"status": "REJECTED", "economic_failure": False}
+            freeze = value(c, frozen) if frozen else {"proposal_id": draft["artifact_id"], "catalog": CATALOG, "catalog_sha256": digest(CATALOG),
+                      "snapshot_id": run["snapshot_id"], "development_id": manifest["development_id"],
+                      "family_id": draft["family_id"], "campaign_id": run["campaign_id"],
+                      "registered_at": draft["created_at"].isoformat(), "confirmatory_tests": 0,
+                      "validation_status": "NO_INDEPENDENT_WINDOW"}
+            if isinstance(proposal, ProposalV3) and proposal.revision is not None and not frozen:
+                freeze = {**freeze, "revision": proposal.revision.model_dump(mode="json"),
+                          "idea_relation": "SAME_RESEARCH_IDEA", "attempt_kind": "CORRECTED_REVISION",
+                          "repair_eligibility": _freeze_summary(repair)}
+            _commit(c, draft["id"], command.actor, "DESIGN_FREEZE", freeze)
+    if denied is not None:
+        raise RepairDenied("REPAIR_EXPOSURE_DENIED:" + ",".join(denied["reasons"]))
     # Commit the design before any new development calculation. Re-running the
     # same command resumes the deterministic job, never a new provider call.
     result = develop(proposal.diagnostic, registry.read(manifest["development_id"])["cases"])
@@ -81,6 +93,32 @@ def admit(registry, command: Admission):
                 "status": status, "economic_claim": None, "execution_allowed": False}
         _commit(c, draft["id"], "catalog:" + CATALOG["version"], "CANDIDATE_LOCK", lock)
     return lock
+
+
+def _repair_recheck(connection, draft, run, manifest, proposal, actor):
+    """Transactional recheck against intervening exposure; an existing record is never rewritten."""
+    c = connection
+    existing = c.execute(select(t.commitments.c.artifact_id).where(t.commitments.c.id == draft["id"] + ":REPAIR_ELIGIBILITY_RECHECK")).scalar_one_or_none()
+    if existing:
+        return value(c, existing)
+    parent_id = proposal.revision.parent_draft_id
+    frozen = recorded_context(c, run["id"])["revision_parents"].get(parent_id, {}).get("repair_eligibility")
+    if frozen is None:
+        return None  # recorded under a grounding contract that predates repair_exposure/1
+    cutoff = now()
+    participants = participant_runs(c, parent_id, draft["signature"], value(c, run["task_id"]).get("related_attempt_ids", ()), run["id"])
+    findings = registry_findings(c, manifest, proposal.diagnostic.hours_utc, cutoff, participants)
+    detail = recheck(frozen, findings, cutoff, actor)
+    _commit(c, draft["id"], actor, "REPAIR_ELIGIBILITY_RECHECK", detail)
+    return detail
+
+
+def _freeze_summary(repair):
+    if repair is None:
+        return {"decision": "NOT_ASSESSED", "policy_version": None,
+                "reason": "recorded grounding context predates " + POLICY_VERSION}
+    return {"decision": repair["decision"], "exposure": repair["exposure"], "policy_version": POLICY_VERSION,
+            "recheck_sha256": digest(repair)}
 
 
 def _commit(connection, draft_id, actor, kind, detail):

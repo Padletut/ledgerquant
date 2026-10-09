@@ -1,6 +1,6 @@
 # Bounded research-agent operations
 
-**Implemented:** 09 October 2026, architecture 2.11.1.
+**Implemented:** 09 October 2026; v3 implementation described in [architecture 2.12](../ARCHITECTURE.md). Its intermediate working revision was 2.11.1, consolidated into 2.12 in commit `79cbbae`. Architecture 2.13 (10 October 2026) adds the repair exposure gate described below; the feedback-type and process-assessment contracts remain planned.
 
 The one-shot workflow is Research proposal → fresh-context Critic → deterministic
 contract review. An operator can then reject or admit an eligible draft to a
@@ -293,3 +293,75 @@ The corrected attempt was admitted and developed: 129 measurable anchors out of
 prior-inventory views show operator/lock state alongside the original review
 and immutable commitment references. The entire step reserved USD 1.540033.
 See the [full execution record](../research/evaluations/grounded_revision_20261009/REPORT.md).
+
+## Repair exposure gate (architecture 2.13)
+
+A v3 task that carries `revision_authorizations` must also declare
+`repair_policy`. `premeasurement_repair` is the strict route: the service must
+establish that no relevant development or validation outcome was exposed.
+`exposed_corrected_attempt` is the route the historical correction used: the
+attempt proceeds, and its exposure state is recorded so it can never be
+described as an unexposed repair. A task with authorizations but no policy, or
+a policy without authorizations, stops before inference. The strict route also
+requires `submission_policy: "revision_only"`.
+
+Each authorization needs three further fields beyond the parent ID/hash, patch
+and reason:
+
+```json
+{
+  "parent_draft_id": "e7f85e02-fe52-473b-a786-6e659ae2f246",
+  "parent_draft_sha256": "a09b3f29fc094bf0eb810a9953d9756f6bb428282b0c71c1b2495f89d144f034",
+  "scope_changes": [{"requirement_index": 0, "scope": "future_economic"}],
+  "reason": "Cost-scope-only correction with unchanged exposure.",
+  "defect_reference": {"kind": "CONTRACT_REVIEW_CORRECTION",
+                       "sha256": "132e3358e814560d845fa4f83453d929e5d33b1398fe0bad5e30747877f9aa04",
+                       "classification": "BLOCKED_CONTRACT_DEFECT"},
+  "reviewer": "operator_name",
+  "reviewer_outcome_exposure": "EXPOSED"
+}
+```
+
+`defect_reference` must resolve to the parent's recorded
+`CONTRACT_REVIEW_CORRECTION` commitment, or to its `CONTRACT_REVIEW` event when
+the service itself returned `BLOCKED_CONTRACT_DEFECT`; any other hash or
+classification stops the run with `DEFECT_REFERENCE_INVALID`.
+`reviewer_outcome_exposure` is the operator's own declaration
+(`NONE_DECLARED`, `EXPOSED` or `UNKNOWN`); the registry cannot verify what a
+person has read, and a declared exposure is never cleared by an empty scan.
+The example above shows the only truthful declaration for the historical
+12 UTC parent, whose family is exposed for every catalog hour subset.
+
+When the run's `GROUNDING_CONTEXT` (`research_grounding/2`) is frozen, the
+service records a `repair_exposure/1` assessment under each revision parent:
+released evidence whose declared hours overlap the repaired diagnostic,
+development results and candidate locks for overlapping family drafts, and
+labelled development pages read by the parent run, same-idea attempts,
+`related_attempt_ids` and the current run, for both roles. Overlap or a declared
+exposure is `EXPOSED`; a missing participant or unparseable record is
+`UNKNOWN`; only an empty overlap is `NONE_ESTABLISHED`. Agents see the
+decision through `read_source_coverage` but cannot change it.
+
+A strict run whose assessment is not `NONE_ESTABLISHED` records the context,
+then stops with a `STOPPED` event of kind `REPAIR_EXPOSURE_DENIED` before any
+provider call. The run still counts against the campaign; redelivering the
+command returns the same record. In an eligible strict run neither role is
+offered `read_development_snapshot`; an attempted call is recorded with
+`OUTCOME_READ_PROHIBITED`, and submission requires only the source-coverage and
+released-evidence reads. The tool policy is taken from the frozen grounding
+context, so the task field alone never relaxes a v1/v2 run's read requirement.
+
+`admit` on an authorized revision recomputes the findings at that moment and
+appends `REPAIR_ELIGIBILITY_RECHECK` to the draft. If a strict repair has
+acquired intervening exposure, for example a development result for an
+overlapping hour subset, the command fails with `REPAIR_EXPOSURE_DENIED` after
+the denial has been committed; repeating the command denies again, no design
+freeze or operator decision is written, and `REJECT` remains available. On the
+exposed route the recheck records the current exposure and admission proceeds.
+The design freeze carries the recheck decision, exposure and hash.
+
+The historical correction `d6149cdb-bc86-47bb-8857-d0225010c35e` was frozen
+under `research_grounding/1` and is not reassessed. Its admission, lock and
+development result are unchanged, and it is not an outcome-unexposed repair.
+Fixture-only tests exercise the eligible path with evidence declared on
+non-overlapping hours; no real run has done so.
