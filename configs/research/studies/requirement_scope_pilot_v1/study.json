@@ -1,0 +1,234 @@
+{
+  "version": "requirement_scope_study_design/1",
+  "study_id": "requirement_scope_pilot_v1",
+  "design_date": "2026-10-10",
+  "stage": "PILOT_DESIGN_ONLY",
+  "authority": {
+    "provider_execution": false,
+    "automatic_permissions": [],
+    "economic_evaluation": false,
+    "new_market_windows": [],
+    "human_review_gate": "UNCHANGED",
+    "reviewer_mode": "ONE_HUMAN_PILOT_EXPLICITLY_SELECTED_BY_USER",
+    "qualifies_delegation": false
+  },
+  "assessment_class": {
+    "id": "requirement_scope_consistency/1",
+    "code": "REQUIREMENT_SCOPE_CONFUSION",
+    "subject_role": "research",
+    "assessor_role": "critic",
+    "contract_versions": [
+      "research_proposal/2",
+      "research_proposal/3"
+    ],
+    "language": "English",
+    "scope": "Binding source requirement versus current no-orders, no-economic-claim diagnostic scope.",
+    "supported_sources": [
+      "raw_news",
+      "historical_sentiment",
+      "broker_costs"
+    ],
+    "scope_values": [
+      "current_diagnostic",
+      "future_economic"
+    ],
+    "mandatory_escalations": [
+      "AMBIGUOUS_SCOPE",
+      "OUT_OF_CLASS",
+      "INVALID_CONTEXT",
+      "INTEGRITY_CONFLICT",
+      "UNCERTAIN_LINEAGE_OR_EXPOSURE",
+      "HIGH_IMPACT",
+      "MATERIAL_DISAGREEMENT"
+    ],
+    "source_visibility": "New operator-authored synthetic process fixtures with explicit provenance; historical inputs are exposed development history.",
+    "maximum_case_packet_bytes": 4096
+  },
+  "inputs": {
+    "history": {
+      "file": "history.json",
+      "sha256": "56c2bfe315a671d1ce0043f8d84a0bd21920b31a3b77f743efd9f3874e3cc0cc"
+    },
+    "method_feedback": {
+      "file": "method_feedback.json",
+      "sha256": "3257e296bcf2ed2cf0a555c5927415a4a9127ad19ff64aaf5b85790f4f1718b3"
+    },
+    "model_profile": {
+      "file": "model.profile.json",
+      "sha256": "531b8895909b45367a74e86b01a70f7c6ff423452b3c1119ca2ed4f0ba49ec17"
+    },
+    "history_only": [
+      "same frozen instructions and class rules",
+      "same current case",
+      "history.json"
+    ],
+    "history_plus_reviewed_methods": [
+      "same frozen instructions and class rules",
+      "same current case",
+      "history.json",
+      "method_feedback.json:model_input"
+    ],
+    "forbidden": [
+      "human test labels",
+      "author-intended labels",
+      "stratum-revealing IDs",
+      "other arm outputs",
+      "new market outcomes",
+      "unreleased holdouts"
+    ]
+  },
+  "inventory": {
+    "candidate_family_slots": 8,
+    "cases_per_family": 3,
+    "total_cases": 24,
+    "strata_per_family": [
+      "SUPPORTED_SCOPE_DEFECT",
+      "VALID_NEAR_MISS",
+      "MANDATORY_ESCALATION"
+    ],
+    "reference_authority": "Human user reviews original packet before author-suggested label; immutable field references and rationale acceptance rules.",
+    "independence_policy": "An independent slot number is not evidence. Document mechanisms and ancestry, merge related clusters, and stop preparation if eight eligible clusters cannot be supported.",
+    "family_shortfall": "INSUFFICIENT_FAMILY_DIVERSITY",
+    "prior_material_policy": "Existing reviewed cases and old suites are development only; renamed or paraphrased siblings cannot fill test slots.",
+    "case_status": "NOT_AUTHORED",
+    "reference_status": "NOT_REVIEWED"
+  },
+  "schedule": {
+    "arms": [
+      "HISTORY_ONLY",
+      "HISTORY_PLUS_REVIEWED_METHODS"
+    ],
+    "repetitions_per_case_arm": 1,
+    "scheduled_assessments": 48,
+    "probe_calls_per_assessment": 1,
+    "scored_calls_per_assessment": 1,
+    "max_provider_invocations": 96,
+    "automatic_retries": 0,
+    "case_order": "Freeze an opaque case order before execution; interleave strata/families. Even pair index starts HISTORY_ONLY, odd starts HISTORY_PLUS_REVIEWED_METHODS.",
+    "context_isolation": "Fresh context per arm; no cross-arm conversation, output, cache-as-context or reference access.",
+    "provider_time_rule": "Execute each pair consecutively; stop on unrecognized returned-model identity change or observed binding drift."
+  },
+  "answer_contract": {
+    "status": "REQUIRES_HARNESS_IMPLEMENTATION",
+    "finding_fields": [
+      "code",
+      "status",
+      "responsible_component",
+      "severity",
+      "references",
+      "applicability",
+      "explanation"
+    ],
+    "finding_shape": "Existing research.process_assessment.Finding shape; code constrained to this class.",
+    "routes": [
+      "ASSESSABLE",
+      "ESCALATE"
+    ],
+    "escalation_reason": "NONE for ASSESSABLE; one registered mandatory-escalation reason for ESCALATE.",
+    "authority": "Proposed evaluation answer only; never a reviewed assessment or release command.",
+    "confidence_controls_routing": false
+  },
+  "scoring": {
+    "track_a": {
+      "metric": "family_macro_exact_accuracy_delta",
+      "contrast": "HISTORY_PLUS_REVIEWED_METHODS minus HISTORY_ONLY",
+      "weighting": "Equal family weight; equal case weight within each family.",
+      "minimum_delta": 0.125
+    },
+    "track_b": {
+      "candidate_arm": "HISTORY_PLUS_REVIEWED_METHODS",
+      "selection": "Fixed before outcomes; never select the better observed arm.",
+      "metrics": [
+        "false_accusation_count_over_8_valid_near_misses",
+        "missed_defect_count_over_8_supported_defects",
+        "missed_escalation_count_over_8_mandatory_cases",
+        "wrong_component_or_severity",
+        "invalid_or_unsupported_citation",
+        "incorrect_scope_explanation",
+        "abstention",
+        "assessable_coverage_over_16_in_class_cases",
+        "errors_among_assessable_cases"
+      ]
+    },
+    "exact_pass_requires": [
+      "correct status",
+      "correct component and severity",
+      "valid supporting citations",
+      "correct route and escalation reason",
+      "rationale consistent with frozen scope rules"
+    ],
+    "semantic_grading": "Human grades with arm IDs hidden using frozen acceptance rules; unresolved output grade is visible and makes the pilot inconclusive.",
+    "failure_denominator": "All 48 scheduled assessments; retain not-started, probe-failed, refused, timed-out, malformed and unknown dispatch rows.",
+    "no_defect_on_unresolved_reference": true,
+    "invalid_reference_policy": "Exclude the same invalid-reference case from both arms semantic denominators, retain both scheduled rows and reason; overall INCONCLUSIVE, no replacement or asymmetric survivor comparison.",
+    "uncertainty": "Descriptive paired family deltas and observed counts only; eight authored clusters do not establish independent support or a confirmatory/generalization interval.",
+    "shared_tracks": "Same cases and outputs, correlated estimands; never reported as independent studies.",
+    "missing_output_score": "Zero completion-inclusive exact correctness on valid-reference cases; technical failure is not a supported agent defect.",
+    "abstention_policy": "In-class abstention reduces coverage and counts as a missed decision; mandatory-case escalation is correct if its findings and reasons meet the reference."
+  },
+  "pilot_decision": {
+    "promising_label": "PROMISING_FOR_LARGER_STUDY",
+    "not_promising_label": "NOT_PROMISING_UNDER_REGISTERED_RULE",
+    "incomplete_label": "INCONCLUSIVE",
+    "required_valid_reviewed_cases": 24,
+    "required_complete_graded_assessments": 48,
+    "minimum_track_a_delta": 0.125,
+    "minimum_treatment_correct_in_class": 14,
+    "maximum_treatment_false_accusations": 0,
+    "maximum_treatment_missed_defects": 1,
+    "maximum_treatment_missed_escalations": 0,
+    "maximum_source_or_authority_violations": 0,
+    "inconclusive_triggers": [
+      "early stop",
+      "missing or invalid reference",
+      "missing or failed output",
+      "unresolved output grade",
+      "unsupported family separation"
+    ],
+    "consequence": "May motivate a separately designed qualification study; grants no automatic authority, market claim or promotion."
+  },
+  "budget": {
+    "planned_step_cap_micro_usd": 3000000,
+    "aggregate_authorization_ceiling_micro_usd": 50000000,
+    "allocated_micro_usd": 0,
+    "provider_spend_this_design_phase_micro_usd": 0,
+    "per_call_reservation_upper_micro_usd": 30288,
+    "worst_case_reservation_micro_usd": 2907648,
+    "max_reserved_tokens": 2893824,
+    "wall_time_limit_seconds": 18000,
+    "price_basis_status": "Historical 2026-10-09 project tariff; verify live official prices before execution.",
+    "aggregate_check": "Read all campaign reservations again before execution. Historical exported totals are not current remaining allowance."
+  },
+  "stopping": {
+    "performance_inspections": 1,
+    "extra_sampling": false,
+    "immediate_stop": [
+      "run/call/token/dollar/wall-time limit",
+      "reference or arm leakage",
+      "invalid source integrity",
+      "authority violation",
+      "unexpected model binding or behavior change"
+    ],
+    "technical_failure": "One scheduled answer fails; no retry or recovery. Preserve full denominator. Halt only if a registered immediate-stop condition also applies.",
+    "new_work": "Linked preregistration and fresh exposure-aware case allocation; no reopening this study."
+  },
+  "qualification_status": {
+    "automatic_assessment": "NOT_QUALIFIED",
+    "automatic_release": "NOT_QUALIFIED",
+    "why": [
+      "single human reference review",
+      "small operator-authored synthetic inventory",
+      "no independent real shadow cases",
+      "no qualified release derivation policy",
+      "no delegation enforcement implemented"
+    ],
+    "next_study_requires": [
+      "fresh independently adjudicated families",
+      "two independent human reviewers",
+      "registered class-specific error/coverage confidence bounds and sample support",
+      "prospective shadow volume/duration and audit limits",
+      "qualified release pipeline and downstream behavior",
+      "explicit human activation"
+    ]
+  }
+}

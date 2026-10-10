@@ -1,0 +1,47 @@
+{
+  "version": "requirement_scope_design_freeze/1",
+  "study_id": "requirement_scope_pilot_v1",
+  "frozen_at": "2026-10-10T01:00:35.574133+00:00",
+  "actor": "codex_operator_under_user_authorization_20261010",
+  "reviewer_mode_authorization": "Explicit user reply: pilot with the user as reviewer.",
+  "source_code_commit": "45912a7c70b5cb3fbdee6460554052b1e44cab58",
+  "scope": "Study design and existing source inputs only; no test cases or results, no execution budget allocation, no automation permission.",
+  "artifacts": [
+    {
+      "path": "configs/research/studies/requirement_scope_pilot_v1/study.json",
+      "hash_mode": "ledgerquant.research.types.digest:canonical_json_sha256",
+      "sha256": "121c98c8cc2bbc99518abfc163770e9e55f560752aa7358203057e1932167fdc"
+    },
+    {
+      "path": "configs/research/studies/requirement_scope_pilot_v1/model.profile.json",
+      "hash_mode": "ledgerquant.research.types.digest:canonical_json_sha256",
+      "sha256": "531b8895909b45367a74e86b01a70f7c6ff423452b3c1119ca2ed4f0ba49ec17"
+    },
+    {
+      "path": "configs/research/studies/requirement_scope_pilot_v1/history.json",
+      "hash_mode": "ledgerquant.research.types.digest:canonical_json_sha256",
+      "sha256": "56c2bfe315a671d1ce0043f8d84a0bd21920b31a3b77f743efd9f3874e3cc0cc"
+    },
+    {
+      "path": "configs/research/studies/requirement_scope_pilot_v1/method_feedback.json",
+      "hash_mode": "ledgerquant.research.types.digest:canonical_json_sha256",
+      "sha256": "3257e296bcf2ed2cf0a555c5927415a4a9127ad19ff64aaf5b85790f4f1718b3"
+    },
+    {
+      "path": "documents/research/studies/requirement_scope_pilot_v1/PROTOCOL.md",
+      "hash_mode": "file_bytes_sha256",
+      "sha256": "23fe023651fa086aa173d52135a1a0df73c6f54a19695dcb87a11c34e5e78216"
+    }
+  ],
+  "execution_manifest_status": "NOT_FROZEN",
+  "unfrozen_dependencies": [
+    "compatible pilot harness, prompt, schema and scorer hashes",
+    "reviewed test families and case packets",
+    "human reference labels and acceptance rules",
+    "verified isolation and live source eligibility",
+    "case order, campaign reservation and final execution manifest"
+  ],
+  "revision_policy": "Any change to a bound design artifact is a new linked design freeze before inference; do not overwrite this freeze or silently update a threshold.",
+  "readiness_file": "readiness.json",
+  "readiness_is_derived_and_not_an_authority": true
+}

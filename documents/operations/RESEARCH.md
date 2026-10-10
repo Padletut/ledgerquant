@@ -507,3 +507,29 @@ human review. It records an abstention or pending decision with the exact source
 it cannot replace missing review with approval. A suspended class falls back to
 the same human workflow. The plan owns the detailed thresholds, audit and
 reactivation requirements; none has yet been empirically qualified.
+
+
+### First requirement-scope pilot: design frozen, execution pending
+
+The user selected a pilot with themselves as the human reference reviewer.
+The [protocol](../research/studies/requirement_scope_pilot_v1/PROTOCOL.md) defines
+`requirement_scope_pilot_v1`; its configuration and design manifest are in
+`configs/research/studies/requirement_scope_pilot_v1/`. Those files are study-design
+artifacts, **not** inputs accepted by the existing `process-suite` command.
+
+The pilot fixes the paired history-only/method-feedback contrast, a preselected
+assessor-reliability arm, numerical screening rules, no retries and one terminal
+inspection. The model profile uses the existing historical price basis, which
+must be verified before execution. No campaign funds have been allocated and no
+provider call has been made for this study.
+
+Use `readiness.json` to track missing gates: compatible harness/scorer, reviewed
+family and case inventory, human reference decisions, reference-store isolation,
+execution hashes and live source/budget checks. It is a preparation checklist,
+not a registry authorization. Finish the harness against development fixtures
+before exposing the candidate system to test cases; keep test labels out of the
+worker-readable research artifacts. The original assessments and released lesson
+remain authoritative registry records.
+
+A successful pilot can motivate a larger qualification study. It cannot grant
+`AUTO_ASSESS` or `AUTO_RELEASE_METHOD`; both human gates remain active.

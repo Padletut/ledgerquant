@@ -1,0 +1,35 @@
+{
+  "version": "requirement_scope_method_input/1",
+  "source_export": "documents/research/reviews/process_assessments_20261010/reviewed/requirement_scope_method_lesson.source.json",
+  "source_feedback_id": "75d98e05811f9d2852ef86422200d9ef488a96f94151a736c0501845219c571b",
+  "source_feedback_sha256": "75d98e05811f9d2852ef86422200d9ef488a96f94151a736c0501845219c571b",
+  "available_at": "2026-10-10T00:26:11.766907+00:00",
+  "source_assessments": [
+    {
+      "id": "85067e5bcc8051778ebfc0e6e40d71afd5273e4b73955bcef405358621e7a60c",
+      "kind": "PROCESS_ASSESSMENT",
+      "sha256": "85067e5bcc8051778ebfc0e6e40d71afd5273e4b73955bcef405358621e7a60c"
+    },
+    {
+      "id": "6f35330be69c89316c0be8c1d46c7e310bd7e66ace29224c89348cca4dadab9f",
+      "kind": "PROCESS_ASSESSMENT",
+      "sha256": "6f35330be69c89316c0be8c1d46c7e310bd7e66ace29224c89348cca4dadab9f"
+    }
+  ],
+  "model_input": {
+    "id": "75d98e05811f9d2852ef86422200d9ef488a96f94151a736c0501845219c571b",
+    "sha256": "75d98e05811f9d2852ef86422200d9ef488a96f94151a736c0501845219c571b",
+    "feedback_type": "METHOD_LESSON",
+    "lineage_key": "process:e7f85e02-fe52-473b-a786-6e659ae2f246",
+    "available_at": "2026-10-10T00:26:11.766907+00:00",
+    "claim": "When reviewing a typed proposal, Critic must compare binding structured requirements against the proposal's stated current scope. Agreement between the prose and Critic's own interpretation is insufficient if the binding field expresses something different.",
+    "applicability": "Review of binding required-data declarations against the current diagnostic scope, under the applicable proposal contract. A declared future economic prerequisite must be distinguished from a current requirement.",
+    "counterexamples": [
+      "A correctly deferred future_economic requirement is not a current missing-data defect.",
+      "A reference-checker rejection of valid authorized fact hashes is a service defect, not an agent citation error.",
+      "A reviewed process lesson does not establish predictive or economic value, or demonstrate improved agent behavior."
+    ],
+    "untested": false
+  },
+  "eligibility": "Recorded released snapshot; live source/feedback integrity must pass again before execution. No selection or provider invocation is authorized by this file."
+}

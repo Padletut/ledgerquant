@@ -1,0 +1,52 @@
+{
+  "version": "requirement_scope_pilot_readiness/1",
+  "study_id": "requirement_scope_pilot_v1",
+  "study_sha256": "121c98c8cc2bbc99518abfc163770e9e55f560752aa7358203057e1932167fdc",
+  "status": "DESIGN_FROZEN_EXECUTION_BLOCKED",
+  "meaning": "Derived preparation record. No provider invocation, registry campaign, reference label or automatic authority is created.",
+  "completed": [
+    "pilot scope and user reviewer choice",
+    "numeric screening rules and denominators",
+    "source-bound development history and reviewed lesson",
+    "model binding and conservative planned budget",
+    "terminal stopping and exposure rules"
+  ],
+  "open_gates": [
+    {
+      "id": "HARNESS",
+      "owner": "implementation_operator",
+      "status": "NOT_IMPLEMENTED",
+      "required": "Bound answer schema, exact arm input assembly, scheduling, blinded scoring, budget enforcement and focused tests."
+    },
+    {
+      "id": "CASE_FAMILIES",
+      "owner": "case_author_and_human_reviewer",
+      "status": "NOT_AUTHORED",
+      "required": "Twenty-four candidate packets, family mechanisms/ancestry, reviewed diversity and retained authoring revisions."
+    },
+    {
+      "id": "REFERENCES",
+      "owner": "human_user",
+      "status": "NOT_REVIEWED",
+      "required": "Explicit per-case decisions and rationale acceptance rules, author labels hidden during initial judgement."
+    },
+    {
+      "id": "ISOLATION",
+      "owner": "implementation_operator",
+      "status": "NOT_IMPLEMENTED",
+      "required": "Reference-store access denied to worker including mounts, tools, logs and error output."
+    },
+    {
+      "id": "EXECUTION_MANIFEST",
+      "owner": "execution_operator",
+      "status": "NOT_FROZEN",
+      "required": "Hash-reviewed cases/references, prompt/schema/scorer/code versions, case order and live lesson eligibility."
+    },
+    {
+      "id": "EXECUTION_BUDGET",
+      "owner": "execution_operator",
+      "status": "NOT_ALLOCATED",
+      "required": "Verify official prices, all campaign reservations and approved data scope; reserve within USD 3 and original USD 50, never reset allowances."
+    }
+  ]
+}

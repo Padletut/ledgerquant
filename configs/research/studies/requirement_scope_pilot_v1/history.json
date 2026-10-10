@@ -1,0 +1,114 @@
+{
+  "version": "requirement_scope_history/1",
+  "evidence_mode": "EXPOSED_DEVELOPMENT_HISTORY",
+  "projection": "Only original scope-relevant draft and critique fields. Later human findings, derived lessons, target labels and subsequent development outcomes are excluded.",
+  "historical_v1_rule": "In v1 a listed data requirement is binding current required data; prose cannot defer its typed declaration. Later v2/v3 scopes do not rewrite v1.",
+  "v2_v3_requirement_rules": "Every v2 data requirement has an explicit scope:\ncurrent_diagnostic blocks this attempt when the source is unavailable;\nfuture_economic records a deferred prerequisite and does not block this price\ndiagnostic or grant economic eligibility. Requiring broker_costs for the current\nno-orders, no-economic-claim catalog is REQUIREMENT_CONTRADICTION, a contract\nrejection, never a measured COST_FAILURE. Raw news or historical sentiment\nrequired now remains BLOCKED_DATA_REQUIREMENT, pending data and a reviewed\ncatalog extension. Do not silently execute an unsupported event-conditioned rule.\nCheck mechanism, support and falsifier against these structured scopes. A claim\nto use a source now while deferring its requirement is a narrative contradiction.\nPreserve it as a material REQUIREMENT_CONTRADICTION objection for operator review.\n",
+  "records": [
+    {
+      "run_id": "e7f85e02-fe52-473b-a786-6e659ae2f246",
+      "source_export": "documents/research/reviews/process_assessments_20261010/reviewed/e7f85e02-critic.source.json",
+      "source_packet_sha256": "ed36ab51484e8d70b9da0bcb2db74973168fe11e451804ecd797190b4db2d035",
+      "draft_sha256": "a09b3f29fc094bf0eb810a9953d9756f6bb428282b0c71c1b2495f89d144f034",
+      "critique_sha256": "3a914886ea68b36f380501cf23444e534466c6bc3a74de1a27c56cd4a29aa76c",
+      "proposal_contract_version": "research_proposal/1",
+      "draft_fields": {
+        "diagnostic": {
+          "candidate_rule": "prior_hour_midquote_momentum_sign",
+          "catalog_version": "eurusd_direction/1",
+          "horizon_seconds": 14400,
+          "hours_utc": [
+            12
+          ],
+          "instrument": "EURUSD",
+          "lookback_seconds": 3600,
+          "orders_allowed": false
+        },
+        "mechanism": "Declare only 12 UTC, not the known-duplicate all-hours rule. The testable conjecture is that prior-hour midquote direction during the European trading day may persist over the next four hours as activity transitions toward the US session. Restricting the clock hour reduces mixing with morning and late-day conditions, but fixed UTC hours do not perfectly track daylight-saving session shifts. This is a mechanism conjecture, not measured order-flow evidence. Use exactly the catalog momentum-sign rule with its registered label and tie semantics; add no filters or alternative rules. The hour choice is mechanism-motivated, not selected by a performance comparison. Admissibility probability 0.80 is my pre-review belief that this bounded exploratory proposal is admissible, not a probability of predictive success.",
+        "falsifier": "Apply the catalog unchanged to the declared 12 UTC weekday subset of the permitted 2020-01-01 through 2020-07-01 exclusive development window: retain holidays, the one-second decision delay, 60-second quote-age and settlement-delay limits, and the registered majority-development-target baseline with NON_UP ties. Fewer than 100 eligible anchors or missing fraction above 0.10 blocks an interpretable comparison rather than proving no predictive value. With adequate support and quality, a nonpositive paired candidate-minus-baseline accuracy difference contradicts the proposed directional continuation in this diagnostic window. A positive difference is merely exploratory and does not establish transport, confirmatory success, model quality or profitability. Do not search other hour subsets after observing the result. No independent validation window is available.",
+        "data_requirements": [
+          {
+            "reactivation_condition": "Only reconsider an execution-oriented extension after independently verified, timestamp-aligned broker spread, commission and slippage evidence becomes available and a separate authorization process permits that research.",
+            "reason": "Broker execution costs are unverified. This blocks economic interpretation, not the present no-trade price diagnostic, and is not evidence of absent predictive value.",
+            "source": "broker_costs"
+          }
+        ]
+      },
+      "critique_fields": {
+        "summary": "No supported blocking objection to the exact draft was identified after reading source coverage, both released outcomes and the development page. Recommend REVIEW, not approval or a successful-payoff finding. The declared 12 UTC subset, unchanged rule, horizon, development window, quality thresholds and no-order restriction conform to the catalog. The available evidence does not establish that this subset is a duplicate; sharing the broader rule is not sufficient to prove duplication. The development page confirms the cited missing input and incorrect measurable 12 UTC prediction, but does not establish subset accuracy, eligible support or overall missingness. INSUFFICIENT_SUPPORT remains a possible data-quality failure, not a measured outcome. TEMPORAL_FAILURE is supported as a risk by the released replication, not as an observed result for this proposal. Historical visibility remains assumed and costs remain COST_UNVERIFIED; missing broker costs block economic interpretation, not this no-trade price diagnostic. All independent windows are consumed. The draft appropriately disclaims confirmatory, model-quality and economic-edge conclusions, and labels its 0.80 admissibility probability as a subjective belief rather than measured evidence. No rewriting or additional candidate is proposed."
+      }
+    },
+    {
+      "run_id": "23632117-fb7e-40c6-bffc-b9bbc39df16e",
+      "source_export": "documents/research/reviews/process_assessments_20261010/reviewed/23632117-critic.source.json",
+      "source_packet_sha256": "b674a26b3f1919bedac0321dacd4043e94805436589800aee6b23a495e67d786",
+      "draft_sha256": "079119c60e0db938ba981e28ec54e4b622f9bf3ffd6b18da198b146b1995754a",
+      "critique_sha256": "cd4c99129a4d51b253be59bb89972dc7fc5d8d8f1910fd3bb0010a39466e0a4f",
+      "proposal_contract_version": "research_proposal/2",
+      "draft_fields": {
+        "diagnostic": {
+          "candidate_rule": "prior_hour_midquote_momentum_sign",
+          "catalog_version": "eurusd_direction/1",
+          "horizon_seconds": 14400,
+          "hours_utc": [
+            12
+          ],
+          "instrument": "EURUSD",
+          "lookback_seconds": 3600,
+          "orders_allowed": false
+        },
+        "mechanism": "At the 12 UTC decision hour, compare the prior one-hour EURUSD midquote drift sign against the catalog baseline rule. The hypothesis is that short-horizon continuation or reversal effects around this anchor can create a measurable four-hour directional edge in the retrospective diagnostic, without invoking any trade execution or economic claim.",
+        "falsifier": "If the retained 12 UTC prior-hour midquote momentum sign diagnostic cannot reproduce a positive candidate-versus-baseline gap under the catalog's exact historical constraints, or if admissibility requires converting the deferred broker_costs item into a current diagnostic requirement, the proposal is falsified.",
+        "data_requirements": [
+          {
+            "reactivation_condition": "If a later operator request adds an orders_allowed=true or economic-eligibility extension, review execution-cost inputs then.",
+            "reason": "Deferred prerequisite for any future economic extension only; it does not block this current price-only diagnostic.",
+            "scope": "future_economic",
+            "source": "broker_costs"
+          }
+        ]
+      },
+      "critique_fields": {
+        "summary": "Recommend REVIEW, not rejection. The proposal is internally consistent with the no-orders, price-only catalog scope, and its deferred broker_costs item is correctly scoped as future_economic. The main concern is temporal instability: the 2021 replication failed after the 2020 positive run, so the draft should be treated as fragile rather than validated.",
+        "requirement_consistency": "CONSISTENT",
+        "requirement_explanation": "The narrative and structured fields align with the catalog scope. The diagnostic is price-only, orders_allowed is false, and the broker_costs item is explicitly filed under future_economic as a deferred prerequisite rather than a current diagnostic requirement. Source coverage also states execution costs are unverified, which supports deferral rather than blocking this attempt."
+      }
+    },
+    {
+      "run_id": "d6149cdb-bc86-47bb-8857-d0225010c35e",
+      "source_export": "documents/research/reviews/process_assessments_20261010/reviewed/d6149cdb-critic.source.json",
+      "source_packet_sha256": "7f5d6af5f8ed589d56bfc6b533b2b10e76cd7a81459eeb25dd4a88fcd0d2b6b5",
+      "draft_sha256": "df1bc355a480b211da53a156c0d08450c69776594e0e2f46654cd99d6ed00537",
+      "critique_sha256": "84cb0ad34184c0f90e09a579c140479e41ae2fe7290e054f76011cd6ec687214",
+      "proposal_contract_version": "research_proposal/3",
+      "draft_fields": {
+        "diagnostic": {
+          "candidate_rule": "prior_hour_midquote_momentum_sign",
+          "catalog_version": "eurusd_direction/1",
+          "horizon_seconds": 14400,
+          "hours_utc": [
+            12
+          ],
+          "instrument": "EURUSD",
+          "lookback_seconds": 3600,
+          "orders_allowed": false
+        },
+        "mechanism": "Declare only 12 UTC, not the known-duplicate all-hours rule. The testable conjecture is that prior-hour midquote direction during the European trading day may persist over the next four hours as activity transitions toward the US session. Restricting the clock hour reduces mixing with morning and late-day conditions, but fixed UTC hours do not perfectly track daylight-saving session shifts. This is a mechanism conjecture, not measured order-flow evidence. Use exactly the catalog momentum-sign rule with its registered label and tie semantics; add no filters or alternative rules. The hour choice is mechanism-motivated, not selected by a performance comparison. Admissibility probability 0.80 is my pre-review belief that this bounded exploratory proposal is admissible, not a probability of predictive success.",
+        "falsifier": "Apply the catalog unchanged to the declared 12 UTC weekday subset of the permitted 2020-01-01 through 2020-07-01 exclusive development window: retain holidays, the one-second decision delay, 60-second quote-age and settlement-delay limits, and the registered majority-development-target baseline with NON_UP ties. Fewer than 100 eligible anchors or missing fraction above 0.10 blocks an interpretable comparison rather than proving no predictive value. With adequate support and quality, a nonpositive paired candidate-minus-baseline accuracy difference contradicts the proposed directional continuation in this diagnostic window. A positive difference is merely exploratory and does not establish transport, confirmatory success, model quality or profitability. Do not search other hour subsets after observing the result. No independent validation window is available.",
+        "data_requirements": [
+          {
+            "reactivation_condition": "Only reconsider an execution-oriented extension after independently verified, timestamp-aligned broker spread, commission and slippage evidence becomes available and a separate authorization process permits that research.",
+            "reason": "Broker execution costs are unverified. This blocks economic interpretation, not the present no-trade price diagnostic, and is not evidence of absent predictive value.",
+            "scope": "future_economic",
+            "source": "broker_costs"
+          }
+        ]
+      },
+      "critique_fields": {
+        "summary": "REVIEW. The revision is admissible as a linked same-idea correction with proper scope handling and preserved no-trade diagnostic framing. The only material issue is evidence-scope wording: 'all-hours' is too loose for the released [8,12,16] family evidence. Tighten that language, but no blocking objection was found.",
+        "requirement_consistency": "CONSISTENT",
+        "requirement_explanation": "The draft correctly applies the catalog's explicit scope rule: broker_costs is deferred as future_economic and does not block this no-trade diagnostic. It also keeps orders_allowed false, uses the cataloged rule and permitted hour, and does not introduce an unsupported execution or economic claim. That matches the requirement rules and avoids the REQUIREMENT_CONTRADICTION the service warns against."
+      }
+    }
+  ]
+}
