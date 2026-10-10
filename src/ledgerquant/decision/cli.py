@@ -12,9 +12,9 @@ from sqlalchemy import create_engine
 from ledgerquant.capture.settings import database_url_from_environment
 from ledgerquant.integrations.model_providers.openai import OpenAIResponses
 from ledgerquant.models.generation import ModelProfile
-from ledgerquant.research.types import digest
+from ledgerquant.records import digest
 from .runner import ShadowRunner
-from .shadow import SHADOW_INSTRUCTIONS, SHADOW_TOOL
+from .shadow import CONTRACT_VERSION, SHADOW_INSTRUCTIONS, SHADOW_TOOL
 from .store import ShadowStore
 from .access import provision_shadow_worker
 
@@ -43,7 +43,7 @@ def main():
         at = datetime.fromisoformat(args.at)
         profile = ModelProfile.model_validate_json(Path(args.profile).read_text())
         config = {
-            "contract_version": "shadow_executor/1",
+            "contract_version": CONTRACT_VERSION,
             "model_profile": profile.model_dump(mode="json"),
             "instructions_sha256": digest(SHADOW_INSTRUCTIONS),
             "tool_schema_sha256": digest(SHADOW_TOOL),

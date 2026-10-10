@@ -1,7 +1,0 @@
-{
-  "schema_version": 1,
-  "event_type": "CANDIDATE_SELECTION_FROZEN",
-  "hypothesis_id": "eurusd_four_hour_direction_2020_v1",
-  "selection_sha256": "62388091916d9dbc7523f312b6127c03f636ca6e8bbc3ffcf1ffab3620ad16d0",
-  "frozen_at_utc": "2026-10-09T17:33:06Z"
-}

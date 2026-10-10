@@ -1,9 +1,0 @@
-{
-  "version": "eurusd_agent_bootstrap/1",
-  "purpose": "Propose one bounded price-only EURUSD diagnostic using the registered catalog and released evidence. Explain its mechanism, contrary evidence and falsifier. Critic must review the exact draft independently of the Research conversation.",
-  "evidence_mode": "retrospective_engineering",
-  "feedback_policy": "structured_released_evidence/1",
-  "candidate_limit": 1,
-  "validation_access": "none",
-  "execution_allowed": false
-}

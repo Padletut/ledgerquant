@@ -3,7 +3,7 @@ import json
 import httpx
 import pytest
 
-from ledgerquant.agents.tools import schemas
+from ledgerquant.decision.shadow import SHADOW_TOOL
 from ledgerquant.models.generation import ModelProfile
 from ledgerquant.integrations.model_providers.openai import OpenAIResponses
 
@@ -22,7 +22,7 @@ def provider(handler):
 
 def test_exact_stateless_request_and_strict_schema():
     p = provider(lambda request: httpx.Response(200))
-    request = p.prepare("instructions", [p.user_message("task")], schemas("research"))
+    request = p.prepare("instructions", [p.user_message("task")], [SHADOW_TOOL])
     assert request["store"] is False
     assert request["parallel_tool_calls"] is False
     assert "private-test-key" not in json.dumps(request)
@@ -38,11 +38,11 @@ def test_exact_stateless_request_and_strict_schema():
 
 def test_raw_response_identity_and_usage_preserved():
     body = {"status": "completed", "model": "returned-version", "id": "resp_test",
-            "output": [{"type": "function_call", "call_id": "call_1", "name": "read_source_coverage", "arguments": "{}"}],
+            "output": [{"type": "function_call", "call_id": "call_1", "name": "submit_shadow_decision", "arguments": "{}"}],
             "usage": {"input_tokens": 100, "output_tokens": 12}}
     p = provider(lambda request: httpx.Response(200, json=body, headers={"x-request-id": "req_test"}))
-    result = p.invoke(p.prepare("instructions", [], schemas("research")))
-    assert result.calls[0].name == "read_source_coverage"
+    result = p.invoke(p.prepare("instructions", [], [SHADOW_TOOL]))
+    assert result.calls[0].name == "submit_shadow_decision"
     assert result.input_tokens == 100
     assert json.loads(result.raw["body"])["model"] == "returned-version"
     assert result.raw["request_id"] == "req_test"

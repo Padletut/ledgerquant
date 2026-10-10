@@ -5,7 +5,7 @@ from typing import Literal, Protocol
 
 from pydantic import Field
 
-from ledgerquant.research.types import Record
+from ledgerquant.records import Record
 
 
 class ModelProfile(Record):

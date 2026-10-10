@@ -6,9 +6,9 @@ from uuid import uuid4
 
 from ledgerquant.decision.shadow import ShadowDecision, build_context, validate_decision
 from ledgerquant.decision.runner import ShadowRunner
-from ledgerquant.decision.shadow import SHADOW_INSTRUCTIONS, SHADOW_TOOL
+from ledgerquant.decision.shadow import CONTRACT_VERSION, SHADOW_INSTRUCTIONS, SHADOW_TOOL
 from ledgerquant.models.generation import Generation, ModelProfile, ToolCall
-from ledgerquant.research.types import digest
+from ledgerquant.records import digest
 
 
 NOW = datetime(2026, 10, 12, 8, 0, tzinfo=timezone.utc)
@@ -44,25 +44,57 @@ def test_stale_future_and_crossed_quotes_do_not_make_ready_context():
 def test_signal_requires_citation_and_frozen_horizon():
     source = tick()
     context = build_context([source], "EURUSD", NOW, 10)
-    decision = ShadowDecision.model_validate({
-        "action": "LONG", "setup_thesis": "Potential continuation",
+    decision = ShadowDecision.model_validate({"action": "LONG", "setup": {
+        "thesis": "Potential continuation",
         "observation_ids": [str(source["message_id"])],
         "invalidation": "Fresh quote reverses the move", "uncertainty": "High",
         "horizon_minutes": 60, "expiry_minutes": 5,
-    })
+    }})
+    def changed(**fields):
+        return decision.model_copy(update={"setup": decision.setup.model_copy(update=fields)})
     assert validate_decision(decision, context, 60, 5) == "VALID"
-    assert validate_decision(decision.model_copy(update={"observation_ids": [str(uuid4())]}), context, 60, 5) == "UNKNOWN_CITATION"
-    assert validate_decision(decision.model_copy(update={"horizon_minutes": 30}), context, 60, 5) == "HORIZON_MISMATCH"
+    assert validate_decision(changed(observation_ids=[str(uuid4())]), context, 60, 5) == "UNKNOWN_CITATION"
+    assert validate_decision(changed(observation_ids=[]), context, 60, 5) == "INCOMPLETE_SIGNAL"
+    assert validate_decision(changed(invalidation=" "), context, 60, 5) == "INCOMPLETE_SIGNAL"
+    assert validate_decision(changed(horizon_minutes=30), context, 60, 5) == "HORIZON_MISMATCH"
+    assert validate_decision(decision.model_copy(update={"setup": None}), context, 60, 5) == "INCOMPLETE_SIGNAL"
 
 
-def test_no_signal_and_invalid_context():
-    decision = ShadowDecision.model_validate({
-        "action": "NO_SIGNAL", "setup_thesis": "No clear setup",
-        "observation_ids": [], "invalidation": "", "uncertainty": "High",
-        "horizon_minutes": 60, "expiry_minutes": 5,
-    })
-    assert validate_decision(decision, {"status": "READY", "quotes": []}, 60, 5) == "VALID"
-    assert validate_decision(decision, {"status": "STALE", "quotes": []}, 60, 5) == "CONTEXT_NOT_READY"
+def test_no_signal_needs_no_setup_or_reason():
+    bare = ShadowDecision.model_validate({"action": "NO_SIGNAL", "setup": None, "note": None})
+    assert validate_decision(bare, {"status": "READY", "quotes": []}, 60, 5) == "VALID"
+    noted = ShadowDecision.model_validate({"action": "NO_SIGNAL", "note": "Nothing worth taking"})
+    assert validate_decision(noted, {"status": "READY", "quotes": []}, 60, 5) == "VALID"
+    assert validate_decision(bare, {"status": "STALE", "quotes": []}, 60, 5) == "CONTEXT_NOT_READY"
+
+
+def test_no_signal_with_setup_is_inconsistent():
+    source = tick()
+    context = build_context([source], "EURUSD", NOW, 10)
+    decision = ShadowDecision.model_validate({"action": "NO_SIGNAL", "setup": {
+        "thesis": "x", "observation_ids": [str(source["message_id"])], "invalidation": "x",
+        "uncertainty": "x", "horizon_minutes": 60, "expiry_minutes": 5}})
+    assert validate_decision(decision, context, 60, 5) == "INCONSISTENT_DECISION"
+
+
+def test_wait_names_what_it_waits_for_and_carries_no_setup():
+    source = tick()
+    context = build_context([source], "EURUSD", NOW, 10)
+    wait = {"kind": "CONFIRMATION", "waiting_for": "Whether the breakout holds through the London open",
+            "recheck_after_minutes": 30}
+    decision = ShadowDecision.model_validate({"action": "WAIT", "wait": wait})
+    assert validate_decision(decision, context, 60, 5) == "VALID"
+    blank = decision.model_copy(update={"wait": decision.wait.model_copy(update={"waiting_for": " "})})
+    assert validate_decision(blank, context, 60, 5) == "INCOMPLETE_WAIT"
+    assert validate_decision(decision.model_copy(update={"wait": None}), context, 60, 5) == "INCOMPLETE_WAIT"
+    setup = {"thesis": "x", "observation_ids": [str(source["message_id"])], "invalidation": "x",
+             "uncertainty": "x", "horizon_minutes": 60, "expiry_minutes": 5}
+    both = ShadowDecision.model_validate({"action": "WAIT", "wait": wait, "setup": setup})
+    assert validate_decision(both, context, 60, 5) == "INCONSISTENT_DECISION"
+    signal_with_wait = ShadowDecision.model_validate({"action": "LONG", "wait": wait, "setup": setup})
+    assert validate_decision(signal_with_wait, context, 60, 5) == "INCONSISTENT_DECISION"
+    no_signal_with_wait = ShadowDecision.model_validate({"action": "NO_SIGNAL", "wait": wait})
+    assert validate_decision(no_signal_with_wait, context, 60, 5) == "INCONSISTENT_DECISION"
 
 
 class FakeStore:
@@ -71,7 +103,7 @@ class FakeStore:
         self.recorded = []
         self.item = {"id": uuid4(), "feed_id": "private-feed", "symbol": "EURUSD",
                      "scheduled_at": scheduled_at, "config": {
-                         "contract_version": "shadow_executor/1",
+                         "contract_version": CONTRACT_VERSION,
                          "model_profile": profile.model_dump(mode="json"),
                          "instructions_sha256": digest(SHADOW_INSTRUCTIONS),
                          "tool_schema_sha256": digest(SHADOW_TOOL),
@@ -108,7 +140,7 @@ class FakeProvider:
     def invoke(self, request):
         self.calls += 1
         return Generation("COMPLETED", {"model": self.profile.model}, [],
-                          (ToolCall("call-1", "submit_shadow_decision", '{"action":"NO_SIGNAL","setup_thesis":"No setup","observation_ids":[],"invalidation":"","uncertainty":"High","horizon_minutes":60,"expiry_minutes":5}'),),
+                          (ToolCall("call-1", "submit_shadow_decision", '{"action":"NO_SIGNAL","setup":null,"wait":null,"note":null}'),),
                           10, 20)
 
 
@@ -166,3 +198,29 @@ def test_changed_schema_rejected_before_invocation():
     with pytest.raises(ValueError, match="contract differs"):
         ShadowRunner(store, provider).run(store.item["id"])
     assert provider.calls == 0
+
+
+def test_runner_records_wait_as_its_own_outcome():
+    p = profile()
+    now = datetime.now(timezone.utc)
+    row = tick()
+    row.update(event_at=now - timedelta(seconds=1), observed_at=now - timedelta(seconds=1),
+               received_at=now - timedelta(seconds=1), ingested_at=now - timedelta(seconds=1))
+    store = FakeStore([row], p, now - timedelta(seconds=1))
+    provider = FakeProvider(p)
+    provider.invoke = lambda request: Generation("COMPLETED", {}, [], (ToolCall(
+        "call-1", "submit_shadow_decision",
+        '{"action":"WAIT","setup":null,"wait":{"kind":"EVENT","waiting_for":"After CPI at 12:30 UTC","recheck_after_minutes":30},"note":null}'),), 10, 20)
+    assert ShadowRunner(store, provider).run(store.item["id"])["status"] == "WAIT"
+    assert store.recorded[-1]["payload"]["decision"]["wait"]["kind"] == "EVENT"
+
+
+def test_wait_kind_is_required_and_bounded():
+    import pytest
+    from pydantic import ValidationError
+    with pytest.raises(ValidationError):
+        ShadowDecision.model_validate({"action": "WAIT", "wait": {
+            "waiting_for": "Something", "recheck_after_minutes": 30}})
+    with pytest.raises(ValidationError):
+        ShadowDecision.model_validate({"action": "WAIT", "wait": {
+            "kind": "PRICE_LEVEL", "waiting_for": "1.0950", "recheck_after_minutes": 30}})

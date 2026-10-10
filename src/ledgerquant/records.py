@@ -1,4 +1,4 @@
-"""Strict value objects and canonical identities shared by research services."""
+"""Strict value objects and canonical content identities."""
 
 from hashlib import sha256
 import json

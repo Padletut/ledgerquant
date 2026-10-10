@@ -2,7 +2,7 @@
 
 from decimal import Decimal, ROUND_CEILING
 
-from ledgerquant.research.types import canonical
+from ledgerquant.records import canonical
 
 
 def micro_usd(amount):

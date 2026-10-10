@@ -1,12 +1,13 @@
-"""Add operator-owned process assessments and derived research feedback.
+"""Retired: process assessments and research feedback.
 
 Revision ID: 0004_process_feedback
 Revises: 0003_research_registry
+
+Retired with the research-governance track (tag archive/research-governance-v1).
+The revision ID stays in the chain so existing databases keep their history. A
+fresh database creates nothing here; an existing database keeps its ``research``
+schema and records untouched until an operator removes them after a backup.
 """
-
-from alembic import op
-
-from ledgerquant.research.tables import FEEDBACK_TABLES
 
 
 revision = "0004_process_feedback"
@@ -16,16 +17,8 @@ depends_on = None
 
 
 def upgrade():
-    # A fresh database may already hold these tables from 0003's create_all;
-    # creation is therefore conditional and the append-only triggers are replaced.
-    for table in FEEDBACK_TABLES:
-        table.create(op.get_bind(), checkfirst=True)
-        op.execute(f"CREATE OR REPLACE TRIGGER no_mutation BEFORE UPDATE OR DELETE ON research.{table.name} "
-                   "FOR EACH ROW EXECUTE FUNCTION research.reject_mutation()")
-        op.execute(f"CREATE OR REPLACE TRIGGER no_truncate BEFORE TRUNCATE ON research.{table.name} "
-                   "FOR EACH STATEMENT EXECUTE FUNCTION research.reject_mutation()")
+    pass
 
 
 def downgrade():
-    for table in reversed(FEEDBACK_TABLES):
-        table.drop(op.get_bind(), checkfirst=True)
+    pass

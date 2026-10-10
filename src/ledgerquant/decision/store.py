@@ -5,7 +5,7 @@ from uuid import uuid4
 
 from sqlalchemy import text
 
-from ledgerquant.research.types import canonical, digest
+from ledgerquant.records import canonical, digest
 
 
 class ShadowStore:

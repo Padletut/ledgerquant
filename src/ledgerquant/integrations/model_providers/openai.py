@@ -5,7 +5,7 @@ import json
 
 import httpx
 
-from ledgerquant.research.types import canonical
+from ledgerquant.records import canonical
 from ledgerquant.models.generation import Generation, ModelProfile, ToolCall
 
 

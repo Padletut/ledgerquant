@@ -24,7 +24,7 @@ services:
       OPENAI_API_KEY_FILE: /run/secrets/openai_api_key
     secrets: [shadow_worker_password, openai_api_key]
     volumes:
-      - ../configs/research/openai_gpt54_mini.profile.json:/run/config/model-profile.json:ro
+      - ../configs/models/openai_gpt54_mini.profile.json:/run/config/model-profile.json:ro
 
 secrets:
   shadow_worker_password:

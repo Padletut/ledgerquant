@@ -1,8 +1,0 @@
-{
-  "max_runs": 1,
-  "max_invocations": 11,
-  "max_reserved_tokens": 900000,
-  "max_usd": 1.034184,
-  "confirmatory_tests": 0,
-  "evaluation_mode": "engineering_recovery_only"
-}

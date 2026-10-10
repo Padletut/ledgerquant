@@ -1,6 +1,0 @@
-{
-  "schema_version": 1,
-  "event_type": "EVALUATION_RECORDED",
-  "hypothesis_id": "eurusd_four_hour_direction_2021_replication_v1",
-  "evidence_sha256": "06a6513818d7d58c0ad888ba9e6425d28f6bd7b042ce904da5190cee81bcc527"
-}

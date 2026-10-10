@@ -6,8 +6,8 @@ from datetime import datetime, timezone
 from pydantic import ValidationError
 
 from ledgerquant.models.generation import ModelProfile
-from ledgerquant.research.types import digest
-from .shadow import SHADOW_INSTRUCTIONS, SHADOW_TOOL, ShadowDecision, build_context, validate_decision
+from ledgerquant.records import digest
+from .shadow import CONTRACT_VERSION, SHADOW_INSTRUCTIONS, SHADOW_TOOL, ShadowDecision, build_context, validate_decision
 
 
 class ShadowRunner:
@@ -28,7 +28,7 @@ class ShadowRunner:
             raise ValueError("provider differs from scheduled model profile")
         if config["instructions_sha256"] != digest(SHADOW_INSTRUCTIONS):
             raise ValueError("scheduled instructions differ from running version")
-        if config["contract_version"] != "shadow_executor/1" or config["tool_schema_sha256"] != digest(SHADOW_TOOL):
+        if config["contract_version"] != CONTRACT_VERSION or config["tool_schema_sha256"] != digest(SHADOW_TOOL):
             raise ValueError("scheduled decision contract differs from running version")
 
         started_at = datetime.now(timezone.utc)
@@ -87,7 +87,8 @@ class ShadowRunner:
                         result["status"] = validate_decision(decision, context,
                             config["horizon_minutes"], config["expiry_minutes"])
                         if result["status"] == "VALID":
-                            result["status"] = "NO_SIGNAL" if decision.action == "NO_SIGNAL" else "CANDIDATE"
+                            result["status"] = {"NO_SIGNAL": "NO_SIGNAL", "WAIT": "WAIT"}.get(
+                                decision.action, "CANDIDATE")
             except (ValueError, ValidationError, KeyError, IndexError, TypeError):
                 result = {"status": "INVALID_MODEL_OUTPUT", "decision": None,
                           "provider_response": generation.raw if generation else None}
