@@ -8,6 +8,22 @@
 
 The manifest records account and broker identity, symbol, image digest, exact UTC event bounds, count, duplicate timestamps, equal bid/ask rows, CSV length and SHA-256, and extraction wall-clock times. `available_at_utc` and `observed_at_utc` remain null: a 2026 download does not prove historical point-in-time availability. `coverage_status` and `quote_quality_status` remain `UNVERIFIED`. A published manifest means this run reached its end witness and its CSV was hashed; it does not certify continuous coverage or quote fidelity. The CLI backtest API returned an empty `Account.BrokerName` in the tested Linux image. In that case, `broker_name_basis=cli_accounts_asserted` means the operator supplied the broker name from the authenticated CLI account listing; account number and live/demo mode came from the runtime API. Server identity remains unknown.
 
+## Long intervals
+
+`tools/tick_export_batch.py` runs the same procedure over a long interval, one
+bounded backtest at a time. It splits the interval into chunks of at most seven
+days, splits a chunk in half when it reaches the row limit, verifies every
+manifest against its CSV, records every attempt in `batch.jsonl` and skips
+verified runs when restarted. It reads `CTRADER_ID` and
+`CTRADER_ACCOUNT_NUMBER` from the environment or the ignored `.env` and never
+prints them. Run one symbol at a time:
+
+```bash
+.venv/bin/python tools/tick_export_batch.py --symbol XAUUSD \
+  --start 2025-09-01 --end 2026-10-10 --chunk-days 2 \
+  --out data/ctrader_tick_exports/post_cutoff_v1/XAUUSD
+```
+
 ## One bounded run
 
 1. Build the nested project and record the `.algo` hash:
@@ -54,4 +70,4 @@ The [1–2 January EURUSD comparison](measurements/icm-eu-live-eurusd-desktop-co
 
 The [XAUUSD quote-quality audit](measurements/xauusd-quote-quality-audit-v1.json) retains six bounded 2020 exports and six 2021 metadata-only probes. Its development evaluator checks manifest hashes and source identity, samples only previously observed quotes and reports all fixed anchors. The raw CSVs, manifests, full per-anchor result and CLI logs are local ignored artifacts; copy them to managed storage before treating the measurement as durable evidence. The 2021 quote outcomes were not opened.
 
-With the six local 2020 export manifests in place, reproduce only the development result with `PYTHONPATH=src .venv/bin/python -m ledgerquant.research.quote_quality documents/data/measurements/xauusd-quote-quality-sampling-v1.json data/ctrader_tick_exports/xauusd_quote_quality_dev_v1 > data/ctrader_tick_exports/xauusd_quote_quality_dev_v1/development_evaluation.json`. The command reads the declared development dates; it does not read the 2021 metadata-probe directory.
+The evaluator that produced this development result was retired with the research-governance track; it is preserved under the git tag `archive/research-governance-v1` together with the command that reproduces it.
