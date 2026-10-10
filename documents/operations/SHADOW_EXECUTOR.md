@@ -5,7 +5,10 @@ Migration `0005_shadow_decisions` was applied to the running database after a
 private backup; capture and PostgreSQL remained healthy. No model invocation,
 prospective decision or economic evaluation has been run. The existing capture
 database contains live broker ticks, but weekend quotes are stale. This is not
-an automated schedule or an authorization to trade.
+an automated schedule or an authorization to trade. The decision contract is
+`shadow_executor/2`, which lets the Executor abstain or wait without inventing a setup;
+no opportunity had been registered under version 1, and the runner refuses any
+opportunity whose recorded contract version differs.
 
 The operator registers an opportunity **before** its scheduled UTC time. The
 runner records a `STARTED` event before calling the pinned model and one `FINAL`
@@ -84,9 +87,15 @@ and includes full quote and provider content, so treat its output as private.
 - Quotes at approximately now, 5, 15 and 30 minutes provide a bounded price
   context. Missing samples remain absent. News, sentiment, account state,
   positions, costs and RAG are not supplied to the first Executor.
-- The typed result is a proposal or `NO_SIGNAL`, not a broker order. Its
-  direction, thesis, citations, invalidation and uncertainty are validated
-  and retained. There is no fill, realized P/L or independent payoff evidence.
+- The typed result (`shadow_executor/2`) is `NO_SIGNAL`, `WAIT` or a
+  `LONG`/`SHORT` proposal, not a broker order. `NO_SIGNAL` carries nothing and
+  needs no justification; an optional short note may be recorded. `WAIT` states
+  what kind of thing it waits for (`EVENT`, `CONFIRMATION`, `CONDITIONS` or
+  `CLARITY`), what exactly, and when to look again; this slice records it but
+  schedules no recheck. A proposal must carry a setup with thesis, cited observation IDs,
+  invalidation, uncertainty and the fixed horizon/expiry. A decision carrying
+  fields that belong to another action is recorded as `INCONSISTENT_DECISION`.
+  There is no fill, realized P/L or independent payoff evidence.
 - Repeated calls on an existing opportunity return its recorded state. A
   `STARTED_UNCERTAIN` call is never silently replayed. Manual operational
   review is needed before treating that slot as resolved.

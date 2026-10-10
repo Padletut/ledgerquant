@@ -1,870 +1,929 @@
 # LedgerQuant Architecture
 
-**Date:** 10.10.2026
+**Version:** 3.0 · **Date:** 10.10.2026
 
-**Version:** 2.25
+**Status:** Target design. Implemented today: live broker capture (ticks and
+cTrader sentiment), the historical tick exporter, an OpenAI model adapter and a
+manual, non-trading shadow Executor (`shadow_executor/2`). Everything else in
+this document is target state; [Section 10](#10-current-state-and-build-order)
+lists what exists.
 
-**Status:** Target architecture with implemented live capture, offline EURUSD diagnostics, a development-only XAUUSD quote-quality diagnostic, bounded Research/Critic workflows and a manual, non-trading shadow Executor bootstrap. Automated opportunity scheduling, prospective Executor evidence, independent new validation, promotion, live trading agents and the operational frontend remain target state.
+Version 3.0 replaces the 2.x architecture. The 2.x track built research-process
+governance around fixed price diagnostics, which was not the intended product.
+Its code and documents are preserved under the git tag
+`archive/research-governance-v1`. Change history lives in git, not in this file.
 
-**Revision scope:** 2.25 adds `shadow_executor/1`: an operator registers a future decision opportunity, a bounded runner reads committed broker tick observations, and append-only events retain the exact context/request and result or failure. It has no order route, automatic scheduler, news/RAG context or payoff evaluator. The runner has not been invoked against a provider; the first prospective decision and economic evidence remain pending. See the [shadow operations guide](operations/SHADOW_EXECUTOR.md).
+## 1. Mandate
 
-2.24.1 clarified that Research primarily improves the agents' contextual market judgement through measured changes to context, instructions, tools, retrieval, memory and, where supported and justified, model training. It does not primarily search for static trading rules. No agent-learning method is assumed effective without comparison on the same decision task.
+LedgerQuant is a **multi-agent CFD trading system**. It is not rule-driven.
 
-2.24 made the LLM Executor's contextual setup discovery the next product milestone. Fixed price rules remain optional controls and data diagnostics. The next slice is prospective shadow decisions from source-backed market context, before broker order authority. This changed implementation priority, not an implemented runtime or the authority of existing research results.
-
-2.23.1 refined Research and Critic instructions within `idea_exploration/2` after the [XAUUSD parked run](research/evaluations/xauusd_quote_quality_followup_v2_20261010/REPORT.md). Unmeasured costs, latency or missing evaluator support limit conclusions, not hypothesis proposals. An abstention proposal identifies the orders it could skip and the economic comparison. Parking remains available without implying measured failure. The instruction hashes changed under the same tool and data schema; no new contract, table, evaluator or trading authority was added.
-
-2.23 added `idea_exploration/2` to the existing runner. Research can submit a revised market idea or park a question with a reason and revisit condition; Critic reviews either record and labels decision, payoff and exposure scope. These labels are model-authored review claims, not certified facts or evaluator decisions. Parked attempts retain lineage, cannot be admitted or used as a measurement source, and can be revisited by a later exploratory run. Version 1 definitions and recorded runs remain unchanged.
-
-2.22.2 recorded a bounded XAUUSD quote-stream audit and a separate, offline development evaluator for one descriptive 30/15-minute measurement. It did not add a live abstention rule, economic payoff gate, independent validation result or broker execution authority. The 2021 quote outcomes remain unopened. See [data availability](data/DATA_AVAILABILITY.md) and the [sampling and measurement record](data/measurements/xauusd-quote-quality-sampling-v1.json).
-
-2.22.1 corrected exploratory lineage submission: a `parent_idea_draft_id` already present in the task may also appear in the draft's optional `related_draft_ids`, without a duplicate task permission list. Parent existence, review and time checks still apply. Critic guidance treats broker symbols as identifiers and distinguishes an explicit wait for information from unverified feed and quote latency. No schema, evaluator or trading authority changed in that revision.
-
-2.22 let Research submit a new idea after seeing its earlier draft and Critic review, with the parent and child retained as separate runs. An operator can link a later supported diagnostic to an exploratory idea; normal Critic review and operator admission freeze the derived measurement question and exact idea lineage. At that revision the EURUSD evaluator was the only implemented measurement path. The run report exposes stored drafts, critiques and development commitments for feedback inspection.
-
-2.21 added a bounded, catalog-independent CFD idea workflow to the existing agent runner and append-only registry. Research records one idea and Critic records one review under the run's budget; neither can admit the idea directly to the EURUSD evaluator. Source and related-draft references are task-bounded, and family assignment remains unassessed.
-
-2.20 restored the CFD research and trading mandate and separated open research-idea exploration from admission to a supported evaluator. The EURUSD catalog still bounds the implemented diagnostic measurement path.
-
-2.19 let Research correct a deterministically invalid `broker_costs` requirement scope in the same bounded run before a draft was recorded. The tool returns a field error and records the attempted call; a corrected submission can proceed without a new review process. Already recorded drafts and later measurements keep their lineage and exposure. See [Section 1.1](#11-small-stable-interfaces-and-configurable-workflows).
-
-2.18 adopted a solo-project operating scope and retired the stopped pilot's dedicated package, six commands and tests from active code. Its exact implementation is preserved in the [study archive](research/studies/requirement_scope_pilot_v1/IMPLEMENTATION.md); cases, reviews, freezes and `DO_NOT_START` remain intact. Routine research uses the existing runtime, configuration and registry. Automatic review/release qualification is deferred until needed; its current human gate remains active.
-
-2.16 built offline preparation for the requirement-scope pilot before 24 synthetic cases were authored. The [original review package](research/studies/requirement_scope_pilot_v1/review/README.md) and [review status](research/studies/requirement_scope_pilot_v1/REVIEW_STATUS.md) preserve all decisions and the declared `AI_ASSISTANT` reviewer provenance. Preparation stopped as `INSUFFICIENT_FAMILY_DIVERSITY`; no complete human reference set, provider execution or automatic authority followed. Revision 2.17 clarified adaptability; 2.18 archives the specialized implementation instead of generalizing it into another framework.
-
-2.15.1 freezes the design of the [first requirement-scope feedback pilot](research/studies/requirement_scope_pilot_v1/PROTOCOL.md), using one human reviewer as selected by the user. The design binds existing history, one released lesson, the model profile, screening thresholds and a planned USD 3 ceiling. That design freeze preceded implementation and candidate authoring; reviewed references and the execution manifest remain pending. No study has run and no automation is qualified. 2.15 defines the planned transition from human bootstrap review to empirically qualified automatic process assessment and method-feedback release, with separate scoped permissions, mandatory human escalation and revocation. No delegation is active or implemented; the current human gate remains until the replacement is empirically evaluated and explicitly activated. The [implementation plan, revision 1.9](research/AGENT_LOOP_IMPLEMENTATION_PLAN.md#from-human-review-to-scoped-automation), owns the detailed qualification and rollout gates.
-
-**Implemented foundation:** 2.14 implements the process-assessment and typed-feedback contracts that 2.12 specified: sealed pre-action packets and `process_assessment/1`, `research_feedback/1` with `METHOD_LESSON`, `EMPIRICAL_FINDING` and `CAUSAL_CONJECTURE`, the feedback policy `reviewed_method_feedback/1` with an exact selection manifest, and two append-only registry tables (migration `0004_process_feedback`). It also widens the 2.13 repair exposure scan to every recorded outcome read and serializes admissions per family. 2.13 implemented the repair exposure gate (`repair_exposure/1`, `research_grounding/2`, `research_tools/1+outcome_free_repair/1`). Measuring whether reviewed feedback changes later behavior remains pending. On 10 October 2026, explicit human review was recorded as six `REVIEWED` supersessions with declared outcome exposure; one user-authored requirement-scope method lesson was released. See the [review results](research/reviews/process_assessments_20261010/reviewed/README.md). Historical v1–v3 records and the admitted historical correction are unchanged.
-
-2.14.1 adds `process-review`, a read-only human presentation of a recorded assessment and its exact stored packet (`process_review/1`). It expands source references, displays proposed findings and current integrity, and flags changed packets. The [review guide](research/reviews/process_assessments_20261010/README.md) connects the six original proposed records and their reviewed successors to readable evidence. Exports are derived; reading or generating them neither changes review state nor grants approval. Assessment/feedback write contracts and existing records remain unchanged.
-
-**Version provenance:** commit `79cbbae` consolidated the implemented v3 foundation and `scoped_registry_references/1` from working revisions 2.11/2.11.1 together with the planned feedback contracts into 2.12. The preceding committed architecture was 2.10.2; 2.11 and 2.11.1 were intermediate working labels, not separately committed architecture versions. References to 2.11.1 in execution records identify that implementation stage and do not imply that the planned 2.12 contracts were implemented. 2.13 implemented the repair exposure gate; 2.14 implemented the assessment and feedback records. The held-out feedback comparison (plan item 4) has not run.
-
-## 1. Purpose and design rules
-
-LedgerQuant is an agent-driven, auditable research and trading platform focused on Contract for Difference (CFD) markets. At decision time, an Executor agent analyzes eligible market context, identifies a possible setup and proposes a bounded trading action or `NO_SIGNAL`. Research agents discover, critique and refine the Executor's decision process and new market/payoff questions. Evaluation establishes empirical evidence under controlled data and measurement boundaries, while independent broker, account and risk controls govern live execution. A deterministic trigger or baseline may schedule and test the agent; it does not choose the agent's setups or trading direction.
-
-The platform must preserve flexible research exploration without requiring every hypothesis to fit an existing evaluator catalog. Evaluator capabilities constrain what can currently be measured, not what agents are permitted to investigate. A Next.js/TypeScript console lets operators inspect and manage the system through supported workflows. Every agent run and trading decision must retain the exact configuration and information that produced it.
-
-- **Explicit ownership:** agent, portfolio, account, market data, decision and execution concepts have distinct owners and contracts.
-- **Single source of truth (SSOT):** versioned configuration and audit history live in the registry and ledger; immutable source artifacts have authoritative references there. Committed tick chunks in durable archive storage, indexed by PostgreSQL manifests, are the historical market-data record. Current broker positions, balances and fills come from the broker and are reconciled into the ledger. Redis streams, search indexes and cached views are bounded runtime projections.
-- **Reusable behavior:** common lifecycle, validation, persistence and transport behavior is shared through cohesive components. Agent-specific decision logic uses a defined capability interface.
-- **Immutable history:** published configuration versions, decision inputs, inference outputs and execution events are never silently rewritten. Changes create new versions or events.
-- **Contract-relative data sufficiency:** source coverage is judged against frozen decision, payoff and cost requirements. Missing observations remain visible; no universal tick-coverage percentage certifies every hypothesis.
-- **Execution safety:** agents propose actions; an account-scoped execution boundary independently enforces broker and capital constraints. The initial boundary is the broker-side execution cBot.
-- **Incremental distribution:** components have stable boundaries and can run in separate processes or hosts. Deployment is split where isolation, throughput or availability warrants it.
-- **Focused modules:** business rules belong in domain and application modules, adapters handle external systems, and entry points only assemble components.
-- **Replaceable integrations:** model providers and broker platforms implement typed ports with verified capabilities. A provider or broker is activated only for the operations its adapter has passed.
-
-Configuration provides adaptability within a supported operational contract. A new agent using existing capabilities can be registered without source changes. Research ideas may range beyond implemented data sources, evaluators and broker adapters; those limits are recorded as measurement or deployment gaps. A genuinely new executable capability, broker protocol or safety rule requires a reviewed implementation, contract tests and deployment. Arbitrary code stored in the database is not an extension mechanism.
-
-### 1.1 Small stable interfaces and configurable workflows
-
-Adaptability is an implementation requirement. Reuse the existing registry,
-runner and evaluator interfaces for supported variations. A new agent, prompt,
-model binding, portfolio profile, account or study configuration should normally
-create a versioned record. It should not require a new Python model, database
-table, service, CLI command or approval document for each variant.
-
-| Concern | How it changes |
+| Question | Answer |
 | --- | --- |
-| Identity, provenance, permissions, resource accounting and result ownership | Small shared contracts with explicit semantics; change their schema when meaning or compatibility changes. |
-| Agent instructions, supported tools/model bindings, profiles, accounts and schedules | Validated configuration and lifecycle events using the existing interfaces. |
-| Study cases, grouping, arms, repetitions, thresholds and review policy | One authoritative study configuration interpreted by supported evaluation logic; numerical choices are scoped to that study. |
-| A completed run or experiment | An immutable record of the effective configuration, inputs, implementation and outputs; later work gets its own identity and preserves exposure. |
+| Who analyzes the market? | GPT and Claude agents, independently. |
+| Who finds setups? | The agents themselves. |
+| Who decides `LONG`, `SHORT`, `WAIT` or `NO_SIGNAL`? | The agents: GPT and Claude propose, Jev validates and makes the final decision. |
+| Who protects capital? | The independent Risk Engine: deterministic code with user-set limits, not a model. |
+| What does Research do? | A process the user starts, as a single run or continuously until a time, cost or outcome limit, to make the agents better traders. |
 
-A new configuration version does not by itself require a new schema version.
-Add a contract only when an implemented boundary needs new enforceable semantics
-that the current interface cannot express. Keep draft editing lightweight;
-commitments attach to the stages that require them. Store related settings
-together and derive readable views and indexes from their authoritative records.
+Consequences:
 
-A deterministic field error during proposal submission is feedback within the
-current run. The attempted tool call is recorded, but no draft is committed;
-Research may correct the field within its existing step and spending limits.
-This currently handles a `broker_costs` requirement incorrectly declared as a
-current input to the price-only diagnostic. A recorded draft or measured result
-cannot be rewritten; any later correction keeps its original attempt and
-exposure. This distinction requires no extra reviewer or study for an unsaved
-field correction.
+- Trading decisions come from agent judgement over market context. Fixed price
+  rules are allowed only as **baselines** to compare agents against, never as
+  the product.
+- `NO_SIGNAL` is a normal, first-class outcome. An agent may abstain without
+  inventing a setup or a justification.
+- `WAIT` means a setup may be forming but something it depends on has not
+  happened yet. It states what it waits for and when to look again.
+- GPT and Claude do not need to agree. Disagreement is information for Jev and
+  for Research.
+- The agents also manage open positions: `HOLD`, `CLOSE` or an `ADJUST` of stop
+  or target. Deterministic code protects capital but does not take over the
+  agents' trading role.
+- Agents propose and decide; they never hold broker authority. Position size,
+  limits and the final veto belong to the Risk Engine and the broker-side
+  execution cBot, under settings only the user controls.
+- Research changes the agents (instructions, models, context, tools, roles,
+  memory). It does not search for static trading rules.
+- Agents are not deterministic. The same context can give a different answer;
+  LedgerQuant records what the agents actually answered and never expects them
+  to repeat it.
+- Initial instruments: **EURUSD, GBPUSD and XAUUSD**.
 
-Exploratory Research may also conclude that the currently permitted evidence
-does not support another market hypothesis. `idea_exploration/2` records that
-choice as a parked attempt with a reason instead of forcing a fabricated
-decision or payoff. Critic reviews the exact attempt and explicitly reports
-whether a revised proposal still describes a market action, whether its payoff
-is economic or only a proxy, and whether cited historical outcomes are already
-development-exposed. These are review annotations, not automatic semantic
-certification. A parked attempt remains visible and can be a parent of later
-exploration, but is never itself an evaluator input or a promotion candidate.
+## 2. Decision pipeline
 
-Missing measurements constrain conclusions and admission, not exploratory
-hypothesis generation. Research may propose an unmeasured action, provisional
-payoff and explicit gaps without claiming it works. An abstention hypothesis
-needs a strategy or order population that would otherwise trade: skipping no
-orders has no economic payoff. Critic challenges both unsupported payoff claims
-and parking that treats missing cost or latency evidence as proof that no
-hypothesis can be stated. A low-priority idea, a measurement blocked by data and
-a hypothesis falsified under a frozen test are distinct conclusions. These
-instruction clarifications create new agent-version hashes; earlier recorded
-instructions and outcomes remain immutable.
-
-Freezing a study preserves what was decided before its results were seen. It
-does not freeze the repository or prevent future studies from choosing different
-parameters. Record the relevant build/environment and semantic inputs for replay;
-run an old experiment against its pinned artifacts. Unrelated development should
-not require rewriting old freezes or maintaining the whole working tree at an
-old version. Changed questions or success rules retain new-attempt lineage and
-previous exposure, using the same supported contract shape where possible.
-
-Apply gates to the claim or authority they protect. Bounded development runs and
-descriptive diagnostics can inform ongoing research under their existing access,
-budget and review policies. Qualification for automatic process assessment,
-method release, economic promotion or live trading has additional evidence
-requirements. Failure of one qualification study limits that study's claim and
-authority; it is not a project-wide prohibition on further research. The current
-human gate stays active until its replacement is empirically qualified.
-
-For the private solo deployment, concentrate strict validation at consequential
-boundaries: feed identity, timestamps and units; broker/account permissions and
-order idempotency; spending limits; and ownership/provenance of measured results.
-An invalid item is rejected or quarantined at that boundary with a useful reason.
-Unrelated instruments, runs and collection continue when their own inputs remain
-valid. Missing research data can block a measurement without blocking storage or
-critique of the idea.
-
-Routine development needs the question, permitted data, model/tools, budget and
-stopping rule, followed by recorded inputs, outputs and results. Capture these
-through the existing task, campaign and registry records. Prompts and supported
-settings can change for the next run while earlier runs keep their actual inputs.
-There is no standing requirement to author another protocol, supply eight case
-families, find a second reviewer or freeze dozens of repository files. A small
-descriptive check can remain useful with limited support; stronger claims require
-appropriate evidence. Predeclared economic validation and automatic authority
-remain consequential boundaries.
-
-The specialized pilot is an archived, stopped experiment. Its package and six
-offline commands are no longer part of the application. Preserve its original
-counts, thresholds and implementation in the archive without applying them to
-future work. Keep the existing runtime and avoid a universal workflow language,
-new qualification service or per-study schema. Operator review is reserved for
-the decisions that need its authority; reviewing every ordinary agent response
-is not a prerequisite for another bounded research run.
-
-## 2. Logical architecture
+One **decision cycle** runs for a point in time `T`. A clock triggers cycles on a
+schedule. The clock is not a signal: it only decides *when* agents look, never
+*what* they conclude. The same pipeline runs live (shadow, demo, live) and in
+historical replay; only the context source differs.
 
 ```text
-Broker feed → Market-data cBot → authenticated ingestion → recoverable ingress journal
-                                                       └→ Redis Streams (recent events)
-                                                            ├→ decision dispatch → workers
-                                                            └→ archive writer → tick chunks
-                                                                          └→ PostgreSQL manifests
-
-Control API → versioned registry → scheduler → decision workers ← PIT context
-                                                 agents · RAG · memory · replay
-                                                               │ candidate decision
-                                                               ▼
-                                                  execution coordinator
-                                                reservations · account routing
-                                                               │ authenticated command
-                                                               ▼
-                                                    execution cBot → Broker
-                                                risk checks · reconciliation
-
-PostgreSQL: registry, archive manifests, evidence, ledger, outbox and projections
-Durable archive: immutable tick chunks; Redis: bounded low-latency transport and feed state
+ clock ─► Context (point-in-time at T, enabled accounts and instruments only)
+              │
+              ▼
+          Scout ───────────────► shortlist (may be empty → cycle ends, recorded)
+              │   + instruments on the WAIT watchlist that are due
+              │   + every open position (always reviewed, never screened out)
+              ▼
+     ┌────────┴────────┐
+   GPT analyst     Claude analyst     each: news + sentiment + chart → proposal
+     └────────┬────────┘              (NO_SIGNAL │ WAIT │ LONG/SHORT + setup)
+              ▼
+          Jev: validate ─────────► risk checks, scenario analysis,
+              │                    final decision: NO_SIGNAL │ WAIT │ LONG/SHORT
+              │                    (open position: HOLD │ CLOSE │ ADJUST)
+              ▼
+          Risk Engine (code) ────► per account: REJECTED(reason) │ APPROVED(size)
+              │
+              ▼
+          Execution: shadow → demo → live (broker-side cBot enforces limits)
+              │
+              ▼
+          Journal: every input, output, cost and outcome of the cycle
 ```
 
-The boxes are logical responsibilities, not a requirement for one service per box. The initial deployment may use one control API process, separate workers, Redis, an archive writer and two broker-side cBots. The API is one logical, versioned surface and may have multiple stateless replicas. There is no API instance or endpoint set per agent. Workers and cBot connections scale independently, with execution work partitioned by account where ordering or capital safety requires it. The market-data and execution cBots have separate protocols and release lifecycles.
+### 2.1 Context
 
-The control plane manages definitions and deployment intent. The data plane ingests observations and builds point-in-time context. The decision plane runs configured agents. The execution plane owns order authorization, dispatch and reconciliation. A research plane reads permitted snapshots and proposes hypotheses; an independent evaluator writes measured evidence, and promotion remains a controlled registry transition. The research plane has no direct path to the broker. A component accesses another component's state through its contract; it does not bypass ownership with ad hoc cross-module database writes.
+Context is assembled for time `T` and contains only information whose
+`available_at` is at or before `T`. Each source in the context has an explicit
+status: `READY`, `STALE` or `UNAVAILABLE`. A missing source is shown as missing,
+never filled with a guess or zero.
 
-The research path was implemented first to establish audit and evidence ownership:
-
-```text
-Released evidence + permitted development data → Research/Discovery proposal
-                                                   ↓
-                                             Critic review
-                                                   ↓
-                                      contract validation and freeze
-                                                   ↓
-                              independent evaluator → evidence record
-                                                   ↓
-                                  released results → later agent runs
-```
-
-The agent runtime schedules and records bounded runs; it does not own proposal acceptance, validation outcomes or promotion. Agents may learn from released failures, including the 2021 EURUSD temporal failure, but inspected 2020–2021 outcomes cannot become untouched validation for a revised hypothesis.
-
-The next product slice is a **prospective shadow Executor**, ahead of further
-static-rule discovery. A scheduler offers each eligible instrument to a pinned
-LLM at declared decision times or source events. The model sees only available,
-source-backed broker quotes and any other eligible raw or derived context; it
-may discover a setup, choose a direction and propose a time-limited action, or
-return `NO_SIGNAL`. The trigger defines when to ask, not what to trade. Record
-every scheduled opportunity, including no-signal, stale-context and inference
-failure cases, so evaluation cannot select only attractive model outputs.
-Shadow mode records decisions and later outcomes but sends no broker orders.
-Start with a feed whose prospective timestamps can be verified; add news,
-sentiment and further CFD instruments as their source and availability
-contracts become usable. Historical backfill can support labelled retrospective
-experiments but cannot stand in for this prospective test of a contemporary
-model's decisions.
-
-The implemented bootstrap has a narrower boundary: the operator preregisters
-one future feed/symbol/time opportunity. `shadow_executor/1` fixes the model
-profile, instruction hash, one-hour outcome horizon, five-minute proposal
-expiry, ten-second quote freshness and USD 1 request ceiling. A manual runner
-reads committed tick rows, samples recent and 5/15/30-minute quote landmarks,
-and invokes the model only for a fresh context. `STARTED` and `FINAL` events
-are append-only; an interrupted start is left uncertain without automatic
-retry. A dedicated database role can read capture rows and append its own
-decision records but cannot write capture rows. Feed and account identity are
-not included in the provider request.
-There is no scheduler claiming complete time coverage, payoff evaluator,
-prospective run or trading authority yet.
-
-## 3. Domain model and sources of truth
-
-| Entity | Identity and versioning | Owner and purpose |
-| --- | --- | --- |
-| `agent_definition` | Stable `agent_id`; immutable `agent_version` | Agent registry. Defines a supported role/capability, input policy, output schema, named model bindings and prompt or typed-question references. |
-| `portfolio_profile` | Stable `portfolio_id`; immutable `portfolio_version` | Portfolio registry. Defines investment universe, allocation and risk policy. |
-| `trading_account` | Stable `account_id`; operational changes have audit events | Account registry. Identifies broker, adapter, environment, external account key, capabilities and credential reference. |
-| `portfolio_account_allocation` | Versioned portfolio/account binding | Portfolio registry. Reserves a capital/risk slice and effective interval. |
-| `deployment` | Stable `deployment_id`; immutable `deployment_version` and `epoch_id` | Deployment registry. Binds an agent version to a portfolio version, account allocation, schedule, mode and limits. |
-| `broker_feed` | Stable `feed_id`; versioned source and symbol mapping contracts | Market-data owner. Binds a cBot or other broker-data adapter to venue, environment and permitted instruments. |
-| `model_profile` | Stable `model_profile_id`; immutable version | Model registry. Binds provider endpoint, model identity, capability snapshot and inference policy. |
-| `observation` | Immutable source artifact identity | Market-data owner. Carries source, timing, canonicalization and provenance; high-volume tick payloads reside in committed archive chunks. |
-| `retrieval_snapshot` | Immutable corpus, index and retriever version IDs | Knowledge owner. Identifies the searchable projection used to build context. |
-| `episode` | Immutable `episode_id`; summaries have separate versions | Memory owner. Records an eligible, time-scoped experience derived from an audited run. |
-| `hypothesis` | Stable `hypothesis_id`; frozen contract version before validation | Research registry. Identifies a Loop A improvement or Loop B payoff discovery and its parent. |
-| `evidence_record` | Immutable result ID and evaluation-run reference | Research registry. Stores machine-readable measurements, failure reasons and lineage. |
-| `decision` | Immutable `decision_id` and input fingerprint | Decision ledger. Captures the agent result and complete effective configuration. |
-| `signal` | Stable `signal_id` | Execution coordinator. Represents one proposed account-scoped trading action. |
-| `execution_event` | Immutable event identity | Execution ledger. Records dispatch, execution cBot response, broker events and reconciliation. |
-
-Identifiers are opaque and remain stable across renames. Display names are never routing keys. Every active deployment resolves to one exact agent version, portfolio version, allocation version and account ID before evaluation. These references are copied into decision and signal lineage. A later registry edit cannot change an in-flight decision.
-
-The broker is authoritative for actual orders, fills, positions, balances and margin. LedgerQuant records the last observed broker state with observation time and reconciliation status. Configuration and intended limits are authoritative in the registry; the active execution adapter independently checks live broker state before execution. A market-data feed and a trading account have distinct IDs and are linked explicitly where needed, rather than inferred from a shared broker connection.
-
-### 3.1 Agent definitions and lifecycle
-
-An agent definition contains a stable ID, role, capability identifier, input/context contract, output schema, named model/provider bindings when applicable, prompt or typed-question and decision-policy references, allowed tools, resource limits and evaluation policy. A version is immutable after publication. The same runner executes any version that satisfies a registered capability interface and validated schema.
-
-```text
-DRAFT → VALIDATED → CANDIDATE → APPROVED → ACTIVE → PAUSED → RETIRED
-                       └───────────────→ REJECTED
-```
-
-- **Create:** validate references, supported capability, schema compatibility, permissions and resource bounds before publishing a version.
-- **Change:** create a new version. Run contract and evaluation checks, then promote it explicitly. Existing epochs keep their pinned version.
-- **Pause:** stop new scheduling and dispatch for affected deployments; reconcile existing broker work according to the execution policy.
-- **Retire:** prevent new deployments and retain all versions and lineage. Referenced definitions are never physically deleted from history.
-- **Remove a draft:** allow deletion only before it has been referenced by an event or published version.
-
-An agent may emit `NO_SIGNAL`, a typed candidate action or a structured failure. Output validation occurs before signal creation. An Executor is a decision capability. Critic/Research and Discovery are research capabilities: they may propose improvements or new payoff hypotheses, but cannot choose validation results, activate deployments or change capital limits. Additional capabilities use the same lifecycle and typed interfaces; their behavior is not encoded in a growing role-specific switch statement.
-
-The first research runner uses versioned instructions, model bindings, tool permissions and resource budgets. Every model invocation and tool call records exact inputs or immutable references, outputs, hashes, versions, timestamps, errors and the parent run ID. Research tools initially expose scoped reads of source coverage, permitted development material and released evidence, plus typed draft submission and review requests. A small MCP server may expose these same application-service operations to compatible agent hosts; MCP is a tool transport, while application services remain the owners of authorization, data filtering and audit. The MCP surface does not grant generic SQL, unrestricted file access, broker execution, evidence writes or promotion. Tool schemas and annotations assist clients, but server-side scope checks enforce the boundary. [MCP architecture](https://modelcontextprotocol.io/specification/2025-11-25/architecture) · [MCP tools](https://modelcontextprotocol.io/specification/2025-11-25/server/tools)
-
-### 3.2 Portfolio profiles and account allocations
-
-A portfolio profile is a reusable policy, not a broker account. Its version defines eligible instruments and markets, capital budget, exposure and concentration limits, strategy allocation rules, rebalance or evaluation schedule, and allowed execution modes. Constraints are typed, validated and have explicit units and currencies. Values that affect risk or selection are frozen into the version used by a deployment.
-
-An allocation binds a portfolio profile to a trading account for an effective interval and assigns an explicit capital/risk slice. A profile may span accounts; an account may serve multiple profiles when allocations are compatible. Activation checks that account-wide limits and reserved slices are not exceeded. Runtime risk checks aggregate across all active allocations and deployments on the same account. Where constraints conflict, the stricter applicable limit wins. No agent or profile can loosen an account-level hard limit.
-
-Changing portfolio policy creates a new portfolio version and a controlled deployment transition. Changing the allocation creates a new binding version. Removing an active binding first drains or pauses dependent deployments, resolves pending orders and preserves historical bindings for audit. Renaming a profile does not alter its identity.
-
-### 3.3 Trading accounts
-
-A trading account records broker adapter type, environment, external account key, base currency, allowed instruments, execution capabilities, status and a reference to credentials in a secret store. Raw credentials never enter agent configuration, API responses, audit payloads or source control. Credential rotation changes the reference and records an audit event without changing account identity.
-
-Account states are `DRAFT`, `VERIFIED`, `ACTIVE`, `SUSPENDED` and `RETIRED`. Verification includes broker identity and capability checks. Suspension rejects new entries while preserving broker-side position protection and reconciliation. Retirement requires disabled deployments, no unresolved commands and an explicit position handover policy. Historic accounts and their execution records remain queryable. The same external broker account must not be registered twice in the same environment unless an explicit shared-account policy and serialized execution owner are configured.
-
-### 3.4 Deployments and safe reconfiguration
-
-A deployment binds a published agent version, portfolio version, allocation, account, execution mode (`RESEARCH`, `SHADOW`, `DEMO` or `LIVE`) and schedule. Activation creates an immutable epoch with a content hash of all effective configuration, including prompt or question-set, decision-policy, retrieval, memory and model-binding references. Multiple deployments can run concurrently; each result is attributed to its deployment and epoch. A new version becomes effective only at a declared epoch boundary. The scheduler receives a registry change event and periodically reconciles its state against the registry so a missed notification cannot leave it permanently stale.
-
-Before activation, validate schema compatibility, account capability, market permissions, allocation capacity, risk limits, credential availability, retrieval and memory policies, and required approvals. Version transitions are atomic at the deployment level. In-flight evaluations complete under their original epoch; new work uses the new epoch. Conflicting simultaneous changes use optimistic concurrency and return a conflict rather than silently overwriting another operator's edit.
-
-## 4. Decision and execution flow
-
-Source ingestion, decision making and broker execution have separate event histories. An observation is not a signal state, and an execution cBot acknowledgement is not a fill.
-
-```text
-Observation → PIT context (RAG + eligible episodes)
-                         ↓
-               Pinned deployment epoch
-                         ↓
-                Validated agent result
-                ├─ NO_SIGNAL
-                ├─ FAILURE
-                └─ candidate action
-                         ↓
-             Account policy and reservation
-                         ↓
-               Signal and dispatch outbox
-                         ↓
-              Execution cBot checks live account
-                         ↓
-               Broker result or uncertainty
-                         ↓
-                 Reconciliation events
-```
-
-Decision events record input observation IDs, retrieved artifact and episode IDs, agent and portfolio versions, allocation and account IDs, epoch, model-binding and prompt or question-set/decision-policy versions, output schema, result, timestamps and reason codes. Each model invocation records an immutable reference to its exact assembled input, content hash, model and step identity, output and timing; this also preserves lineage when a capability composes several models. A candidate action becomes executable only after policy checks, account capacity reservation and durable dispatch intent succeed.
-
-For an LLM Executor, the typed result carries the selected instrument and
-side, or `NO_SIGNAL`; the proposed entry and expiry, decision horizon,
-setup thesis, cited input observations, invalidation conditions and
-uncertainty are recorded with the decision. These are model proposals, not
-broker facts or proof of positive expected value. A decision policy validates
-them against the deployment's allowed action space and context freshness.
-Research can change the model instructions, context assembly, candidate
-features or decision policy as versioned Loop A experiments. It does not need
-to encode the winning setup as a static entry rule. A changed action space,
-horizon or payoff question follows Loop B and receives its own evaluation.
-
-The signal workflow is `CREATED → AUTHORIZED → DISPATCHED → ACKNOWLEDGED → BROKER_ACCEPTED → PARTIALLY_FILLED/FILLED → RECONCILED`, with explicit `REJECTED`, `EXPIRED`, `CANCELLED` and `UNKNOWN_PENDING_RECONCILIATION` paths. Transitions are appended as events; a current-status projection may be updated for queries. A timeout leaves uncertain broker state to reconcile before retrying an order. Every command uses a stable `signal_id` and an idempotency key. Retries must not create a second broker order.
-
-Per-account execution is serialized through one logical owner or an equivalent fenced lease. The coordinator checks aggregate reserved exposure across all deployments on that account, then records the reservation and an outbox message in one database transaction. If the owner changes, fencing prevents the previous owner from dispatching new commands. The execution cBot remains independently capable of rejecting a command based on fresher broker state. Reconciliation releases or adjusts reservations from observed broker outcomes.
-
-### 4.1 Execution cBot wire contract and connection safety
-
-The authenticated, versioned execution protocol uses a routing envelope with `protocol_version`, `message_type`, `message_id`, `correlation_id`, `account_id`, `created_at` and `expires_at`. A trading command also carries `signal_id`, `deployment_id`, `epoch_id`, agent and portfolio version IDs, instrument, side, order semantics and applicable risk-policy reference. Optional agent output fields are part of the agent schema, not universal protocol fields.
-
-Delivery may be duplicated, delayed or reordered. The execution cBot persists command idempotency and reports acknowledgements separately from broker acceptance and fills. Expired commands cannot be executed after reconnect. After a connectivity failure threshold, new entries stop, pending commands are invalidated or reconciled, and existing protective orders remain under cBot and broker control. Reconnection requires account and order reconciliation before new entries resume.
-
-Transport uses TLS, scoped and revocable credentials, rotation, rate limits and connection audit. The execution cBot receives only the account-scoped commands it is authorized to execute. The control API cannot bypass its risk checks.
-
-### 4.2 Market-data cBot ingestion contract
-
-The separate market-data cBot reads broker market events and publishes versioned observations to an authenticated ingestion adapter, which admits them to the market stream. Its envelope includes protocol version, message ID, feed ID and send time. The payload covers instrument identity, broker symbol, quote/bar/event type, bid/ask or other applicable values, broker event timestamp, cBot observation timestamp, source sequence, cBot build version and symbol-map version. If the broker supplies no sequence, the cBot emits a boot/session ID and monotonic local sequence; repeated equal prices are not deduplicated solely by content hash. The ingestion adapter records its receive and journal-commit times, validates units and schema, and assigns canonical observation IDs. A feed is registered with an explicit source contract before it can supply Executor context. The cBot uses the ingestion contract rather than holding general Redis credentials. The current `cbots/LedgerQuant.MarketData/` project contains a read-only `TickHistoryProbe` for measuring broker history; the publishing contract remains a target. Its initial results are in [DATA_AVAILABILITY.md](data/DATA_AVAILABILITY.md).
-
-The market-data cBot has no order command handler, execution credentials or route to the execution coordinator. It is deployed and monitored independently from the execution cBot. Authentication scopes allow publishing observations only for its registered feed. Where the broker platform cannot provide physically separate privileges, the code and inbound protocol still expose no trading operation; contract tests verify this boundary.
-
-The stream tolerates reconnects, duplicate messages and out-of-order delivery. Sequence gaps, clock skew, stale feeds and dropped events are observable states. Backpressure uses bounded buffering and an explicit gap/recovery record; it must not silently label a delayed quote as current. A required stale feed prevents new decisions that depend on it, while the execution cBot continues broker-side position protection. Live executable quote and account checks remain with the execution cBot, because the ingested data may be delayed.
-
-#### 4.2.1 Implemented live-capture bootstrap
-
-The separate `cbots/LedgerQuant.LiveCapture/` project captures the current `Symbol.Sentiment` snapshot and subsequent update events in cTrader Desktop/.NET 6. Version `capture-0.2.0` monitors all symbols enabled on one account at startup by default, or an explicitly selected set, from one cBot instance; each symbol still has a separate feed ID and journal. Optional live bid/ask ticks are disabled by default. This is an observation-only cBot with no order calls or execution credential. The current Windows Desktop 5.10.16 instance crashes before `OnStart` when explicit `[Robot(...)]` settings are used, so the bootstrap build uses `[Robot]`; its packaged metadata retains UTC but cTrader CLI reports `FullAccess`. This broader host permission is an explicit bootstrap limitation, and least-privilege packaging must be revalidated before wider deployment. The first live EURUSD sentiment startup snapshot was verified in PostgreSQL for the IC Markets EU live research account at `2026-10-09 06:11:50.104069+00` using version `capture-0.1.2`; 20 later EURUSD update rows were also confirmed. Version `capture-0.2.0` was then verified ingesting sentiment for 101 symbols from that account, beginning at `2026-10-09 12:49:59.944735+00`. Multi-symbol ingestion works, while valid nonzero sentiment and gap-free coverage for every symbol remain unverified. cTrader's sentiment API has no historical backfill and is unavailable in CLI and Cloud. [cTrader symbol sentiment](https://help.ctrader.com/ctrader-algo/guides/symbol-sentiment/)
-
-Each monitored symbol has a unique feed ID bound to source, broker, demo/live environment, account and symbol. Each feed receives its own session ID, monotonically increasing local sequence and append-only NDJSON journal. Batches remain single-feed protocol v1 messages; the account cBot drains nonempty feed journals in round-robin order, with one HTTP request in flight. A journal is flushed before a record is sent; its acknowledgement cursor advances only after the ingest API confirms a committed batch. Restart and duplicate delivery therefore preserve original message IDs. An unreadable or full journal, mismatched source identity or permanent ingest rejection stops the account collector visibly rather than silently dropping one symbol. Journals are never silently trimmed; backup and capacity management are operational duties. The cBot uses a bearer credential for the ingest endpoint, with loopback HTTP allowed for a colocated Desktop client and HTTPS required for a remote endpoint.
-
-`src/ledgerquant/capture/` implements a small authenticated batch API. PostgreSQL `market.capture_observations` is an append-only raw-capture store with unique message IDs and `(feed_id, session_id, sequence)` identity, payload hashes, immutable feed bindings and mutation-rejecting triggers. A successful API response is sent only after the database transaction commits. Tick source event time and local observed time remain separate; sentiment has an observed time but no invented source event time. Server receive and ingest times are recorded independently. A zero sentiment percentage is marked `ZERO_AMBIGUOUS`, because zero can mean unavailable source data. The bootstrap's `available_at` is assigned during the insert transaction, before commit; it is an ingest-time estimate, **not an exact durable-visibility timestamp for historical decision replay**. Before any captured record enters Executor context or a strict point-in-time evaluation, a later canonicalization stage must derive a conservative post-commit availability bound and preserve this raw timestamp.
-
-This bootstrap writes optional ticks as PostgreSQL rows to start collection early. It has no Redis stream, archive writer, immutable tick chunks, control API, feed-health service or execution path. It is deliberately a small capture store, not the target historical market-data architecture in Section 4.3. Capacity, backups, restore tests, feed gaps, clock quality and a migration into the durable archive are required before it becomes the long-term tick history or an Executor feed. The operating procedure is in [CAPTURE.md](operations/CAPTURE.md).
-
-#### 4.2.2 Bounded historical tick export
-
-The separate `cbots/LedgerQuant.TickExport/` cBot exports one declared UTC interval from cTrader CLI server-tick backtesting to a local CSV and JSON manifest. It requires a pre-window tick and an after-window tick as boundary witnesses, limits the interval to seven days and caps row count. It preserves distinct equal-time updates, validates quote fields and ordering, writes a partial file first, then publishes the manifest only after the CSV has been flushed, hashed and moved into place. A failed run leaves no committed manifest. The cBot refuses real-time operation and contains no order calls. Its `FullAccess` setting is used only in the controlled CLI container for a mounted output directory; the Linux CLI does not enforce the desktop sandbox. The broker name is asserted from the CLI account listing when the backtest API leaves `Account.BrokerName` empty, and the manifest records that basis.
-
-This exporter is an acquisition experiment, not the durable archive of Section 4.3. Its manifest marks coverage and quote quality `UNVERIFIED`, leaves historical `available_at` unset and does not invent a cTrader server identity. Local extracts are ignored by Git. The bounded EURUSD and GBPUSD findings, including a high rate of equal bid/ask quotes for EURUSD, are in [DATA_AVAILABILITY.md](data/DATA_AVAILABILITY.md); the operating procedure is in [TICK_EXPORT.md](data/TICK_EXPORT.md). Measured gaps and quote uncertainty remain source facts. A hypothesis may use a bounded dataset only after its frozen data requirements establish that the relevant decision inputs, outcome observations and cost evidence are sufficient for the claim being evaluated; no universal tick-completeness percentage certifies all hypotheses.
-
-The XAUUSD quote-quality slice uses the same historical exporter and the existing read-only probe. Six preselected 2020 development dates were exported; six 2021 dates were checked for source/time metadata only. The offline `research.quote_quality` evaluator verifies manifests and hashes, measures fixed 30-minute lookback and 15-minute forward windows with past-only one-second quote sampling, and retains every scheduled anchor, including insufficient-source cases. It reports a within-day descriptive association without a success gate. This is an exploratory measurement path alongside, not an extension of, the `eurusd_direction/1` catalog. The sampled backfill has no verified historical `available_at`, independent executable quote fidelity or cost evidence. [Audit](data/measurements/xauusd-quote-quality-audit-v1.json).
-
-### 4.3 Redis stream and durable tick archive
-
-Redis Streams carry recent canonical market events to independent consumer groups. Physical keys include environment, feed ID and canonical instrument ID, for example `market:live:<feed_id>:EURUSD`; a bare `market:EURUSD` cannot distinguish broker feeds or environments. The Redis stream ID is a transport cursor, not the observation ID, broker event time or durable archive offset. A decision-dispatch group schedules eligible workers without PostgreSQL polling; a separate archive-writer group receives the same events. Consumers acknowledge only after their own durable work is complete, reclaim abandoned pending messages and deduplicate by canonical event ID. A group distributes work among its members, while separate groups support fan-out. [Redis Streams and consumer groups](https://redis.io/docs/latest/develop/data-types/streams/)
-
-The ingestion adapter first writes each validated canonical event to a bounded, disk-backed ingress journal and acknowledges the cBot only after the journal's declared durability boundary. It then publishes to Redis. The journal retains an event until the archive checkpoint and required decision-dispatch receipt have committed, allowing replay into Redis after a Redis restart or lost stream entry. The dispatch receipt means the decision work is durably accepted; it does not claim that inference has finished. Redis persistence is enabled for short-term recovery, but its configured fsync policy and failure window are explicit; Redis AOF or replication alone is not the long-term tick archive. If the journal, Redis or writer falls behind its bounded capacity, ingestion applies backpressure; unrecoverable loss creates a typed gap record and required feeds become stale for new decisions. [Redis persistence](https://redis.io/docs/latest/management/persistence/)
-
-The archive writer batches ticks into immutable, compressed chunks partitioned by feed, instrument and time. It writes a chunk to durable disk or object storage, verifies its checksum, then commits a PostgreSQL manifest and archive checkpoint before acknowledging the archive consumer group or releasing journal entries. Retries use stable event IDs and idempotent chunk identity; a crash between object write and manifest commit leaves an unreferenced object for cleanup, never a visible partial chunk. A manifest records storage URI, content hash, schema/canonicalizer versions, feed and instrument IDs, event-time and `available_at` bounds, count, source-sequence bounds and gaps. The archive retains per-tick bid/ask, source identity, event time, `available_at` and provenance. PostgreSQL stores manifests, coverage, gaps and query metadata rather than every tick row.
-
-Redis retention has explicit age and memory targets, but trimming may advance only past committed archive checkpoints and the required consumer-group acknowledgements. Redis memory pressure must backpressure ingestion rather than evict unarchived stream entries. A default length-based trim can remove entries still referenced by a group's pending list, so trimming cannot be the archival commit mechanism. Archive lag, pending entries, journal occupancy, memory pressure and oldest retained stream ID are monitored together. Redis feed-state and recent-value caches are rebuildable from committed data plus new observations; a rebuilt cache is marked stale until a fresh source observation arrives. [Redis `XTRIM` behavior](https://redis.io/docs/latest/commands/xtrim/)
-
-Historical tick queries use the archive-query contract: resolve requested feed, canonical instrument and UTC interval against PostgreSQL manifests, read matching immutable chunks, and return bid/ask ticks in a stable order with source, schema and coverage/gap metadata. Queries are paginated or streamed with resource limits; they never scan Redis as the five-year history store. A request for EURUSD ticks in March 2023 reports the archived coverage and any missing intervals instead of silently treating a partial result as complete. An archive interval is queryable only after its manifest commits; `archived_at` is distinct from the decision-time `available_at`.
-
-### 4.4 Adapting the existing execution cBot
-
-The execution cBot is planned to be brought from another project and adapted to LedgerQuant's account-scoped command, acknowledgement, risk and reconciliation contracts. It is not yet code in this repository. Integration starts by identifying its existing order and position-management behavior, then mapping those behaviors to the versioned wire contract and LedgerQuant IDs. Preserve broker-side protective behavior during adaptation; any changed safety rule requires a specific test and review. The imported cBot must reject unknown protocol versions, stale epochs, duplicate signals and commands for another account. Its broker events are mapped to immutable execution events without assuming that a local acknowledgement proves a broker fill.
-
-### 4.5 Broker adapter ports and capability gates
-
-Broker connectivity is split into typed ports for market data, account state and execution. An adapter may implement one or several ports. The target adapter families are broker APIs, cBots, MT4, MT5 and NinjaTrader; each is a distinct integration with its own deployment and protocol constraints. The cBots are the initial adapters. A platform name in the registry does not imply that all operations are implemented or safe for live use.
-
-Every adapter publishes a versioned capability snapshot: supported instruments and order types, market-data modes, account and position queries, cancel/modify behavior, protective orders, partial fills, timestamp quality, precision, rate limits, idempotency mechanism and reconciliation coverage. Account and feed activation check the required capabilities against the deployment contract. Unsupported operations fail validation before a signal is sent. Broker-specific symbols, volume units, currencies, time zones and order states are normalized at the adapter boundary while original broker identifiers and payload references remain in the ledger.
-
-Exactly one logical execution owner is assigned per trading account across all adapter types. Each execution adapter maps the stable `signal_id` to broker order IDs, enforces expiry and duplicate protection, checks current account and quote state, and emits acknowledgements, rejections, fills and reconciliation events through the common contract. If a platform cannot provide an independent broker-side cBot, its connector includes an isolated account-scoped safety component with the same authority to reject and manage protective orders. A new adapter reaches `LIVE` eligibility only after contract, failure-recovery, reconciliation and broker-specific safety checks pass in demo or shadow mode.
-
-Model providers and broker adapters are different extension points. Changing a model cannot change broker safety behavior; changing a broker adapter cannot change the frozen decision or payoff contract. Both changes produce versioned deployment lineage and targeted regression evaluations.
-
-## 5. Data lineage and replay
-
-Each external artifact is normalized by a source-specific, versioned canonicalizer before its content hash is calculated. Preserve the original payload or an immutable reference where legally and operationally possible. Canonicalization records what was normalized; it cannot discard fields merely because they appear irrelevant.
-
-A central-bank statement, economic release, geopolitical event record or news article is a raw source artifact. It is decision-time source evidence with its own source identity, content or immutable reference, publication and first-seen times where available, revision lineage and `available_at`. Ingestion does not turn it into a sentiment score. This source evidence is distinct from an `evidence_record` in the research registry, which stores measured hypothesis and evaluation results.
-
-Semantic labels, summaries and sentiment inferred from raw news are separate derived artifacts. They retain the raw artifact and revision references, derivation method, model and prompt versions, computation time and their own `available_at`. A historical raw article does not make a semantic score calculated years later available at the original publication time. Applying a currently pinned model to historically eligible text is a labelled retrospective inference experiment with separate simulated decision time and actual inference time; its output is not a historical source observation. The model may have been trained on later events, so point-in-time input filtering does not remove model-knowledge leakage. Such a run is not a recorded 2020 model decision or proof of production-equivalent behavior.
-
-An observation records `source_id`, `source_type`, `source_event_time`, `observed_at`, `received_at`, `ingested_at`, `available_at`, `canonicalizer_version`, `content_sha256` and `raw_artifact_reference`. Broker-feed observations also record feed ID, cBot version, symbol-map version and source sequence/message ID. For archived ticks, the immutable chunk retains per-tick fields while its manifest holds the reference and indexed bounds; a PostgreSQL row per tick is not required. The source contract defines `available_at`, which controls point-in-time visibility. For a broker cBot feed, `ingested_at` is the durable journal commit and `available_at` cannot precede it: a broker timestamp or cBot clock does not make delayed data available earlier. `archived_at` records the later manifest commit and does not rewrite `available_at`. Replay at time `T` may read only records whose declared `available_at ≤ T` and whose source revisions were visible then. A retrospective simulation may instead use a frozen, source-specific hypothetical visibility rule for backfilled prices or news, while retaining their actual later retrieval and availability times; it is labelled simulation and cannot be reported as historical replay. Clock skew and transport delay are measured separately.
-
-An inference fingerprint binds the visible context, canonicalization version, agent and portfolio versions, retrieval and memory policy versions, selected artifact and episode IDs, named model/provider bindings and step plan, prompt or typed question-set and decision-policy versions, tools, output schema and inference parameters. Recorded-output replay returns the persisted result for that exact contract. Fresh-inference replay invokes the pinned model steps again and stores distinct invocation events; probabilistic inference may differ. Replay results state the mode and the source-availability contract.
-
-Point-in-time filtering alone does not eliminate survivorship bias, missing historical observations, changed providers or execution-model differences. Evaluation reports identify these limits and keep research, shadow, demo and live results separate.
-
-### 5.1 Retrieval-augmented generation (RAG)
-
-Retrieval has two separate logical domains with distinct corpora, policies, indexes and permissions. They may share storage technology, but never an unrestricted `vector_db_of_everything` or a query that silently mixes purposes:
-
-| Domain | Consumer | Permitted content and authority |
-| --- | --- | --- |
-| **Market knowledge RAG** | Executor at decision time | Raw news and event source evidence, macro releases, central-bank communication, broker observations and event metadata available at that instant. The source artifact and its `available_at` govern visibility; retrieval does not relabel a source artifact as sentiment. |
-| **Research knowledge RAG** | Critic/Research and Discovery | Research literature, methods, approved analyses and narrative reports for idea generation and explanation. Retrieved prose is background material; structured evaluation results come from the evidence registry. |
-
-Each domain builds searchable, versioned projections from approved source artifacts. Each document and chunk retains its source reference, content hash, source event time when defined, `available_at`, canonicalizer and chunker versions. Embeddings, lexical indexes and ranking scores are derived data; the source artifact remains authoritative. Reindexing creates a new index version and does not rewrite earlier retrieval records. Research material is not automatically eligible for Executor context; moving content between domains requires source review, policy approval and a new version.
-
-High-frequency broker quotes, ticks and bars from the market-data cBot are primarily structured time-series observations queried by instrument and time. They do not need to become vector documents. Market knowledge RAG may retrieve associated broker notices or event metadata, while structured market queries supply prices and feed-health facts under the same point-in-time rules.
-
-An agent version pins a retrieval policy: domain, allowed corpora and source types, account/portfolio scope, index and embedding versions, retriever/ranker version, point-in-time filters, freshness limits, relevance threshold and context budget. Market retrieval applies authorization and `available_at` filtering **before** ranking. Research retrieval also records the information cutoff used for each study. Hybrid lexical/vector retrieval is permitted behind one typed interface; changing the search implementation must preserve the retrieval contract and create a new version where results can differ. The same filtered, versioned context may supply a typed decision model; the retrieval rules do not depend on whether the consumer generates text.
-
-Each decision or research run records the query hash, retrieval domain and snapshot, selected chunk IDs and order, content hashes, scores, source citations, filters and exact assembled context hash. Recorded-output replay uses this captured context; a new retrieval is a separate run. Mandatory market evidence that is absent, stale or outside scope produces `CONTEXT_INCOMPLETE` or `SOURCE_STALE`, never invented context. Retrieved text is untrusted data: it cannot change system instructions, call tools, redefine success metrics or override execution policy. Source and account access rules apply before content reaches the model.
-
-### 5.2 Episodic memory
-
-Episodic memory stores selected, auditable experiences from prior runs: the decision, cited evidence, subsequent execution outcome, reconciliation status and lessons or summaries derived from those records. A research episode may instead link a proposal, critique and evaluator result after that result is released; a blocked or unmeasured proposal has no outcome lesson. The immutable episode references its original event IDs. Model-written summaries are separate, versioned derivatives with their own `available_at`, authoring model/instruction identity, validation status and source references. A memory writer records an execution episode only after the outcome is observed and reconciled, or a research episode only after the evaluator has released its result; it does not turn an unverified model assertion into a fact. A lesson keeps ex-ante decision/process quality, broker execution quality and later economic outcome distinct: a profitable breach of risk policy is not rewritten as a sound decision, and an adverse market outcome is not proof that the earlier decision or fill was defective.
-
-Every episode has an `available_at` no earlier than the time it was actually written and all evidence and outcomes used to form it. Memory retrieval respects that timestamp during replay, plus environment, agent, portfolio and account permissions. Cross-account or research-to-live reuse requires an explicit policy. Selection has relevance, quality, deduplication, retention and context-budget rules; the selected episode IDs, order and content hashes are recorded with the decision. Retiring or correcting a memory adds a new status event; the original evidence remains auditable. Summaries are regenerated from source episodes when their contract changes.
-
-A reviewed method lesson can instead derive from a process assessment of a blocked or unmeasured attempt, without waiting for a market result or creating an outcome episode. Its evidence is the frozen proposal, rules and eligible context. Section 6.3 separates this feedback from empirical findings and untested causal explanations; neither an episodic store nor embeddings are required to deliver it.
-
-Memory may inform a decision but cannot activate an agent, modify risk limits or issue an order. A missing memory store follows the deployment's declared degradation policy: use the permitted empty-memory path or stop evaluation. The choice and reason are recorded. Outcome data from after a historical decision cannot appear in that decision's replay context.
-
-### 5.3 Versioned evaluations
-
-An evaluation suite fixes dataset and source snapshots, temporal splits, expected labels where available, scoring rules, baseline, minimum gates and evaluation code version. Development data is separate from a frozen holdout. Walk-forward windows and prospective shadow runs are used for trading behavior; repeated prompt, question-set or policy changes are not tuned against the holdout. A changed suite or threshold creates a new suite version rather than rewriting an old result; it cannot reclassify a failed frozen hypothesis without a new child hypothesis and untouched validation evidence.
-
-Evaluate the complete decision contract, including retrieval, memory, prompt or typed-question contract, model and policy versions. Gates cover retrieval relevance and evidence coverage, citation faithfulness where applicable, temporal leakage, schema validity, justified abstention, unsafe actions, capital-limit violations, latency and cost. Typed decision models are also measured for class/score accuracy, probability calibration, coverage at each abstention threshold and stability across instruments and time windows. Market-data eligibility is evaluated against the frozen hypothesis requirements at each decision and settlement window, with eligible, stale, missing and excluded cases counted separately. Trading metrics use the same market window and execution assumptions for candidate and baseline, report sample sizes and uncertainty, and keep simulated outcomes distinct from broker-observed outcomes. A passing offline score does not authorize live trading.
-
-For setup discovery, freeze the **opportunity population** before outcomes:
-which instruments and times or events invoke the Executor, the context it may
-see, its action space, expiry and settlement rule. Score the full population,
-including `NO_SIGNAL`, rather than only model-proposed trades. Compare the
-LLM policy with a no-trade baseline and a simple, declared control under the
-same observation and cost assumptions. For a shadow action, a quote-derived
-counterfactual is a simulation, not a fill; no-signal has zero executed P/L,
-while any claim about a missed trade needs a separately defined comparator.
-Review decision quality from decision-time evidence before exposing outcomes,
-then evaluate later payoff and costs separately. Static rules can be controls
-or source diagnostics without becoming the intended trading intelligence.
-
-Judge a trading decision by the **information and obligations available when it was made**. The independent evaluator keeps three linked assessments, with distinct timestamps and evidence owners:
-
-| Assessment | Eligible evidence | What it determines |
-| --- | --- | --- |
-| Decision process | The frozen decision-time context, source freshness, registered policy, ex-ante forecast/expected payoff, uncertainty, permitted action, account risk limits and abstention rule. | Whether the proposal was authorized, supported and consistent with the policy given what was knowable then. Score or blind-review this before showing the later outcome; record its version and hash. |
-| Broker execution | Reconciled order requests, acknowledgements, fills/rejections, contemporaneous quotes and fees. | Whether an authorized action was executed and reconciled as intended, including latency and slippage; an acknowledgement alone is not a fill. |
-| Economic outcome | Settlement observations and reconciled realised gross/net payoff, costs, drawdown and tails under the frozen payoff contract. | What happened afterward, compared with the registered baseline across an adequate independent sample. |
-
-A losing trade can have a valid decision and good execution; a winning trade can violate the decision or risk contract. Neither realised sign is an individual decision-quality label. Later outcome-aware reviews may diagnose model calibration or systematic decision errors across cases, but they are identified as ex-post analyses and cannot rewrite a previously frozen decision-time assessment. Process compliance alone also does not establish an economic edge; promotion still requires independent outcome evidence.
-
-Every run stores candidate and baseline IDs, suite version, case IDs, inputs, outputs, metric definitions, failures and reproducibility metadata. Research promotion decisions cite both the evaluation run and its structured evidence record, plus any accepted exceptions. Evals are also regression gates for adapter, index, model, question-set, decision-policy and memory-policy changes. After activation, ongoing evaluation watches data quality, behavior and risk drift; a breached hard gate pauses new entries or rolls back through the deployment workflow.
-
-### 5.4 Instruction and question optimization and promotion
-
-Prompts and typed question sets are immutable, versioned artifacts referenced by agent versions. A typed question set includes question IDs, text, option descriptions or score rubric and its answer schema; the deterministic policy that combines answers has its own immutable version. An optimizer or Critic may propose prompt, question-set or policy candidates using only its permitted development evidence and a bounded experiment budget. Each experiment links to a Loop A hypothesis and research trial; it records the proposal method, parent artifact, candidate hash, retrieval/memory/model configuration and evaluation suite. The independent evaluator writes measured results to the evidence registry. Candidates are compared with the active baseline under the same conditions; changing multiple components is either isolated in separate experiments or identified as a combined change.
-
-The optimizer cannot read the frozen holdout while generating candidates, promote its own result, change account policy or edit active versions. Candidate selection passes contract checks, temporal evaluation, stress cases and prospective shadow evidence before explicit approval. Activation creates a new deployment epoch; rollback selects a prior approved version and records a new epoch. Prompt or question text alone is never treated as the complete unit of optimization because retrieved context, memory, model behavior and decision policy also affect the result. A change to the target decision or payoff contract belongs to Loop B, regardless of whether it is expressed as a prompt, question or policy edit.
-
-## 6. Two self-improvement loops and structured evidence
-
-The research system has two explicit loops. Both can lead from hypotheses to measured evidence; neither directly changes a live deployment. Its primary subject is the **agent's decision-making behavior**: what context it sees, how it interprets that context, when it abstains and whether its proposed action is justified. Historical market data, released decisions and outcomes are material for developing and comparing agent versions, subject to their actual visibility and exposure limits. A static trading rule is optional as a control or diagnostic; finding one is not the purpose of Research.
-
-Research/Discovery may record, critique and refine a CFD market idea before a compatible evaluator or data source exists. Keep its question, rationale, suggested lineage and known measurement gaps; do not assign a measured failure to an untested idea. A reviewed evaluator catalog limits which ideas can proceed to computation, frozen validation and economic claims. An unsupported instrument, decision rule or payoff identifies a capability gap for later implementation; it does not forbid investigation or force the agent to recast the idea as an existing EURUSD diagnostic. Freeze the full decision, data, payoff and success definitions when an idea is ready for independent validation, before its outcomes are inspected.
-
-The implemented `idea_exploration` workflow records one typed attempt and one hash-linked Critic review in the existing run, draft and critique ledger. It requires no historical EURUSD bundle, evaluator catalog or measurement contract. The task bounds permitted source references and prior-draft links; references are provenance pointers, not proof of source content, point-in-time eligibility or independent family identity. Version 1 retains its original idea-only semantics for historical runs. Version 2 may record an idea as `EXPLORATORY_UNMEASURED` or a reasoned stop as `EXPLORATORY_PARKED`; both leave family assignment open. Existing admission rejects either, so a later measurement requires an active idea, a separately reviewed evaluator and frozen contract. The existing `discovery` workflow remains the bounded EURUSD diagnostic path. Broader autonomous search and evaluators beyond this diagnostic remain future work.
-
-Research may improve a reviewed exploratory idea by starting another bounded run with the prior idea draft ID in its task. The service supplies that exact attempt and Critic review to both roles, verifies the prior record and appends a parent/child link when the new draft is stored. A parked attempt may likewise be revisited by a later exploratory run, but cannot directly source a measurement. Research may cite the task parent ID in the draft's optional `related_draft_ids`; the task does not need a second copy in its allowed-reference list. The original draft and critique stay intact. This is iteration on an idea, without an evaluator contract or an inferred economic result.
-
-For a measurable derivative, an operator supplies the source idea draft ID and a reason for mapping it to a supported diagnostic run. Research proposes a normal catalog-compatible diagnostic, Critic reviews it, and existing admission independently checks the mapping reference, eligibility and evaluator behavior. Admission records the source idea and Critic hashes in the design freeze before development runs. The link states `DERIVED_MEASUREMENT_QUESTION`; it does not assert that a narrowed diagnostic is the same payoff or independently validated. An idea outside implemented evaluator capabilities stays exploratory until the needed evaluator is built and reviewed. Recorded reports show the draft, critique, frozen design, development result and candidate-lock status; later outcomes do not rewrite earlier ideas.
-
-| Loop | Research question | Contract boundary |
-| --- | --- | --- |
-| **A — improve an existing decision system** | Can a prompt, model, tool, market-context assembly, RAG policy, episodic memory, fine-tuned model or decision policy improve the current Executor's setup recognition, abstention and action quality? | The decision target and payoff contract stay fixed. Compare a candidate with the current agent baseline under the same opportunity population, evaluation and cost assumptions. |
-| **B — discover a new payoff contract** | Is there another decision and payoff for which observable information has stable economic value? | Register new decision, feature, payoff and cost contracts before validation. A changed payoff is a new hypothesis, even if it reuses an existing agent. |
-
-The measured research path is `PROPOSE → FREEZE CONTRACT → DEVELOP → INDEPENDENT TEMPORAL VALIDATION → COST/STRESS VALIDATION → PROSPECTIVE SHADOW → APPROVAL`. An exploratory idea can remain before freeze while its data and evaluator gaps are addressed. A Critic or Discovery agent can submit candidates and inspect permitted evidence, but the evaluation service computes outcomes and the promotion authority controls status. Loop B may produce a new agent capability, portfolio policy or execution mode; such changes follow the normal code and risk review before deployment.
-
-### 6.1 Ex-ante hypothesis contracts
-
-Each hypothesis receives a stable `hypothesis_id`, optional `parent_hypothesis_id`, loop type and immutable contract hash before it can enter validation. Its contracts specify:
-
-- `decision_contract`: eligible instruments and events, event-selection rule, decision time after required inference, action space, entry/exit rules, holding horizon and baseline;
-- `feature_contract`: source IDs, transformations, publication delays, `available_at` semantics and missing-data behavior;
-- `payoff_contract`: outcome calculation, settlement horizon, units, success metrics, risk metrics, minimum gates and comparator;
-- `dependence_contract`: assumed dependence unit (decision, day, event, meeting or regime), overlapping-case treatment, block/cluster uncertainty method, between-cluster assumptions and minimum support; observed cluster count is not automatically an effective independent sample size;
-- `inference_contract`: estimand and case weighting, primary endpoint and comparator, minimum relevant effect, uncertainty/test assumptions, campaign-level multiplicity/error allocation, inspection/stopping rule and release policy;
-- `cost_contract`: spread, commissions, financing, slippage, rejection and fill assumptions, with their source and version;
-- `data_sufficiency_policy`: required decision-time information, actual replay versus retrospective visibility mode and its source-specific basis, temporal resolution and maximum staleness, price/label sampling and tolerance, path-dependence, allowable gaps, missing-case handling and the evidence required for economic cost claims;
-- `development_window` and `validation_windows`: fixed temporal boundaries, instrument scope, data snapshots, evaluation suite and minimum sample size;
-- research family, resource budget and stopping rule: all related searches and attempts counted for multiple-testing review, with predeclared limits on proposals, revisions, trials, model/tool use and independent-window exposure.
-
-The policy makes data quality hypothesis-dependent. A fixed-horizon directional question may need a time-bounded predecision price state, source-backed news and a valid outcome observation near settlement, without requiring every intervening tick. A stop/limit-order or short-horizon execution claim needs the path and quote fidelity required by its order and cost contract. Generate the candidate event set by the frozen source and selection rules without looking at later prices. A source gap outside the registered input, entry, path or settlement windows is reported but does not automatically invalidate a case. A gap inside a required window follows the frozen abstention, exclusion or failure rule; no future quote is carried backward or missing return set to zero. Report eligibility counts and missingness by period and instrument so selective loss of difficult events remains visible. Price-direction diagnostics with unresolved execution costs may be reported as predictive evidence, never as net economic payoff or promotion evidence.
-
-Contracts are registered and frozen before the independent evaluator exposes validation outcomes. The proposer cannot edit the payoff definition, metric, threshold, data-sufficiency policy or validation window after seeing those outcomes. Any changed definition becomes a child hypothesis with a new ID and a new untouched validation plan. The contract service, with independent review for ambiguous cases, assigns authoritative family and exposure lineage from normalized contract signatures; the proposing agent may suggest but cannot choose its own independent family. Related child attempts stay in one research family, and related families retain cross-family exposure links. The family budget and stopping rule are frozen before search; exhaustion does not turn each blocked or rejected idea into a measured economic failure. Exhausted holdout windows cannot be reused as fresh evidence. Loop A preserves the parent's payoff contract; a payoff change is routed to Loop B.
-
-The design freeze fixes the permitted development problem and search policy; a later candidate lock fixes the selected executable rule, fitted transformations and baseline before validation access. Development labels must mature without crossing into reserved validation intervals. Confirmatory claims also belong to a service-owned campaign whose statistical error allocation spans related families, variants, endpoints and planned looks. Resource limits and attempt counts do not themselves control false discoveries. The first prospective policy uses a fixed collection end, maturity cutoff and one terminal performance inspection; continuous monitoring requires a separately justified sequential method. A historical window unaccessed through LedgerQuant may still overlap a model's training knowledge, so project exposure and known model-exposure bounds remain separate metadata. Exact gates and supporting research are in the [agent-loop implementation plan](research/AGENT_LOOP_IMPLEMENTATION_PLAN.md).
-
-The implemented offline bootstrap in `src/ledgerquant/research/` audits frozen EURUSD price-direction diagnostics. It verifies the contract and source hashes, streams the operator-confirmed cTrader Desktop CSV, validates quote order and fields, generates calendar anchors before assigning source rows, and publishes decision inputs with midquotes and source references, plus separate evaluator-facing settlement-presence metadata. These artifacts are hashed and retain every scheduled anchor; neither contains predictions, settlement prices or payoff measurements. A development-only selection step then records every development case, freezes the constant-direction baseline and all validation predictions, and publishes a hashed selection record before the offline evaluator resolves validation outcomes. The evaluator publishes hashed case-level evidence and the frozen predictive gate decision. The original July–December 2020 diagnostic narrowly passed its predictive gate; a child contract with the same rule failed full-year 2021 temporal validation. Both outcomes remain visible. This is a logical phase boundary in one local repository: the raw CSV remains accessible, so it is not enforced holdout access isolation, a production evidence registry or a complete Research Kernel. Source visibility remains retrospective, and no execution-cost or promotion claim follows from either result. The [plan and measured evaluations](research/RESEARCH_KERNEL_PLAN.md) describe the exact scope and limitations.
-
-The bounded agent bootstrap now adds an append-only PostgreSQL `research` schema, immutable agent/model bindings, transactional campaign reservations and versioned scoped application tools. A one-shot Compose worker runs Research and then a fresh-context Critic against released evidence and a registered development snapshot. The worker has no raw CSV mount, capture-table access, evidence-write permission or freeze/promotion permission. The operator imports the exact 2020/2021 artifacts and separately admits or rejects a draft. Design freeze precedes the catalog development calculation; candidate lock follows it. No newly allocated independent validation storage or evaluator service exists yet. See the [research operations guide](operations/RESEARCH.md).
-
-The initial executable catalog is `eurusd_direction/1`: EURUSD, the existing one-hour momentum-sign rule, four-hour target, weekday subsets of 08:00/12:00/16:00 UTC and January–June 2020 development. It retains holidays and missing anchors, fits the majority baseline only on selected development cases and prohibits orders. Its minimum 100 eligible anchors is an explicit technical sufficiency rule for hour subsets; it does not change either legacy hypothesis's 250-case validation gate or create a new significance gate. All variants inherit the existing family's consumed-window exposure. Unsupported horizons, sources and executable economic payoffs require a new reviewed catalog implementation.
-
-Historical proposal/critique v2 introduced `current_diagnostic` versus `future_economic` requirement scope. Current missing sources block the attempt; deferred requirements do not block a price diagnostic or confer economic eligibility. A reported narrative contradiction needs a material objection and operator resolution. V1/v2 artifacts retain their hashes and original decisions; replay never upgrades them.
-
-New registrations use proposal/critique v3. **Market-idea identity and attempt identity are separate.** Within the finite catalog, the normalized diagnostic signature identifies the market idea; each draft/run identifies a separate attempt. An authorized declaration correction can keep that signature and become a `CORRECTED_REVISION`, with the exact parent ID/hash, a declared patch and full attempt accounting. Same idea alone is insufficient grounds to reject that revision. The first supported patch changes an existing broker-cost requirement to `future_economic`, preserving the parent's diagnostic, rationale, evidence IDs, predictive falsifier and family/exposure lineage. A current cost declaration conflicting with the price-only catalog is `BLOCKED_CONTRACT_DEFECT`, never a measured economic failure. Changed decision/payoff semantics require the new-hypothesis path; unlinked repeats cannot claim novelty.
-
-An operator authorizes the parent and scope patch before inference. The bounded `submit_contract_revision` tool applies the patch on the service side; the agent cannot rewrite the parent or silently alter other contract fields. Inherited narrative preserves the original author's wording and beliefs; the new attempt separately records its current admissibility belief. Operator admission remains required. Every correction counts, and no correction or renamed contract restores an inspected window. Original blocked/rejected records remain immutable; operator-only annotations may correct their interpretation without retroactive admission. This refines the new-hypothesis rule above: a declaration repair preserving the market decision/payoff needs revision lineage, not a fictitious new idea or fresh historical holdout.
-
-**Repair exposure gate (implemented in 2.13):** `CORRECTED_REVISION` remains attempt lineage, distinct from market status. A v3 task that carries `revision_authorizations` must declare `repair_policy`: `premeasurement_repair` (strict) or `exposed_corrected_attempt`. Each authorization names a reviewed `defect_reference` (a recorded `CONTRACT_REVIEW_CORRECTION` or `CONTRACT_REVIEW` whose classification is `BLOCKED_CONTRACT_DEFECT`), the `reviewer` and the reviewer's own `reviewer_outcome_exposure` declaration. When the run's grounding context is frozen, the service verifies the defect reference and the allowlisted patch, then records a `repair_exposure/1` assessment per parent inside `research_grounding/2`: the substantive diff and corrected-contract hash, the authorized patch, the assessed cutoff, the reviewer, the tool policy and every finding with its artifact hash and observation time. Findings cover released evidence whose declared hours overlap the repaired diagnostic, measured development results and candidate locks for overlapping drafts in the family, and every labelled page of this development population served to any run before the cutoff, by either role, including abandoned runs and unlisted variants; lineage (parent, same-idea attempts, operator-listed related attempts, the run itself) only tags a finding. Any overlapping finding or a declared reviewer exposure is `EXPOSED`; a missing operator-listed run, an unparseable prior read or declared uncertainty is `UNKNOWN`; only an empty overlap is `NONE_ESTABLISHED`. Model pretraining knowledge is recorded as an unassessed separate fact. The agent never sees or chooses the boundary.
-
-Under the strict policy the repair is `ELIGIBLE_PREMEASUREMENT_REPAIR` only when exposure is `NONE_ESTABLISHED` and the task is `revision_only`; otherwise the assessment is recorded as `DENIED`, the run stops with a `REPAIR_EXPOSURE_DENIED` event before any provider call, and the attempt still counts against the campaign. Strict runs offer neither role the development view; an attempted read is recorded as a prohibited call and the submission requires only the outcome-free reads. The exposed policy proceeds as v3 did, with the exposure state recorded as `EXPOSED_CORRECTED_ATTEMPT`. At admission the service recomputes the findings transactionally, appends `REPAIR_ELIGIBILITY_RECHECK`, and refuses a strict admission when intervening exposure appears; the denial is durable, repeating the command denies again, and rejection remains available. Admissions and measured-result commits of one family are serialized by a family lock, so a recheck and a sibling's development result cannot interleave. The recheck, operator decision and design freeze commit together; a resumed development job keeps that frozen design, which predates any later result. Design freeze records the recheck decision and hash. Post-exposure administrative corrections remain append-only annotations and never obtain premeasurement-repair eligibility; a substantive change follows the exposed child-hypothesis path.
-
-The historical cost-scope correction was executed before this gate under `research_grounding/1`; it is not reassessed, its admission and lineage stay under the recorded policy, and it is not certified retrospectively. Its parent had already seen labelled development cases, including a 12 UTC case, and released aggregate results, and the repair run itself was required by the v3 tool policy to read the labelled development view. Under `repair_exposure/1` the `eurusd_four_hour_direction` family is exposed for every catalog hour subset: both released aggregates cover 08, 12 and 16 UTC and every recorded v1–v3 run read labelled pages. A strict premeasurement repair in this family is therefore denied by construction. The eligible path is exercised only by contract tests whose fixture evidence is declared on non-overlapping hours; no real research run has demonstrated an outcome-unexposed repair.
-
-Before v3 inference, the runtime freezes one shared context for Research and Critic. It groups prior attempts by diagnostic signature, retains blocked/rejected attempts and annotations, and exposes evidence facts with exact source hashes, diagnostic scope, windows and baseline provenance. Proposals compare every prior signature and cite facts from both released outcomes. An all-hours measurement cannot be attributed to a proposed hour subset. The service verifies typed references and revision diffs; Critic and the operator assess narrative attribution and predictive falsification separately from administrative eligibility. Multiple facts from one source are not independent observations. This is structured evidence feedback; arbitrary prose remains fallible.
-
-OpenAI Responses is the first implemented generation adapter. The current user-selected default is `gpt-5.4-mini` with medium reasoning, configured by the immutable profile in `configs/research/openai_gpt54_mini.profile.json` and mounted into the Compose research jobs. Explicit profile overrides must match the registered agent versions. The initial `gpt-6-astra` profile and results remain historical records. Both profiles use the same typed tools, exact request/response recording and mandatory per-run capability probe; no retry or model fallback is implicit. The model change does not reopen the exhausted 40-run campaign or reset its USD 50 budget. The API's returned model identity is recorded, but it does not prove immutable hosted weights. The finite process suite compares contract triage by a single agent, Research plus Critic and a fixed checklist, separately with and without structured registry feedback. Its synthetic contract tasks do not establish open-ended discovery ability or economic value. [First-run evidence](research/evaluations/agent_loop_bootstrap_20261009/REPORT.md)
-
-The subsequent v2 Mini step completed 24 exposed requirement-regression runs and one actual proposal under a separately authorized USD 2 ceiling within the existing total. Mini passed the exercised typed-call probes. The single-agent/checklist arms matched 8/8 reference labels each; Research + Critic matched 7/8. The actual proposal correctly deferred economic costs but duplicated the earlier 12 UTC diagnostic; contract and operator review rejected it without development or new validation. This step retained USD 0.919859 in reservations and stopped at 25 runs. Structured feedback was fixed; a corrected no-feedback comparison remains pending. See the [Mini execution record](research/evaluations/mini_requirements_20261009/REPORT.md).
-
-
-The implemented reference policy `scoped_registry_references/1` accepts Critic citations to released evidence IDs or exact, content-verified fact hashes from the frozen authorized context. Arbitrary hashes and unavailable source records remain invalid. Operator v3 admission records the exact draft/critique hashes and policy in `CONTRACT_REVIEW_ASSESSMENT`; an implementation correction never overwrites the original review. Later prior-attempt views include authoritative operator/lock state, original contract status and commitment references.
-
-The first linked v3 correction has now been admitted, frozen and developed. Its 12 UTC diagnostic measured 129 of 130 development anchors, with candidate accuracy 48.84% versus a fitted baseline's 54.26%. The negative development result is retained; the candidate lock records `NO_INDEPENDENT_WINDOW` and no execution permission. The 18-run process regression exposed remaining model attribution failures. One incomplete provider attempt and a separately registered technical recovery are both counted; the complete step reserved USD 1.540033 within USD 2. See the [linked-revision execution record](research/evaluations/grounded_revision_20261009/REPORT.md).
-
-### 6.2 Structured evidence registry
-
-The evidence registry stores typed, queryable facts rather than treating a narrative report or embedding as the result. A complete hypothesis view exposes at least:
-
-```text
-hypothesis_id
-parent_hypothesis_id
-research_family_id
-loop_type
-decision_contract
-feature_contract
-payoff_contract
-dependence_contract
-inference_contract
-cost_contract
-data_sufficiency_policy
-development_window
-validation_windows
-research_budget_contract
-pair_breadth
-temporal_breadth
-net_expectancy
-drawdown
-calibration
-failure_reason
-status
-```
-
-Contract, window and research-budget fields are frozen proposal metadata. Breadth and performance fields are computed per evaluation run, with units, raw case and observed cluster counts, frozen dependence/block rule and assumptions, uncertainty, market window, data and code versions, baseline, cost assumptions and provenance. `pair_breadth` counts covered instrument pairs under the registered universe; `temporal_breadth` records distinct preregistered windows or regimes and their results without treating those counts alone as proof of independence. `failure_reason` is typed, so transport failure, insufficient data, temporal instability and cost failure remain distinguishable. An untestable but plausible proposal may have `BLOCKED_DATA_REQUIREMENT` with a reactivation condition; it is not a negative payoff measurement. A current hypothesis view joins immutable contracts, append-only result records and status events; no agent edits measured fields.
-
-Evidence integrity is separate from hypothesis status. A source or evaluator defect appends invalidation/supersession events and marks dependent lessons and eligibility decisions for review. Current retrieval excludes invalidated support; historical replay retains the state actually used. Corrections never erase an exposed result or restore its holdout. Budget/window reservations and state transitions are transactional and idempotent, with interrupted work and unknown provider usage preserved across restart.
-
-```text
-PROPOSED
-├→ REJECTED
-├→ BLOCKED_CONTRACT_DEFECT (repair requires a separately recorded eligible attempt)
-├→ BLOCKED_DATA_REQUIREMENT (reactivation is a new status event)
-└→ DEVELOPMENT_SURVIVOR
-   ├→ TEMPORAL_FAILED
-   ├→ COST_FAILED
-   └→ SHADOW_ELIGIBLE → PROSPECTIVE → PROMOTED
-```
-
-Status transitions are validated against required evidence and written as events with actor, time, rule version and evaluation references. A `DEVELOPMENT_SURVIVOR` is only a candidate for independent validation. `SHADOW_ELIGIBLE` requires temporal and cost gates. `PROMOTED` requires prospective evidence and explicit approval; promotion then creates a new versioned deployment epoch. `EXHAUSTED` is a research-family budget state, not a result label for each member hypothesis. Failed or abandoned trials remain visible, including child and sibling hypotheses, to prevent selective reporting.
-
-### 6.3 Separation of discovery, explanation and judgment
-
-The structured registry owns contracts, assessments, measured results and status; feedback text is derived. Research RAG may later help find and explain these records. The planned feedback contract distinguishes three types:
-
-| Feedback type | Required support and permitted use |
+| Source | Content given to agents |
 | --- | --- |
-| `METHOD_LESSON` | A reviewed process assessment against the rules and information available at the assessed action. May teach requirement scope, attribution, lineage or falsifier discipline without a market outcome. Payoff sign and validation status are never process-quality labels. |
-| `EMPIRICAL_FINDING` | Released evaluator evidence with exact contract, population, window, baseline, support, uncertainty and cost/evidence mode. Updates belief about that hypothesis and applicability; a failed payoff does not establish poor research reasoning. |
-| `CAUSAL_CONJECTURE` | An explicitly untested explanation linked to observations and a proposed discriminating test. `TEMPORAL_FAILURE` supports failure to transport under that contract, not established regime dependence. A causal claim needs separately reviewed identifying evidence; plausibility or Critic agreement is insufficient. |
+| Market | Recent bid/ask, derived bars at several timeframes, spread, session state |
+| News | Headlines/articles and macro releases with their timestamps and source IDs |
+| Sentiment | cTrader buy/sell percentages where recorded; other sentiment sources when added |
+| Calendar | Scheduled macro events near `T` |
+| Portfolio (read-only) | Open positions, exposure and remaining risk budget per account |
 
-Each derived artifact records its type, source IDs/hashes, supported claim, applicability, contrary evidence, author/reviewer, creation and eligibility times, integrity and supersession lineage. Method lessons resolve to process assessments; empirical findings resolve to evaluator records. Reviewing a conjecture's wording cannot promote it to a supported finding. Corrections to source or reference labels suspend dependent feedback until reviewed. Invalid test contexts and checker defects are system evidence, not negative agent-training examples.
+The universe is the set of instruments the user has enabled on enabled
+accounts (Section 3). For the global pipeline it is the admin's instruments plus
+every instrument a global-signals user has enabled (Section 9.2). Deterministic **data-quality** filters run before the
+Scout: an instrument with a closed market, stale feed or invalid quotes is marked
+unavailable. These filters say nothing about direction and are not trading
+rules.
 
-A versioned feedback policy filters source integrity, release status, authorization, information cutoff and allowed feedback types **before** selection. Conjectures are excluded from established-method feedback and explicitly marked if supplied for discovery. Group narratives by their root process case or evaluation and retain shared ancestry; repetition adds no independent support. Outcome-blind process review receives neither later market outcomes nor summaries that reveal them. Research agents may see released prior outcomes for a current research task, never as information available to an earlier historical decision. Every supplied claim remains traceable to its typed source. The [implementation plan](research/AGENT_LOOP_IMPLEMENTATION_PLAN.md#research-feedback-contract) specifies the minimum records.
+### 2.2 Scout
 
-**Implemented in 2.14.** A process assessment (`process_assessment/1`) is an operator record about one recorded action: the service builds a sealed packet holding only the task, the role's agent definition hashes, the frozen grounding context, the tool results that role received before its action, the exact draft or critique, the recorded contract review, deterministic service checks recomputed from the draft, and recorded knowledge about the test basis (context invalidation, review corrections). Operator decisions, design freezes, development results, candidate locks and later evidence are excluded, so the packet of one action is identical before and after its outcome exists. The assessor cites the packet hash; every finding names a defect code, `SUPPORTED`, `NOT_SUPPORTED` or `UNRESOLVED`, the responsible component (Research, Critic, contract service, test harness, reference/reviewer or unknown) and packet references. A supported agent finding must reference the agent's own action or inputs; an invalidated context yields no agent label; a disputed checker output cannot confirm an agent error; an agent version cannot assess itself; critic deltas link to the research-role assessment. Assessments supersede one another and record the assessor's own outcome exposure. Derived feedback (`research_feedback/1`) is typed: a method lesson requires reviewed, current assessments; an empirical finding requires released evidence and carries its exact scope; a conjecture is marked untested with a proposed test. Release state is derived: a superseded or unreviewed source, an invalidated evidence record, an invalidated process context or a later label correction suspends the dependent feedback. A run supplies feedback only through `feedback_policy` (`reviewed_method_feedback/1`): the service filters release state, cutoff and allowed types, excludes conjectures unless explicitly opted in, keeps one item per root lineage, and records the selected IDs, hashes and assembled input hash in the frozen context as arm `HISTORY_PLUS_REVIEWED_METHODS`; without a policy the arm is `HISTORY_ONLY`. Six assessments of the three historical drafts (Research and Critic each) were recorded at 2026-10-09 23:04 UTC (10 October local time) as `PROPOSED`, authored by an AI operator with declared outcome exposure. Explicit human review was recorded on 10 October as six `REVIEWED` supersessions, retaining the originals and `EXPOSED` status. The reviewer confirmed six supported, thirteen unsupported and two unresolved findings; both unresolved lineage findings remain attributed to the contract service. One user-authored requirement-scope `METHOD_LESSON` was released from the reviewed Astra pair, grouped as one process lineage. The reference-checker correction remains engineering evidence, and the inherited v3 content does not establish acquired independent agent capability. Read-only selection verified lesson eligibility; no run has yet received reviewed methods. See the [review results and source records](research/reviews/process_assessments_20261010/reviewed/README.md).
+The Scout sees a compact summary of every available instrument in the universe
+and returns a short **shortlist** with one line of reasoning per pick. Most
+instruments are dropped, and an empty shortlist is normal. The Scout is an agent
+(a cheap GPT/Claude model or Jev `Choice` questions), not a threshold screen.
+Instruments on the `WAIT` watchlist whose recheck time has come are added to the
+shortlist directly.
 
-**Deferred delegation of process assessment and release.** Human review remains
-the bootstrap trust boundary for certified findings and method release. Ordinary
-Research/Critic work continues through the existing runtime. Automatic authority
-is an optional later capability for demonstrated repetitive work, with the
-[implementation plan](research/AGENT_LOOP_IMPLEMENTATION_PLAN.md#from-human-review-to-scoped-automation)
-owning its evaluation and escalation rules. No class has delegated authority.
+### 2.3 Analysts: GPT and Claude
 
-The transition is: define one bounded question and proposed permission; evaluate
-against withheld references; observe candidate decisions in normal use with human
-review; then explicitly activate only the scope supported by measured error,
-coverage and uncertainty. Record versions, budget, stopping rules and tolerances
-before the authority evaluation. A solo operator can supply reference judgements
-with authorship and exposure disclosed. Additional independent review depends on
-the judgement and impact; fixed reviewer or family counts are study choices.
-Insufficient evidence keeps the affected permission human-gated.
+For each shortlisted instrument, a GPT analyst and a Claude analyst run
+independently and in parallel. Each sees the full context, but not the other's
+output. Each returns a typed `Analysis`:
 
-Permission to record qualified findings (`AUTO_ASSESS`) and permission to release
-method feedback (`AUTO_RELEASE_METHOD`) remain separate. The latter also needs an
-evaluated derivation policy preserving source claims and applicability, with
-checks for downstream introduced defects. Use the existing registry for scope,
-versions, evidence and activation/suspension history; add only the fields needed
-when implementing that permission. Today's `reviewer` string cannot confer
-machine authority. Research and Critic cannot certify themselves or promote their
-own measured results.
+- a view per perspective (news, sentiment, chart): `BULLISH`, `BEARISH`,
+  `NEUTRAL` or `NO_VIEW`, with key points citing context IDs;
+- a **proposal**: `NO_SIGNAL` (nothing required), `WAIT` (what it waits for and
+  when to look again), or `LONG`/`SHORT` with a setup: thesis, cited context
+  IDs, entry (at market, or a pending order with price and expiry), stop
+  (invalidation level), target or horizon, and what it is
+  unsure about.
 
-Ambiguity, unsupported novelty, material disagreement, uncertain family/exposure
-ancestry, invalid source/context integrity and high-impact changes continue to
-escalate to humans. High impact includes success gates, holdout access, promotion,
-capital/risk and model-training authority. Escalation blocks the affected decision
-or release; unrelated authorized work continues. Audits, source invalidation,
-drift and unqualified version changes can suspend automation and dependent
-feedback. Keep original records and supplied contexts auditable. The human gate
-remains until an empirically evaluated replacement is explicitly activated.
+A perspective whose source is `UNAVAILABLE` is `NO_VIEW`; the analyst does not
+guess. Analysts propose stop levels, not position sizes. Splitting the
+perspectives into separate specialist agents is a variant Research can test.
 
-Access to frozen holdout outcomes is reserved for the independent evaluator and authorized reviewers after candidate selection. Research agents see permitted development evidence and released validation summaries; neither feedback nor memory allows a new success definition in response to a failed validation.
+### 2.4 Jev: validation and final decision
 
-Research-agent quality is not validation pass rate alone: evaluate falsifiability, lineage-aware novelty, information value, cost and calibration of ex-ante forecasts on matched tasks and budgets. Critic objections are recorded before review and audited separately, including a bounded sample of rejected proposals, so excessive rejection is not treated as success. Unmeasured/rejected proposals have censored outcome labels. Hosted model aliases may change behavior; retain exact invocation records and canary results, and distinguish recorded-output replay from fresh inference. The [agent-loop implementation plan](research/AGENT_LOOP_IMPLEMENTATION_PLAN.md) defines the first supported slice, engineering acceptance and later independent-evidence gate.
+Jev is a typed decision model. It answers versioned questions over a typed state
+built from the context summary and both analyses: `Choice` selects among
+declared options, `Score` rates against a declared rubric and `Noul` returns a
+probability for a yes/no proposition. Jev is called when at least one analyst
+proposes `WAIT`, `LONG` or `SHORT`; if both propose `NO_SIGNAL`, the cycle
+records `NO_SIGNAL` without a Jev call.
 
-Separate execution of Research and Critic does not imply independent errors. Process evaluation audits accepted and rejected drafts, uses versioned rubrics and reference labels, compares single-agent/Critic/simple controls at matched total cost, and keeps held-out process tasks separate from prompt-development cases. Once those test results influence changes, they are exposed evidence too. Review judgements remain distinct from evaluator-owned economic measurements.
+- **Risk checks:** judgement questions about each proposal, such as whether the
+  stop sits beyond the risk the analyst named, or whether a scheduled event
+  inside the horizon threatens the setup.
+- **Scenario analysis:** questions such as the probability that the stop is hit
+  before the target within the horizon, for each proposal.
+- **Final decision:** a `Choice` among options built from the proposals, for
+  example *GPT's LONG setup*, *Claude's SHORT setup*, `WAIT` or `NO_SIGNAL`.
 
-Remembering an attempt, interpreting it correctly and improving later behavior require different checks: history coverage, attribution/lineage correctness, then reduced error rates on held-out process tasks. Citing prior IDs or increasing market pass rate proves none of the later steps. Report requirement confusion, evidence misattribution, weak falsifiers, unsupported causal claims and Critic missed/introduced defects separately, with valid task denominators, related-template clusters, budget and uncertainty. The existing Astra invalidation and Mini regressions do not establish general behavioral improvement. For the Executor, compare a plain contextual baseline with each proposed RAG, memory, prompt, tool or training change on matched decision opportunities; score ex-ante decision quality separately from later payoff. Research RAG lessons are not automatically eligible as live market facts. Add these capabilities when their source contract and measured benefit justify them.
+Jev chooses among the proposals; it does not invent entry or stop levels. When
+the analysts disagree, Jev may follow one, wait or abstain. All of Jev's answers
+are recorded with the decision. Jev's risk checks are judgement; the hard capital
+limits remain in the Risk Engine.
 
-Evaluation reports show the number of related trials, all preregistered windows, results by pair and period, net costs, drawdown, calibration, uncertainty and failure reasons. A promising isolated backtest is insufficient for `SHADOW_ELIGIBLE`. Prospective evidence is collected after registration under the same decision and payoff definitions. Any exceptional override is recorded with its reason and approver; it does not rewrite the original result.
+### 2.5 WAIT and the watchlist
 
-## 7. Persistence and consistency
+`WAIT` means: there may be a trade here, but the agents need **new information
+or a judgement they cannot make yet** before deciding. A `WAIT` is a request for
+a new analysis, never a deferred order. It always states what it waits for and
+when to look again.
 
-PostgreSQL is the transactional durable store for registries, ledger, evidence, delivery state and archive metadata. Immutable tick chunks live in durable archive storage; the ingress journal is a bounded recovery buffer and Redis is a bounded runtime transport and cache. Time-series partitioning for lower-volume relational observations and a vector index are optional adapters selected by measured need. The schema is divided by domain ownership; no generic JSON document table replaces typed identities, constraints and relationships. JSON fields are permitted for versioned, schema-validated capability payloads where the shape is genuinely extensible.
-
-```text
-registry:    agent_definitions, agent_versions, prompt_versions,
-             question_set_versions, decision_policy_versions,
-             model_providers, model_profiles, model_profile_versions,
-             provider_capability_snapshots,
-             broker_connections, broker_capability_snapshots,
-             retrieval_policies, memory_policies, portfolio_profiles,
-             portfolio_versions, trading_accounts, portfolio_account_allocations,
-             deployments, deployment_epochs, promotion_events
-market:      broker_feeds, source_contracts, observations, artifact_references,
-             tick_chunk_manifests, archive_checkpoints, coverage_intervals,
-             gap_events, feed_health_events
-knowledge:   corpora, document_chunks, index_versions,
-             retrieval_snapshots, retrieval_events
-memory:      episodes, episode_events, summary_versions, memory_retrieval_events
-decision:    inference_events, decision_events
-evaluation:  evaluation_suites, evaluation_runs, evaluation_case_results,
-             optimization_experiments
-research:    hypotheses, hypothesis_contracts, research_trials,
-             evidence_records, hypothesis_status_events
-execution:   signals, execution_events, broker_observations,
-             account_reservations, reconciliation_runs
-delivery:    outbox_messages, inbox_receipts
-```
-
-Foreign keys, uniqueness, effective-interval constraints and explicit state transitions protect referential integrity. Published versions, frozen hypothesis contracts and ledger events are append-only. Mutable projections, schedules and credential references have audit events and concurrency versions. Migrations are reviewed with the domain change that requires them; schema and API contract versions are independent. Backfills preserve original event times and distinguish derived records from source observations.
-
-The PostgreSQL outbox guarantees that a committed control or execution state transition has a durable delivery intent; it is not the per-tick market-data bus. Market ingestion uses the journal-to-Redis path and archive checkpoint described in §4.3. Consumers keep receipts and process messages idempotently. The system does not assume exactly-once network delivery. Search indexes, memory summaries and read models may lag their source records; each exposes its source version and projection time. Operational queries that affect capital use current, reconciled account state rather than a stale dashboard projection.
-
-## 8. Model provider architecture
-
-Agents use typed model-provider ports; provider SDKs and HTTP formats stay inside adapters. The initial target adapters are OpenAI, Claude, TypeSafe Jev, Ollama, LM Studio and a local `llama.cpp` server. Llama is a model family rather than a transport: Llama-family models are selected through a verified local runtime such as Ollama, LM Studio or `llama.cpp`. Additional providers use the same registration and conformance process.
-
-A versioned model profile fixes model kind, provider instance, endpoint identity, model ID and revision or local artifact digest, inference parameters, credential reference, allowed tools, output contract and resource limits. The provider capability snapshot records supported text generation, typed decisions, structured output, tool calls, streaming, embeddings, context limits and usage reporting. Text generation, typed decisions and embeddings are separate ports; a model is not assumed to support a capability merely because another model from the same provider does. A published agent version binds one or more exact model-profile versions by named step, according to its registered capability contract. The step order, input mapping, output mapping and any approved fallback bindings are versioned; every bound profile is validated before activation. Runtime model selection outside those bindings is forbidden.
-
-The adapter normalizes completed output, refusal or incomplete result, tool requests, usage, latency, provider request ID and error type. The domain validates the normalized result against the agent schema regardless of provider claims. OpenAI-compatible local endpoints are treated as transport options, not proof of identical tools, schema enforcement or token accounting. Each endpoint and model combination must pass conformance tests for the capabilities it advertises. Provider outages, rate limits and malformed output remain distinct failure reasons.
-
-Cloud credentials live in the secret store; local endpoints are explicitly registered and access-controlled. Operators choose which data classes may leave the local system for each provider. Neither browser code nor agent configuration contains raw API keys. A live deployment never silently switches provider or model after a failure: fallback requires a preapproved versioned policy and evaluation evidence, and every invocation records the provider, model revision, profile version and effective prompt or question/context fingerprint. Local model upgrades or changed weights create a new model-profile version.
-
-### 8.1 TypeSafe Jev typed decisions
-
-Jev is a typed decision model, not a text-generation or embedding model. Its adapter implements the typed-decision port with a point-in-time `state` and a versioned set of atomic questions: `Choice` selects from declared options, `Score` evaluates a declared ordered rubric, and `Noul` returns a probability for a yes/no proposition. A `Choice` question whose alternatives may be incomplete includes an explicit `none` or `abstain` option; that answer cannot become a trading action. `Choice` and `Score` also return probability distributions and a provider-defined confidence measure; `Noul` has no separate confidence field. The adapter validates question IDs, criteria, response types and probability ranges, then returns normalized judgments without inventing a text response or treating a schema-valid answer as a correct one. [TypeSafe: primitives](https://docs.typesafe.ai/primitives), [TypeSafe: Choice](https://docs.typesafe.ai/primitives/choice), [TypeSafe: confidence](https://docs.typesafe.ai/confidence)
-
-An agent version freezes the question text, option labels or score rubric, state assembly contract, model-profile binding and deterministic decision policy. The policy combines judgments, applies thresholds validated on domain data and defines abstention or escalation when evidence is missing or uncertainty is high. A Jev result may classify market context, route work or contribute a bounded input to an Executor, Critic or Research agent; it cannot directly authorize an order, change a payoff contract or promote a hypothesis. Account risk checks and independent evaluation remain authoritative. Changing a question, rubric, threshold or model creates a new version and requires comparison against the existing baseline. Store the exact canonical `state` payload or a durable, access-controlled immutable artifact reference, its content hash and assembly version, the question-set and policy versions, the model version returned by the provider, typed answers, distributions, policy result and timing in inference lineage. The deterministic policy maps a result to the registered agent output schema, including `NO_SIGNAL` or failure where applicable. Live deployments pin a versioned model ID rather than a moving alias. [TypeSafe: System One](https://docs.typesafe.ai/concepts/system-one), [TypeSafe: models](https://docs.typesafe.ai/models)
-
-Jev's supported input is text or text-bearing structured state; the integration must not claim image, audio, video, tool-use or free-form generation capabilities. Before activation, run provider conformance and domain evaluations on representative point-in-time cases, including ambiguous inputs, changed option wording, missing context, class imbalance and instrument or regime shifts. Evaluate the resulting trading decisions and abstention behavior, not only the model's advertised confidence. [TypeSafe: System One](https://docs.typesafe.ai/concepts/system-one)
-
-## 9. API and distribution strategy
-
-Expose one logical `/v1` control API for registry commands, lifecycle transitions and queries. Group routes by domain: `agents`, `model-providers`, `portfolio-profiles`, `trading-accounts`, `broker-connections`, `allocations`, `broker-feeds`, `market-data`, `deployments`, `knowledge`, `memory`, `hypotheses`, `evidence`, `evaluations`, `optimization` and `execution`. The `market-data` read contract serves feed health, archive coverage and bounded historical tick queries from manifests and chunks; it does not expose Redis as a historical query endpoint. Writes require scoped authorization, validation, an idempotency key where retries matter, and optimistic concurrency for updates. Responses include stable IDs, version IDs and lifecycle status. Runtime status streams may use WebSocket or server-sent events; broker ingestion and execution transports are separate internal contracts.
-
-| Resource | Supported control operations | Removal rule |
-| --- | --- | --- |
-| Agents | Create draft, publish version, evaluate, approve, activate, pause, retire | Delete only an unreferenced draft; otherwise retire. |
-| Portfolio profiles | Create draft, publish version, validate allocations, activate version, retire | Drain dependent deployments and retain referenced versions. |
-| Trading accounts | Register, verify, rotate credential reference, activate, suspend, retire | Resolve open work and preserve account/execution history. |
-| Broker feeds | Register source and symbol map, verify adapter, activate, suspend, retire | Preserve observation lineage and feed-health history. |
-| Model providers and broker connections | Register endpoint/adapter, verify capabilities, rotate credential reference, suspend | Preserve invocation and broker event lineage; never expose secrets. |
-| Allocations | Create, revise capital slice or effective interval, deactivate | Release reservations and preserve prior binding versions. |
-| Deployments | Create, validate, activate epoch, pause, switch version, retire | Stop scheduling, reconcile pending work and retain epochs. |
-| Knowledge and memory policies | Register corpus, index and policy versions; inspect retrieval and episodes | Retire projections or policies while preserving referenced source and decision lineage. |
-| Evaluation and optimization | Publish suites, run evaluations, propose and review prompt, question-set and decision-policy candidates | Keep immutable experiment and promotion history. |
-| Hypotheses and evidence | Register/freeze contracts, query trials and evidence, request independent evaluation, review status | Preserve failed trials and contracts; corrections create new records or child hypotheses. |
-
-The API returns validation errors with field-level reasons and rejects illegal lifecycle transitions. Authorization scopes separate research proposals, evaluation-result writes, live activation, account administration and risk approval. Research agents have no write access to computed evidence or status gates. A live deployment change records the actor, approval, effective epoch and configuration hash. Bulk operations use the same per-resource invariants and report individual outcomes; they cannot bypass safety checks.
-
-The control API can run as stateless replicas behind a load balancer. It does not own long-running inference or keep the only copy of configuration in process memory. Workers consume durable work items and load pinned configuration by version. Partition queues by account for execution ordering and by independent workload for ingestion and inference. Use bounded concurrency, leases, backpressure and dead-letter handling with explicit recovery operations.
-
-Start with a modular control application, dedicated worker processes, PostgreSQL outbox/inbox delivery, Redis market streams, an archive writer and the two cBots. Split a module into a separately deployed service only when its ownership and contracts are already stable and an operational requirement justifies the split. A split preserves the same IDs, event schemas and authorization boundaries; it does not create a second source of truth. No broker adapter or agent writes directly into another module's tables.
-
-## 10. Operator console (Next.js + TypeScript)
-
-The frontend is a real operational console, not a separate decision engine. Use Next.js App Router and TypeScript with route files kept thin, domain-owned screens and components, and a typed client generated from the control API contract. Server-rendered reads provide the initial view; interactive components handle filters, forms, charts and live status. The frontend calls the control API and its authorized event stream. It never reads PostgreSQL directly, contacts a broker or model provider, or computes authoritative risk and evaluation status in the browser.
-
-| Area | Required views and actions |
+| Waits for | Example |
 | --- | --- |
-| **Overview** | System health, active deployments, account equity and exposure, recent decisions, alerts and reconciliation backlog. Each card shows source and freshness. |
-| **Agents** | Executor, Critic and Research/Discovery agents; versions, prompts or typed question sets, decision policies, named provider/model bindings, allowed tools, confidence calibration, lifecycle and promotion evidence. Register and verify model endpoints; create and compare drafts without changing active epochs. |
-| **Research** | Hypotheses, experiments, candidates, temporal validation, pair and period breadth, cost stress, rejected and null results. Show frozen contracts, parent lineage, trial family and typed failure reasons. |
-| **Evaluations** | Separate decision-process, broker-execution and economic-outcome assessments; agent-version comparisons, payoff, drawdown and tails, calibration, temporal transport and prospective evidence. Show baseline, sample size, uncertainty, cost assumptions and mode beside each result. A profitable policy breach or losing compliant trade is displayed with both facts. |
-| **Portfolios** | Profiles, risk policies, allocations and aggregate exposure by profile and account. Show effective versions and breached limits. |
-| **Accounts** | Demo and live accounts, broker connections and capabilities, equity, margin, positions, pending orders and reconciliation. Display adapter identity, last broker observation and unresolved discrepancies. |
-| **Deployments** | Research, shadow, demo and live deployments; epochs, pinned versions and promote, pause or retire workflows. Show approvals and the exact configuration that will become active. |
-| **Market Data** | Feed registration and health, stream and archive lag, journal occupancy, historical archive coverage, symbol maps, gaps, stale observations and source provenance. Distinguish event time, system availability time and archive commit time. |
-| **Execution** | Signals, risk and broker rejections, fills, latency and execution cBot or other adapter status. Link each event to account, deployment, decision and reconciliation state. |
+| `EVENT` | A scheduled release or announcement: after CPI at 12:30 UTC, after the central-bank statement |
+| `CONFIRMATION` | Price behaviour that needs judgement: whether a breakout holds through the London open, how price reacts at a level |
+| `CONDITIONS` | Tradable conditions: spread back to normal after rollover, volatility settling after a spike |
+| `CLARITY` | Conflicting evidence that new data may resolve, for example GPT and Claude disagreeing |
 
-Navigation and detail pages use stable IDs and cross-links so an operator can trace an alert to its feed, decision, signal, broker event and deployed versions. Global filters include environment, account, portfolio, agent, broker adapter, instrument and time window. Live, demo, shadow and research modes are visually distinct on every action and result. Prices, units, currencies, time zones and data age are explicit. Missing data renders an honest empty, stale or unavailable state rather than a fabricated zero or example row.
+If the condition is only a price level ("buy if price breaks 1.0950"), it is not
+a `WAIT`: the agents place a pending order, which the broker can execute without
+them.
 
-The control API remains the authorization and validation authority. The web server manages the user session and forwards scoped requests; browser code receives only permitted data and never credentials. Route access and backend permissions are checked separately. Promotion and live account changes use a review screen that shows diff, evidence, effective epoch and approver before the final command. Optimistic-concurrency conflicts, pending approvals and reconciliation uncertainty are shown as first-class states. A click acknowledgement is not displayed as a broker fill.
+A `WAIT` puts the instrument on a watchlist. It is rechecked at the earliest of
+its recheck time, a stated delay after the awaited event, or a price alert level
+being touched; an alert triggers a new analysis, not an order. At recheck the
+instrument goes straight to the analysts, with the earlier `WAIT` in its context.
+A `WAIT` expires at its recheck time if no new decision is made; waiting again
+requires a new decision.
 
-Read models support pagination, filtering and stable sorting. Live updates carry event IDs and observation times; the client reconnects by cursor and refetches authoritative state after a gap. Charts and tables have accessible text alternatives and responsive layouts. Frontend work is shipped by complete vertical screen flows tied to real API contracts; navigation entries become available when their data and actions are implemented, without mock operational metrics in production.
+### 2.6 Risk Engine
 
-## 11. Repository and module layout
+The Risk Engine is deterministic code. No agent can change or bypass it. It
+decides what is allowed, the maximum exposure and when a position must be
+force-closed. It does not choose entries or exits; that is the agents' role.
 
-The following is the **target layout**, not a claim that every directory exists. Implemented packages include capture, offline research, the bounded agent runtime, model profiles and the OpenAI provider adapter. Directories are added only with an implemented responsibility:
+For each final `LONG`/`SHORT` decision it checks **per enabled account**
+against the user's settings (Section 3) and returns `APPROVED` with a
+computed size, or `REJECTED` with a typed reason. Checks include:
+
+- account and instrument enabled;
+- fresh account state from the broker adapter; if it is stale or unavailable,
+  new entries on that account are rejected;
+- a stop is present and respects the broker's minimum stop distance;
+- risk per trade and combined portfolio risk;
+- margin per trade and the minimum free margin;
+- exposure per instrument, currency and correlated group;
+- daily and weekly loss limits;
+- current spread and quote freshness at execution time;
+- broker symbol constraints such as minimum volume and step.
+
+The Risk Engine **never changes the stop or target an agent has set.** It
+sizes the position from the agent's stop and then approves or rejects; it does
+not move, tighten or widen levels.
+
+For an open position or pending order, a `CLOSE` is always allowed. An `ADJUST`
+is approved when the position with the new levels still fits the user's
+per-trade risk, portfolio risk and margin; otherwise it is rejected and the
+position keeps its current stop and target. The Risk Engine **force-closes** a position, whatever the agents say, when its maximum holding
+time is reached, a loss limit is breached, or free margin falls below the
+user's minimum.
+
+The Risk Engine protects capital. It does not judge whether a setup is good; that
+is the agents' job, and Research measures it.
+
+### 2.7 Open positions
+
+Responsibility is split three ways:
+
+| Who | Decides |
+| --- | --- |
+| Agents (GPT, Claude, Jev) | Entry (at market or pending), `HOLD`, `WAIT`, `CLOSE` and proposed adjustments of stop, target or pending entry |
+| Risk Engine | What is allowed within the user's risk limits, maximum exposure and when a position must be force-closed; never changes the agents' stop or target |
+| Broker | Stop-loss and other supported protective orders that hold if agents, LedgerQuant or the API are unavailable |
+
+Every open position, real or shadow, is reviewed in every cycle. GPT and Claude
+each see the context, the position (entry, current result, stop, target, time
+open) and the original thesis and invalidation, and propose `HOLD`, `CLOSE` or
+`ADJUST`. Jev validates and decides among the proposals, as for entries, and the
+Risk Engine checks the result. If both analysts propose `HOLD`, the position is
+held without a Jev call.
+
+The horizon set at entry is a **maximum holding time**: a safety limit enforced
+by the Risk Engine, not the only allowed exit. The agents may close earlier.
+Position review runs from the first shadow version, where a close or adjustment
+changes a shadow position and no real order. This is what lets Research measure
+whether GPT, Claude and Jev manage positions better than a static exit.
+
+### 2.8 Pending orders
+
+A setup may enter with a pending limit or stop order instead of at market. A
+pending order is never left open-ended: it must be handled or expire.
+
+- Every pending order has an expiry no later than the user's maximum
+  pending-order lifetime. The broker order carries the same expiry, so it lapses
+  even if LedgerQuant is down.
+- While pending, it counts against the reserved trade slots and the per-trade
+  and portfolio risk as if it were filled.
+- It is reviewed in every cycle like an open position: `HOLD` keeps it, `CLOSE`
+  cancels it, and `ADJUST` moves entry, stop or target, subject to the same
+  risk check as an open position.
+- An order that reaches its expiry unfilled is recorded as `EXPIRED`. In shadow
+  mode a fill is simulated when the quote reaches the entry price.
+
+`WAIT` and a pending order differ: `WAIT` places nothing and asks the agents to
+look again, while a pending order is a committed entry at a stated price.
+
+### 2.9 Execution
+
+Execution has three modes, adopted in order: **shadow** (record only, no orders),
+**demo** (broker demo account) and **live**. A separate execution cBot on the
+broker side places the protective stop with every entry and enforces account
+limits even when LedgerQuant, models or the network are down. The market-data
+cBots never expose trading operations. A broker acknowledgement is not a fill,
+and an uncertain order state is reconciled before any retry. The user can
+always close a position manually.
+
+**Partial fills.** An order can fill only partly. Risk, margin, later `ADJUST`
+checks, closing and results all use the **actual filled volume** reported by the
+broker, never the proposed volume. Reserved risk for an unfilled remainder stays
+reserved while the remainder is still pending and is released when it is
+cancelled or expires.
+
+### 2.10 Journal
+
+Every cycle is recorded append-only: the context snapshot (or its hash and
+source references), each agent's exact input, output, model, version and cost,
+Jev's answers, the Risk Engine verdict per account, execution events and, later,
+the outcome. The journal is what Research learns from and what the user
+reviews.
+
+## 3. User settings
+
+The user sets the boundaries the Risk Engine enforces. Every control below is
+designed to be operated simply from the console when it is built. Until
+then the same settings live in a versioned configuration file. Every change is
+versioned, logged with its time and applies from the next cycle. Agents can read
+the resulting limits but never change them.
+
+Account state (balance, equity, free margin, margin in use, open positions and
+pending orders) is **read from the broker** through the broker adapter: the cBot
+now, a broker API later. The user never enters it; the console shows it
+read-only with the time it was last updated.
+
+| Control | Meaning |
+| --- | --- |
+| Accounts | Each broker account, demo or real, is enabled or disabled for trading individually. This is the only switch between demo and real trading. A newly added account starts disabled. Disabled means no new trades; open positions stay protected and are still reviewed by the agents until closed. |
+| Instruments per account | Which of the account's broker symbols may be traded on that account. |
+| Portfolio risk | Maximum combined loss at the stops of all open positions, as a percentage of equity. |
+| Minimum free margin | The lowest free margin the account may reach, as a percentage of equity. |
+| Reserved trades | `N` trade slots. Each new trade may use at most `1/N` of the portfolio risk, and at most the margin above the minimum free margin divided by the slots still free. |
+| Loss limits | Daily and weekly loss limits. When breached, no new trades open and open positions are force-closed. |
+| Maximum holding time | The longest a position may stay open; an agent's horizon cannot exceed it. |
+| Maximum pending-order lifetime | The longest a pending order may stay open before it expires. |
+
+**Reserved-trades example** (illustrative numbers): equity 10,000, portfolio risk
+3 % and `N = 3` give at most 100 at risk per trade. With free margin 9,000 and a
+minimum free margin of 40 % of equity (4,000), 5,000 is usable; with no open
+trades, the first trade may use at most 5,000 / 3 ≈ 1,667 in margin. Three
+trades can then be open without breaching the minimum. Equity, free margin and
+the number of open trades come from the broker.
+
+## 4. Agents and models
+
+An **agent version** is the hashed combination of instructions, model profile,
+tools, context recipe and output schema (for Jev: question set and options).
+Changing any of them creates a new version, and earlier decisions keep the
+version that produced them.
+
+| Provider | Role | Notes |
+| --- | --- | --- |
+| GPT (OpenAI) | Analyst, Scout, Research | Adapter implemented (Responses API) |
+| Claude (Anthropic) | Analyst, Scout, Research | Adapter target |
+| Jev (TypeSafe) | Validation and final decision; Scout option | Typed `Choice`, `Score`, `Noul`; text input only; adapter target |
+
+Which model fills which role is configuration. Each model profile records its
+**published training cutoff**; replay depends on it (Section 5.2). Provider
+fallback is explicit and versioned; a live deployment never silently switches
+model.
+
+**Agents are not deterministic.** The same context can produce a different
+answer on another call. The journal records the answer that was actually given
+and acted on. Running a past point again with fresh inference produces a new
+sample, not a reproduction, and is labelled as such. Determinism is required only
+of the code around the agents: context assembly, the Risk Engine and execution.
+
+## 5. Research: making the agents better traders
+
+### 5.1 Research runs
+
+Research is a process the user starts, from the command line now and from
+the console later. It runs in one of two modes:
+
+- **Single run:** one round of proposals and tests, then a report.
+- **Continuous run:** repeated rounds, each learning from the previous round's
+  results, until a stop condition is met: a time limit, a cost limit or an
+  outcome (for example a candidate beats the current variant by a stated margin
+  on the development window, or a stated number of rounds without improvement).
+  The user can stop it at any time.
+
+When starting a run, the user chooses:
+
+- the pipeline variant to improve;
+- the journal period to learn from;
+- the replay window to test on, after the models' training cutoffs;
+- whether the holdout may be used, once, at the end of the run;
+- a model spending limit, and for a continuous run its stop conditions.
+
+Each round proceeds:
+
+1. A Research agent reads the journal and earlier rounds: wins, losses,
+   abstentions, waits, pending orders, position management, disagreements
+   between GPT and Claude, Jev's choices, Risk Engine rejections and forced
+   closes.
+2. It proposes concrete changes (instructions, models, context, tools, roles,
+   Jev questions), each as a candidate variant with what it should improve.
+3. Each candidate and the current variant are replayed on the same decision
+   points and compared with each other and with baselines.
+
+The run ends with a report. The user adopts a candidate or discards it. A
+research run never changes a running variant or the user's settings, and it
+never adopts a candidate by itself. Many rounds on the same development window
+make overfitting to it more likely, which is why the holdout stays outside the
+loop.
+
+### 5.2 Historical replay
+
+The replay engine reconstructs the context at past times `T` from archived
+data, honoring `available_at`, and runs a variant through the full pipeline,
+Risk Engine included, in shadow mode.
+
+**Training-cutoff rule.** A model may already know what happened after `T` if
+`T` is before its training cutoff. A replay window used for performance claims
+therefore starts **after the latest published training cutoff of every model in
+the variant**. Earlier windows may be used only to debug the pipeline; their
+results are labelled `CONTAMINATED` and never used to rank variants. A published
+cutoff is a lower bound, not a guarantee of clean data.
+
+This rule makes post-cutoff data the scarce resource (Section 6). New models
+with later cutoffs shrink the usable window, which is why continuous capture
+matters.
+
+### 5.3 Scoring
+
+Each decision is scored after its horizon has passed:
+
+- **Trades:** simulated net P/L with spread and costs, maximum adverse and
+  favorable excursion, and whether the stop or target was hit.
+- **Abstentions:** what would have happened. Abstaining on a market that went
+  nowhere is good; missing a clean move is a measured opportunity cost.
+- **Waits:** whether the awaited condition happened, and whether the later
+  decision was better than acting immediately.
+- **Pending orders:** how often they filled or expired, and whether a filled
+  order beat entering at market at decision time.
+- **Position management:** the agents' `HOLD`/`CLOSE`/`ADJUST` decisions against
+  a static exit on the same positions (hold to stop, target or maximum holding
+  time). This tests whether the agents manage open positions better.
+- **Process:** disagreement between analysts, Jev's choices, Risk Engine
+  rejections, invalid outputs, unsupported citations, latency and model cost.
+
+Variants are compared on the same points. Baselines (always `NO_SIGNAL`, random
+entries with the same risk, simple fixed rules and static exits) show whether
+the agents add anything.
+
+### 5.4 Avoiding self-deception
+
+- Keep a **holdout** part of the post-cutoff window untouched while proposing and
+  choosing variants. Evaluate the chosen variant on it once.
+- Record every variant tried, including failures.
+- Because agents are not deterministic, compare variants over enough decision
+  points and, where it matters, run the same points several times. Report the
+  spread of results, not only the average.
+- The final judge is **prospective** evidence: the shadow pipeline on live data,
+  where hindsight is impossible.
+
+### 5.5 Promotion ladder
+
+`replay` → `shadow` (live data, no orders) → `demo account` → `live, small size`.
+The user approves each step; a variant moves up only with evidence from the
+step below.
+
+## 6. Data
+
+| Data | Historical | Live capture | Note |
+| --- | --- | --- | --- |
+| Broker ticks (IC Markets via cTrader) | Exportable through the cTrader CLI tick exporter; 2020 coverage sampled | Since 9 Oct 2026, ~100 symbols | Post-cutoff windows not yet exported |
+| cTrader sentiment | **None**: real-time only | Since 9 Oct 2026 | Sentiment cannot be replayed before capture began |
+| News | GDELT archive accessible (indexed batches and tone); first-seen times unverified | Not yet captured | A news capture with real `available_at` is needed |
+| Macro releases | ALFRED vintages, issuer releases | Not yet captured | Release timestamps per series |
+
+Data needed for post-cutoff replay:
+
+1. **Export broker ticks** for EURUSD, GBPUSD and XAUUSD from the earliest relevant
+   training cutoff to today, using the existing tick exporter.
+2. **Start a live news capture now**, recording when each item arrived. Back-fill
+   the post-cutoff window from GDELT, labelled as backfilled.
+3. **Keep capture running continuously.** Every day adds clean, post-cutoff,
+   point-in-time data, including sentiment that can never be back-filled.
+4. In replay, a source that did not exist at `T` is `UNAVAILABLE`, and the
+   analysts' view for that perspective is `NO_VIEW`.
+
+Detailed measurements are in [DATA_AVAILABILITY.md](data/DATA_AVAILABILITY.md).
+
+## 7. Failover
+
+An agent, a model provider, LedgerQuant itself or a connection can fail at any
+time. Failover keeps open positions and pending orders protected and managed
+without closing everything, and without letting a partial analysis open new
+risk.
+
+### 7.1 Principles
+
+- **Protection never depends on the agents.** Every position has its stop (and
+  target, if set) at the broker from the moment it opens, and every pending
+  order carries its expiry at the broker. These hold even if every agent and
+  LedgerQuant are down.
+- **A failure closes nothing by itself.** Positions are closed by their stop,
+  target, the agents, the user's own limits or the user, never just because a
+  component is unavailable.
+- **A completed decision stays valid until its expiry.** Executing a decision
+  never needs the agents again.
+- **New risk needs a complete decision.** Missing analyses lead to no new entry,
+  not to a guess.
+- **Every degraded state is recorded and shown to the user.** A decision made in
+  degraded mode is labelled as such in the journal and on the performance page.
+
+### 7.2 Decisions already made
+
+| Decision | Valid until | Executes without the agents? |
+| --- | --- | --- |
+| Approved entry at market | Its decision expiry | Yes. The Risk Engine checks it again at execution time. |
+| Pending order | Its expiry | Yes. It is held at the broker and fills there. |
+| `WAIT` | Its recheck time | No. A `WAIT` places nothing; acting on it needs a new decision. |
+| Open position | Until closed | It stays open and protected. Reviews need the agents (Section 7.3). |
+
+A `WAIT` that all agents agreed on stays valid as a `WAIT` until its recheck
+time, but it contains no order. When the agents can already state the level,
+stop and target at which they would act, they place a **pending order** instead:
+it is then executable on its own, even if the agents later fail. If the agents
+are unavailable at a `WAIT`'s recheck time, the `WAIT` expires without an entry.
+
+### 7.3 When an agent fails
+
+An agent counts as unavailable for a cycle when its call fails, times out or
+returns invalid output before the cycle deadline. An analysis call has no side
+effects, so it may be retried once within the deadline; both attempts are
+recorded. A provider that keeps failing is marked down and retried on later
+cycles. A variant may declare an explicit fallback model per role; using it is
+recorded as degraded and is never a silent switch.
+
+| Unavailable | New entries | Open positions and pending orders |
+| --- | --- | --- |
+| One analyst (GPT or Claude) | Allowed only if the variant permits single-analyst entries (`min_analysts_for_entry`, default 2); Jev then sees that one analysis is missing | Reviewed with the remaining analyst and Jev |
+| Jev | None: there is no final decision | An action is applied only if both analysts propose the same `CLOSE` or `HOLD`; otherwise `HOLD` |
+| Both analysts | None | `HOLD`; broker protection and the user's limits still apply |
+| All models | None | `HOLD`; broker protection and the user's limits still apply |
+| Market data stale | None | `HOLD`; agents never decide on stale data |
+
+In every row the Risk Engine still force-closes on the user's limits, approved
+entries and pending orders remain valid until their expiry, and the user can
+close a position manually.
+
+### 7.4 When LedgerQuant or a connection fails
+
+- **LedgerQuant or the control API down:** stops, targets and pending expiries
+  hold at the broker. The execution cBot keeps a local copy of each position's
+  maximum holding time and the account's loss limits and minimum free margin,
+  and enforces them itself when it loses contact with LedgerQuant (missed
+  heartbeats). It opens nothing new on its own.
+- **Execution cBot disconnected or restarted:** LedgerQuant sends it no orders
+  and marks the account degraded. Events wait in the database. A disconnect or
+  restart **never closes or cancels anything by itself**: there is no "close all
+  on disconnect". Positions and orders stay at the broker with their protection.
+- **cBot reconnect or restart:** LedgerQuant decides what is still valid; the
+  broker shows what actually exists. The cBot reports the broker's positions,
+  orders and fills, and LedgerQuant reconciles them with its own state. Each
+  position and order is matched by the LedgerQuant ID it carries at the broker
+  and adopted again, with its stop, target, maximum holding time or expiry from
+  LedgerQuant. A cBot that lost its local state reloads it from LedgerQuant; it
+  never treats a LedgerQuant position or order it no longer remembers as an
+  orphan to close. A position or order at the broker that LedgerQuant did not
+  create, such as a manual trade, is left untouched and shown to the user.
+  Anything that closed at the broker meanwhile, for example by its stop, is
+  recorded from the broker's fills.
+- **On reconnect:** broker positions, orders and fills are reconciled with the
+  journal before anything new happens. A position or order that is **still
+  valid is kept**, never closed just because of the outage; only what is no
+  longer valid is closed or cancelled (see below). Idempotency keys ensure that
+  nothing executes twice.
+
+**Validity after a reconnect.** A pending order is valid while it has not
+expired and still fits the user's limits. An open position is valid while it is
+within its maximum holding time, the user's limits are not breached and, for a
+global signal, the signal is still open. Anything no longer valid is closed or
+cancelled; everything still valid stays as it is.
+
+Events that waited during the outage are agent decisions made on the context of
+their time. Each carries a decision expiry, like an entry:
+
+- An event still within its expiry is processed in sequence: a `CLOSE` or
+  cancellation is applied, and an `ADJUST` or entry is checked by the Risk Engine
+  against the current state.
+- An event past its expiry is dropped, whether it is an entry, `ADJUST`, `CLOSE`
+  or cancellation. The affected position or order is reviewed by the agents in
+  the next cycle with fresh context instead.
+- **Risk Engine unavailable:** nothing new executes. Broker protection holds,
+  and the cBot enforces its local limits.
+
+### 7.5 Stale commands and races
+
+Reconciliation is a snapshot. The broker's state can change between
+reconciliation and execution: a stop can be hit, a pending order can fill, a
+position can be closed manually. Every command is therefore checked against the
+broker's actual state at the moment it executes, not only at reconciliation.
+
+Example: GPT proposes `CLOSE`, Claude proposes `HOLD`, Jev chooses `CLOSE`, the
+connection drops, the position hits its broker stop, the connection returns, and
+the old `CLOSE` is still queued. The system must see that the position is
+already closed, record the actual outcome and send no new order.
+
+- **Commands target a broker ID and carry the expected state.** A `CLOSE` names
+  the position ID and expects it to be open; a cancel names the order ID and
+  expects it to be pending; an `ADJUST` names the position or order and the
+  state it was decided on.
+- **The cBot checks right before sending.** The cBot sees the live broker state.
+  If the target no longer exists or no longer matches (closed, filled, already
+  cancelled), it sends nothing and reports the command as `STALE` together with
+  the actual state.
+- **Close and cancel act only by ID.** A `CLOSE` closes that position, never by
+  sending an opposite market order, which could open a new position if the
+  original is already gone. A failed cancel because the order has just filled
+  is never turned into a close; the filled position becomes an open position for
+  the agents to review in the next cycle.
+- **One queue per account in the cBot.** Broker events (fills, closes, stop hits)
+  and LedgerQuant commands are processed in one sequence per account, so a
+  command never acts on a state the cBot has already seen change.
+- **Idempotency at the broker.** Each command's ID travels with the broker order
+  (label or comment), so a repeated command is recognised and not executed
+  twice. A result that remains uncertain, such as a timeout, is reconciled
+  before anything else is sent.
+- **Both the decision and the outcome are recorded.** In the example the journal
+  keeps Jev's `CLOSE` as decided but not executed (`STALE`: already closed), and
+  the trade's exit reason is the broker stop. Research can then compare what the
+  decision would have achieved with what happened.
+- **A pending order filled while disconnected** is recorded from the broker's
+  fill. It is now an open position with the stop and target attached to the
+  order. Queued commands for the pending order (cancel, entry adjustment) become
+  `STALE`; the position is reviewed in the next cycle.
+
+### 7.6 Global signals
+
+If the global pipeline fails, users on global signals keep their positions under
+broker protection and their own limits, and are notified that no new signals
+arrive. Open global signals follow Section 7.3: without agent reviews they are
+held. If a user's own cBot is disconnected, the rules in Section 7.4 apply to
+that user's accounts only.
+
+### 7.7 Testing failover
+
+Failover is tested in shadow and on a demo account before live trading: a
+provider outage, Jev unavailable, LedgerQuant stopped, a cBot disconnected
+during an open position and a pending order, and stale market data. Race tests
+include a stop hit while a `CLOSE` is queued, a pending order filling while the
+cBot is disconnected, a state change between reconciliation and execution, a
+partial fill, and one global `CLOSE` reaching accounts in different states.
+Each test checks that protection held, nothing was closed without cause, nothing
+executed twice, no opposite order was opened and the journal shows both the
+decision and the actual outcome.
+
+## 8. Safety and integrity rules
+
+- Agents never call broker trading APIs. Only the execution path does, after the
+  Risk Engine.
+- Accounts, instruments and risk limits are user settings.
+  Agent output and research runs cannot change them.
+- Source text (news, retrieved documents) is data, never instructions.
+- Every model call records its exact input, output, model version and cost. Each
+  run has a spending limit.
+- Live context and replay context are labelled as such; a replay is never
+  reported as live performance.
+- Credentials stay in ignored files and secrets now, and in an encrypted
+  per-user secret store on the platform; they never enter model input, logs or
+  the journal.
+
+## 9. Platform: users, access and console
+
+This is target state, built together with the console. Until then LedgerQuant
+runs as a single-user deployment.
+
+### 9.1 Users and roles
+
+There is one kind of person on the platform: a **user**. A user trades their own
+broker accounts with their own settings. The **admin** is a user who also has
+platform rights. In the single-user deployment, the one user is also the admin.
+
+| Role | Can |
+| --- | --- |
+| Admin | Register, disable and remove users; manage global credentials; decide which users may receive global signals; cap the global pipeline's instruments and model spending; operate the **global pipeline** with all its functions (variants, model roles, schedule, its own instruments, research runs and its journal); set platform limits |
+| User | Manage their own accounts, instruments, risk settings and, in their own pipeline, variants and research runs; review their own journal |
+
+Each user's accounts, settings, positions, journal and research runs are separate.
+The admin cannot see or change another user's trading. Only the user can grant
+the admin access to their trading, and can withdraw that access at any time.
+Every change, grant and withdrawal records which user made it.
+
+### 9.2 Own pipeline or global signals
+
+Each user trades in one of two ways. The admin decides which users may choose
+global signals.
+
+| | Own pipeline | Global signals |
+| --- | --- | --- |
+| Who runs the agents | The user's own pipeline | The admin's global pipeline |
+| Model credentials (OpenAI, Anthropic, Jev) | The user's own | None; the user registers no model keys |
+| Model cost | The user's | The global pipeline's |
+| Research runs | The user's own | Run by the admin on the global pipeline |
+| Broker accounts and credentials | The user's own | The user's own |
+| Risk settings and Risk Engine | The user's own | The user's own |
+
+A global signal is the lifecycle of one global decision: entry (with setup,
+stop, target, maximum holding time and, for a pending order, its expiry), then
+`ADJUST`, `CLOSE` or cancellation. The global pipeline's agents manage a
+reference position per signal, and each event carries the signal ID and a
+sequence number.
+
+For a user on global signals:
+
+- The user's instruments decide what they receive: signals for every instrument
+  they have enabled on an enabled account. The admin's instrument choice never
+  restricts them. The global pipeline covers the admin's instruments plus every
+  instrument a global-signals user has enabled, within the admin's cap below.
+- This holds as long as the platform has data for the instrument, meaning a live
+  market-data feed for it. An instrument without data is shown to the user as
+  unavailable and is not traded.
+- The user's Risk Engine checks and sizes every entry with the user's own
+  settings, per account. An entry it rejects is not taken, and later events for
+  that signal do not apply to that account.
+- A `CLOSE` is always applied. An `ADJUST` that would take the position outside
+  the user's risk limits is rejected for that account; the position keeps its
+  current stop and target.
+- The user's own limits still force-close positions, whatever the signal says.
+- A signal that arrives too late to act on, past the maximum signal age, is not
+  entered.
+- The global pipeline analyzes each instrument **once per cycle**, however many
+  users receive its signals. Model calls grow with the number of distinct
+  instruments, never with users × instruments. Applying a signal to each user's
+  accounts is deterministic code in that user's Risk Engine and needs no model
+  call.
+- The admin can **cap** the global pipeline with a maximum number of
+  instruments and a model spending limit per period. When users enable more
+  instruments than the cap allows, the admin's own instruments are covered
+  first, then those enabled by the most users. An instrument outside the cap is
+  shown to the user as not covered by global signals.
+- Reviews of open signals and pending orders come before new-entry analysis.
+  As the spending limit approaches, new-entry analysis stops first, so open
+  signals keep being reviewed; their broker stops protect them regardless.
+- The performance page shows the user's own results separately from the
+  reference results of the global signals.
+
+**One decision, many account states.** The agents make one decision per global
+signal; they are the same agents whether one user or many receive it. The code
+around them tracks the signal's state **per account**, and every later event is
+applied according to that account's own state. When Jev decides `CLOSE` on the
+global XAUUSD position:
+
+| Account | Actual state | What happens |
+| --- | --- | --- |
+| A | Position open | `CLOSE` is executed |
+| B | Entry was rejected | Nothing; the signal never applied to this account |
+| C | Broker stop already hit | `CLOSE` is recorded as already handled |
+| D | cBot offline | `CLOSE` waits within its validity. If the cBot returns later, the position is no longer valid because its signal has ended, and it is closed on reconnect |
+| E | User closed it manually | No new order |
+
+A later `CLOSE` or `ADJUST` for a signal applies only to the position that
+signal opened on that account, identified by its LedgerQuant ID. It never
+affects another position on the same account, even on the same instrument.
+
+### 9.3 Broker accounts and cBot authority
+
+- **One owner per broker account.** A broker account (broker, environment and
+  account number) can be registered by exactly one user. Registering an account
+  that is already registered is refused, so two users or two pipelines can never
+  steer the same position.
+- **One pipeline per position.** An account follows either its user's own
+  pipeline or global signals. If the user switches, positions and orders already
+  open stay with the pipeline that opened them until closed; new entries come
+  from the new choice.
+- **cBot authority is explicit.** Each execution cBot has its own token bound to
+  specific broker accounts. On connect and reconnect, LedgerQuant tells it which
+  accounts, positions and orders it has authority over. The cBot acts only on
+  those, and LedgerQuant rejects any command or report for an account the token
+  is not bound to.
+- **User isolation.** A user can never read, change or close another user's
+  accounts, positions or orders without that user's explicit grant. Every query
+  and command is checked on the server against the owner, not only filtered in
+  the frontend, and this is covered by tests.
+
+### 9.4 Credentials
+
+- Broker credentials always belong to the user.
+- Model-provider keys belong to the user in own-pipeline mode. Users on global
+  signals have none; global model credentials are used only by the global
+  pipeline.
+- Credentials are stored encrypted in a secret store. The frontend can set or
+  replace them but never shows them again. They never appear in logs, the
+  journal or model input.
+
+### 9.5 Signal delivery
+
+Every signal event and execution instruction is first written to the database,
+which is authoritative, and then pushed over WebSocket to connected clients:
+execution cBots and open consoles. Each message carries an ID and sequence
+number. A client that reconnects resumes from the last sequence it confirmed, so
+a dropped connection loses nothing; execution stays idempotent, so a repeated
+message never creates a second order.
+
+A single FastAPI instance holds all connections at first. Only when measured
+load needs more than one instance is a shared message layer added (for example
+Redis Streams), so that any instance can deliver events to its own connections.
+The message format and resume rule above make that change additive.
+
+### 9.6 API security
+
+- The browser talks only to the control API, never directly to PostgreSQL,
+  broker or model-provider APIs.
+- Authentication is built into the FastAPI backend and kept simple; no external
+  identity provider. The admin creates users, and users sign in with username
+  and password. Passwords are stored only as a slow hash (Argon2id).
+- A signed-in user gets a server-side session in an `HttpOnly`, `Secure`,
+  `SameSite` cookie, with an expiry and CSRF protection on changing requests.
+  Every request is checked against the user, role and ownership of what it
+  touches.
+- Machine clients (capture cBots, execution cBots, workers) use their own API
+  tokens, limited to what each client needs and stored as hashes.
+- HTTPS only. Disabling a user ends their sessions and revokes their tokens.
+- Two-factor sign-in (TOTP) can be added later without changing this design.
+
+**Request limits** protect the API against spam without throttling normal
+machine traffic:
+
+- Sign-in attempts and other unauthenticated requests are limited strictly per
+  client address. Repeated failed authentication blocks that address for a
+  while with `429`.
+- Authenticated users and machine tokens get their own limits. A cBot's limit is
+  set well above its measured normal rate, so capture and execution are never
+  throttled in normal operation.
+- Request bodies and batches have size limits.
+- The API sees the real client address only through the trusted reverse proxy
+  (Caddy), never from an arbitrary forwarded header.
+- A throttled client backs off and retries. Capture batches and execution
+  messages are idempotent, so a retry is safe.
+
+Current state: the capture API already requires a bearer token (compared in
+constant time), limits bodies to 1 MiB and batches to 250 observations, exposes
+no documentation endpoints and is reached over HTTPS through Caddy. Its token is
+a plain secret file, not yet a stored hash, and it has **no rate limiting yet**.
+
+### 9.7 Console
+
+- **Mobile first:** designed for small screens first, then extended to tablet
+  and desktop as a responsive web app.
+- **Accessible:** meets WCAG 2.2 level AA: full keyboard use, screen-reader
+  labels, sufficient contrast, text resizing, reduced motion, and no
+  information carried by color alone (a `LONG`, `REJECTED` or stale status is
+  also written as text).
+- **Operational view:** it shows state from the API and computes nothing
+  authoritative. Missing or stale data is shown as missing or stale, never as
+  zero or example data.
+- The controls in Section 3 are its core: simple to reach and change on a phone.
+
+### 9.8 Performance and history
+
+A separate console page tracks trading performance and history, including the
+status of open trades and pending orders. It is kept apart from the user
+settings.
+
+**Filters:** account, instrument, period, mode (`shadow`, `demo`, `live`),
+pipeline variant, which proposal Jev chose (GPT or Claude), status and exit
+reason. Shadow, demo and live are never added into one total. Replay results
+belong to research reports, not this page.
+
+**Summary:** total trades (closed and open), win rate, net P/L from the broker,
+account growth, average daily and weekly return, maximum drawdown in amount and
+percent, CAGR, Sharpe ratio, profit factor, average win / average loss, average
+realized R against the initial stop, longest win and loss streaks, edge stability
+(share of rolling windows with positive expectancy), rolling expectancy and
+rolling Sharpe over the last trades, and equity smoothness.
+
+**Agents:** counts of `NO_SIGNAL`, `WAIT`, `LONG` and `SHORT`; how often GPT and
+Claude disagreed and whose proposal Jev chose, with results for each; Risk Engine
+rejections by reason; agent `HOLD`/`CLOSE`/`ADJUST` decisions on open positions.
+
+**Breakdowns and curves:** results per instrument and per weekday; realized
+balance curve (closed trades), equity curve including floating P/L, return
+curve, daily return and drawdown curves; P/L distribution in pips and in R.
+
+**Exit reasons:** agent close, stop-loss, take-profit, maximum holding time, Risk
+Engine forced close (with its reason), manual close, reconciled and unknown.
+Pending orders that expire unfilled are counted separately, not as trades.
+
+**Open trades and pending orders:** entry, current price, floating P/L, stop,
+target, time open against the maximum holding time, the latest agent review and
+its time, and the time left before a pending order expires.
+
+**Trade history:** broker ticket, instrument, direction, entry, exit, volume,
+pips, net result, initial stop, net R, status, exit reason, opened and closed
+times (UTC), variant and proposal source, and a link to the full journal of the
+decisions behind the trade.
+
+Rules for this page:
+
+- Metrics are computed on the server from the journal and broker-reconciled
+  fills (shadow records for shadow mode). The frontend only displays them.
+- Net figures include the broker's commission and swap. A missing fee is shown
+  as unknown, not as zero.
+- Each metric shows its definition, for example that average win / average loss
+  is a realized payoff ratio and not R.
+- A metric without enough data says so instead of showing a misleading number,
+  for example an annualized CAGR from a few weeks of trading.
+- Research scoring uses the same metric implementation, so a number means the
+  same thing on both sides.
+
+### 9.9 Ownership from the start
+
+New tables for settings, journal, positions and research runs carry their owner
+(user and account) from the first version, with one initial admin as owner in
+the single-user deployment. Adding users later then adds sign-in and access
+checks without changing the meaning of existing records.
+
+## 10. Current state and build order
+
+| Component | State |
+| --- | --- |
+| Live capture: cBot → HTTPS ingress → API → PostgreSQL | Running ([CAPTURE.md](operations/CAPTURE.md)) |
+| Historical tick exporter cBot | Implemented ([TICK_EXPORT.md](data/TICK_EXPORT.md)) |
+| OpenAI adapter, model profiles and budget | Implemented |
+| Shadow Executor: one GPT agent, quotes only, `NO_SIGNAL`/`WAIT`/`LONG`/`SHORT`, manual schedule, no positions | Implemented ([SHADOW_EXECUTOR.md](operations/SHADOW_EXECUTOR.md)) |
+| Replay engine, Scout, GPT/Claude analysts, Jev validation, watchlist | Target |
+| Shadow positions and position review (`HOLD`/`CLOSE`/`ADJUST`) | Target |
+| Claude and Jev adapters | Target |
+| User settings, Risk Engine, execution cBot, demo/live execution | Target |
+| News capture, scoring, research runs | Target |
+| Users and roles, built-in sign-in and request limits, global signals over WebSocket, credential store, console | Target |
+
+Build order, each step a working vertical slice:
+
+1. **Post-cutoff data:** export ticks for EURUSD, GBPUSD and XAUUSD; start news
+   capture.
+2. **Replay engine:** point-in-time context at `T` from archive and capture data.
+3. **GPT analyst** through replay with **shadow positions and position review**
+   (`HOLD`/`CLOSE`/`ADJUST`), scoring and baselines including a static exit;
+   then the **Claude adapter and analyst**.
+4. **Jev adapter, validation and final decision.**
+5. **User settings and Risk Engine** in the replay and shadow path,
+   including forced closes.
+6. **Scout, the `WAIT` watchlist and pending orders with expiry.**
+7. **Research runs**, single and continuous, over the journal.
+8. **Scheduled shadow** on live data, then **demo** execution with the execution
+   cBot, its local limit enforcement and the failover tests in Section 7.6.
+9. **Platform and console:** users and roles, built-in sign-in and request limits
+   for the control API, per-user credentials, global signals over WebSocket,
+   and the mobile-first, WCAG 2.2 AA console with the controls in Section 3, the
+   performance and history page, the journal and pipeline state.
+
+## 11. Code layout
 
 ```text
-documents/
-  ARCHITECTURE.md             # canonical architecture and entry point
-  data/
-    DATA_AVAILABILITY.md      # source coverage and unresolved questions
-    TICK_EXPORT.md            # bounded historical export procedure
-    measurements/             # retained probe logs
-  operations/
-    CAPTURE.md                # live-capture bootstrap runbook
-    RESEARCH.md               # bounded agent registry and execution runbook
-  research/
-    RESEARCH_KERNEL_PLAN.md   # data-first implementation sequence
-  decisions/                  # architecture decisions and migrations of intent
-contracts/                    # OpenAPI, events and broker wire schemas
-configs/research/             # actual versioned model, budget, task and suite inputs
 src/ledgerquant/
-  api/                        # HTTP/stream adapters, request/response schemas
-  agents/                     # definitions, capabilities, runner, validation
-  models/                     # model profiles, generation, decision and embedding ports
-  brokers/                    # adapter ports, capabilities and connection registry
-  portfolios/                 # profile policy and account allocations
-  accounts/                   # account registry and broker-state contracts
-  deployments/                # epochs, scheduling, activation
-  market_data/                # sources, canonicalization, PIT queries, archive contracts
-  knowledge/                  # RAG corpora, indexes, retrieval, citations
-  memory/                     # episodes, summaries, selection policy
-  decisions/                  # context assembly, inference, replay
-  evaluations/                # suites, cases, metrics, comparisons
-  optimization/               # prompt, question and policy candidates; experiments
-  research/                   # hypotheses, payoff discovery, evidence registry
-  execution/                  # signals, reservations, dispatch, reconciliation
-  integrations/
-    model_providers/          # OpenAI, Claude, Jev and local runtime adapters
-    broker/                   # API, cBot, MT4, MT5, NinjaTrader adapters
-    market_transport/         # Redis Streams and ingress-journal adapters
-    market_archive/           # durable chunk storage and archive-query adapters
-  messaging/                  # outbox, inbox and delivery adapters
-  persistence/                # database setup and module repository adapters
-  security/                   # identity, authorization and secret references
-  observability/              # metrics, tracing and structured events
-  app/                        # dependency assembly and process entry points
-apps/web/
-  src/app/(console)/
-    overview/                  # system health and alert summary
-    agents/                    # agent registry and versions
-    research/                  # hypotheses and trials
-    evaluations/               # comparisons and evidence
-    portfolios/                # profiles, policies and exposure
-    accounts/                  # account and broker state
-    deployments/               # epochs and promotion workflow
-    market-data/               # feeds, coverage and provenance
-    execution/                 # signals and broker outcomes
-  src/features/                # domain screens, forms, charts and tables
-  src/components/              # shared accessible UI primitives
-  src/lib/api/                 # generated control-API client and query helpers
-  src/lib/auth/                # session and authorization presentation
-  src/lib/streams/             # event cursor and reconnect handling
-cbots/
-  LedgerQuant.Execution/      # adapted C# execution cBot
-  LedgerQuant.MarketData/      # read-only history probe; market-data publisher planned
-  LedgerQuant.TickExport/      # bounded historical cTrader tick export
-  LedgerQuant.LiveCapture/     # current sentiment and optional live tick capture
-deploy/
-  compose.yaml                # current bootstrap; full stack remains a target
-  compose.research.yaml        # isolated operator and one-shot research workers
-  Caddyfile.capture           # bootstrap HTTPS ingress for remote Desktop capture
-migrations/                   # ordered database migrations
-tests/
-  unit/                       # domain rules
-  contract/                   # API, event and adapter contracts
-  integration/                # persistence and component boundaries
-  end_to_end/                 # signal through reconciliation
+  capture/        live capture API, contracts and storage (implemented)
+  decision/       shadow Executor contract, runner and store (implemented)
+  integrations/   model provider adapters (OpenAI implemented)
+  models/         model profiles, generation types, budget (implemented)
+  records.py      canonical JSON and content hashes
+cbots/            cTrader cBots: LiveCapture, TickExport, MarketData probe
+deploy/           Docker Compose for capture and manual shadow runs
+migrations/       Alembic schema history
 ```
 
-Within each domain package, separate entities/value objects, application use cases, ports and infrastructure adapters when those layers have real responsibilities. Keep dependencies pointing inward: domain rules know no HTTP framework, database driver or broker SDK. Shared modules contain only cross-cutting primitives with stable meaning; a catch-all `utils` package is not a substitute for domain ownership. Entry points remain thin. A file is split when it contains unrelated responsibilities or becomes hard to review, not to satisfy an arbitrary line count. Scripts are limited to small operational entry points that call tested application services.
-
-Names and paths follow the concepts they implement. Avoid duplicate models for the same fact, copied validation rules, undocumented global state, implicit environment fallbacks and partially wired placeholders. An extension is complete only when persistence, API, lifecycle, authorization, observability and relevant tests agree on its contract. Documentation and migrations change in the same work item as the behavior they describe.
-
-## 12. Engineering and verification gates
-
-- **Domain tests:** lifecycle transitions, profile allocation arithmetic, account-wide limits, version pinning and conflicting edits.
-- **Contract tests:** agent capability inputs/outputs, event schemas, API semantics and both cBot protocols; include compatibility, authorization and rejection cases.
-- **Integration tests:** transactional outbox, inbox deduplication, leasing/fencing, account reservations, migration integrity and secret-reference handling.
-- **End-to-end tests:** one observation through `NO_SIGNAL` or a broker rejection/fill to reconciliation, including reconnect, duplicate delivery and process restart.
-- **Replay checks:** point-in-time visibility, version identity, recorded-output replay and explicit fresh-inference lineage.
-- **RAG and memory checks:** source authorization, retrieval provenance, stale or missing evidence, prompt-injection isolation, episode eligibility and no future-outcome leakage.
-- **Broker-feed checks:** source and symbol identity, event/receive/availability times, duplicate and reordered events, reconnect gaps, backpressure and stale-feed handling; verify the market-data cBot has no execution path.
-- **Market archive checks:** Redis loss and journal replay, duplicate consumer delivery, writer crash between chunk write and manifest commit, checkpoint and trim ordering, checksum failures, bounded backpressure, historical query ordering and coverage/gap reporting.
-- **Execution cBot checks:** account routing, duplicate and expired commands, independent risk rejection, broker acknowledgement versus fill, protective positions and reconnect reconciliation.
-- **Provider checks:** schema and tool capability conformance, typed-question/answer validation for Jev, model-version pinning, multi-step binding validation, refusal and error normalization, local artifact pinning, secret isolation and no unapproved live fallback.
-- **Broker-adapter checks:** platform-specific symbol/volume mapping, account ownership, order lifecycle, protective orders, reconnect and reconciliation before live eligibility.
-- **Frontend checks:** typed API contract, permission and mode visibility, promotion review, stale/empty/error states, stream-gap recovery and no secrets or fabricated metrics in browser output.
-- **Evaluation checks:** frozen holdout access, suite versioning, baseline comparability, regression gates and experiment reproducibility.
-- **Discovery checks:** contract freeze before validation, immutable trial lineage, derived metric ownership, multiple-testing accounting, pair/time breadth and enforced status transitions.
-- **Operational checks:** structured reason codes, trace/correlation IDs, queue and stream lag, journal capacity, archive lag, stale broker observations, reconciliation gaps, container readiness, restore verification and fail-closed entry behavior.
-
-Failures are typed and distinguish `NO_SIGNAL` from inference failure, risk rejection from transport failure, and acknowledgement from fill. Required reason codes include source unavailable/stale/schema invalid, context incomplete, inference failed/schema invalid, signal expired, transport unavailable, execution rejected, broker rejected and reconciliation required.
-
-## 13. Container deployment (Docker Compose / Portainer)
-
-The implemented `deploy/compose.yaml` currently runs PostgreSQL, an Alembic migration job, the authenticated capture API and a small HTTPS ingress. It is a capture bootstrap, not the full target stack below. The API binds to host loopback by default at port 18080; Caddy publishes TLS on the configured LAN address for a separate cTrader Desktop VM and forwards to the internal API. Its local CA key stays in a persistent named volume; the public root must be trusted by the Desktop user. PostgreSQL uses a named volume, while the cBot journal lives in cTrader's local Algo file storage. Secret files are kept outside Git and outside the Docker build context. The capture service and migration run with the UID/GID that owns those files. See [CAPTURE.md](operations/CAPTURE.md) for startup, Portainer secret-file paths, monitoring and backup.
-
-The target deployment uses a versioned Docker Compose definition that can run through `docker compose` or as a Git-backed Portainer stack on a Docker Standalone endpoint. This is a Compose deployment model, not a Docker Swarm deployment. The Compose file and its pinned image versions are reviewed with application changes; Portainer reads the same repository definition rather than becoming a separate configuration source. Configuration values are environment-specific, while service topology and required health contracts stay versioned. [Docker Compose production guidance](https://docs.docker.com/compose/how-tos/production/) · [Portainer stacks from Git](https://docs.portainer.io/user/docker/stacks/add)
-
-The stack groups deployable processes by actual responsibility: control API, Next.js console, schedulers and decision workers, authenticated market ingestion, archive writer, execution coordinator, PostgreSQL and Redis. A local archive service is included only when the chosen durable object-storage backend needs one; an external object store is another adapter behind the same archive contract. The two cBots run on their supported cTrader/broker hosts and connect through authenticated ingestion and execution contracts; they are not presumed to be Linux containers or co-located with the stack. Agents, model profiles, portfolio profiles and accounts are versioned registry data, not individual Compose services.
-
-PostgreSQL data, Redis persistence, ingress-journal files and any local tick archive use explicit persistent storage. Archive chunks, manifests, journal checkpoints and configuration backups have a coordinated backup and restore procedure; restoring PostgreSQL without its referenced chunks is incomplete. Redis is recoverable transport and cache, so restart recovery replays retained journal entries, reconciles archive checkpoints and dispatch receipts, and marks feed state stale until a new observation arrives. Health checks distinguish a running container from a ready service; startup dependencies wait for required readiness, while workers also retry and recover if a dependency fails later. [Compose startup and health checks](https://docs.docker.com/compose/how-tos/startup-order)
-
-Only necessary ingress endpoints are published. Internal services use isolated networks and scoped credentials; broker, database, Redis, storage and model-provider credentials use secret references or mounted secrets, never committed values or browser-visible configuration. Service images are pinned to immutable releases, and schema migration, rollback and restore procedures are versioned with deployments. The initial Compose/Portainer shape is a single-host operational unit; it does not promise host-level high availability. Any move to multi-host operation requires an explicit storage, fencing, failover and recovery design. [Compose secrets](https://docs.docker.com/compose/how-tos/use-secrets)
-
-## 14. Implementation sequence
-
-The live-capture bootstrap and offline audits preserve data and establish parts
-of the research ledger, but they are not the trading product. The next
-implementation slice must demonstrate the LLM making source-backed decisions
-on prospective market observations. Complete only the feed, context and audit
-pieces needed for that slice before broadening infrastructure. A complete
-archive and each new evaluator follow measured needs and their data contracts.
-
-1. Retain the implemented Research/Critic history and released EURUSD/XAUUSD evidence with its limited claims. Do not spend the next increment inventing more fixed-rule strategies as a prerequisite to the Executor.
-2. Establish one verified prospective broker feed and a small point-in-time context assembler for one CFD instrument. Include quote freshness, source IDs and an explicit unavailable state; add raw news or sentiment only after their own live availability is verified. A full Redis/archive rollout is not a prerequisite for the first bounded shadow run.
-3. Run one pinned LLM Executor in `SHADOW`: at every registered opportunity it chooses `NO_SIGNAL` or a typed, time-limited setup and candidate action from the eligible context. Persist the exact input, output, version, timestamps and failures. Dispatch no orders. Provide an operator-readable run view through the existing service boundary before building a broad console.
-4. Freeze that Executor's opportunity population and payoff for a prospective evaluation. Score all scheduled decisions, compare no-trade and simple controls, and separate ex-ante decision quality from later quote-derived outcomes. Research and Critic use the released record to propose one-at-a-time Loop A changes to the model instructions, context or decision policy; the evaluator, not the agents, measures them.
-5. Use Loop B for genuinely different decisions, instruments, horizons or payoffs, including ideas that require new data or evaluator support. Freeze each measurable derivative before independent validation; do not force it into the old EURUSD catalog. Add market-knowledge/research retrieval and eligible memory as versioned context policies when source coverage and comparison justify them.
-6. Extend market ingestion with the durable journal, Redis consumer groups, immutable tick chunks, archive manifests, feed-health reporting and recovery as data volume and replay requirements demand. Continue prospective collection throughout.
-7. Adapt the existing execution cBot and establish account, portfolio, allocation, reservation, risk and reconciliation contracts. Complete the observation-to-order vertical path in demo mode before live eligibility; broker-side protective behavior and account-scoped authorization remain independent of the agent runtime.
-8. Make the trading path restart-safe with outbox/inbox idempotency, account serialization, journal and stream replay, archive checkpoint recovery, feed-gap recovery and broker-state recovery. Validate the Compose/Portainer deployment, health checks, backup/restore and full Execution/Accounts/Portfolios views. Add prospective gates and controlled promotion before live activation.
-9. Add further conformance-tested OpenAI, Claude, TypeSafe Jev, Ollama, LM Studio and local Llama-runtime adapters, plus broker API, MT4, MT5 and NinjaTrader integrations as each reaches its required capability gate. Scale API, frontend and workers independently when measured load or isolation requires it.
-
-The first release does not need every possible agent capability or a separate service for every module. It does need complete lifecycle and identity handling for each object it exposes. Future adaptability comes from stable contracts, versioned composition and safe deployment transitions, rather than from unbounded configuration or a growing collection of special cases.
+New packages (`replay/`, `pipeline/`, `risk/`, `execution/`, `journal/`,
+`research/`) are added when their first slice is built, not before.

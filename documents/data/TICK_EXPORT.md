@@ -44,7 +44,7 @@ The manifest records account and broker identity, symbol, image digest, exact UT
 
 ## Measured limitation
 
-EURUSD exports with different warm-up starts were byte-for-byte identical. A run with CLI `--spread=1` and another with official CLI 5.10.1.0 also produced identical `Tick.Bid`/`Tick.Ask` rows in this one interval. cTrader Desktop CSV rows matched all 1,545 EURUSD rows on 1 January and all 30,656 on 2 January. Nevertheless, 28,912 of 30,656 EURUSD rows on 2 January and 14,238 of 80,762 GBPUSD rows had equal bid and ask. Those prices pass basic field validation and the EURUSD extraction comparison, but their economic spread quality is unresolved. Establish a separate broker quote/cost contract before using these quotes for cost-sensitive research. See [measured data availability](DATA_AVAILABILITY.md) and the [Research Kernel gates](../research/RESEARCH_KERNEL_PLAN.md).
+EURUSD exports with different warm-up starts were byte-for-byte identical. A run with CLI `--spread=1` and another with official CLI 5.10.1.0 also produced identical `Tick.Bid`/`Tick.Ask` rows in this one interval. cTrader Desktop CSV rows matched all 1,545 EURUSD rows on 1 January and all 30,656 on 2 January. Nevertheless, 28,912 of 30,656 EURUSD rows on 2 January and 14,238 of 80,762 GBPUSD rows had equal bid and ask. Those prices pass basic field validation and the EURUSD extraction comparison, but their economic spread quality is unresolved. Establish a separate broker quote/cost contract before using these quotes for cost-sensitive research. See [measured data availability](DATA_AVAILABILITY.md) and the [replay data requirements](../ARCHITECTURE.md#6-data).
 
 ## Desktop comparison gate
 

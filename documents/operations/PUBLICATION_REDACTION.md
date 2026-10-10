@@ -14,9 +14,10 @@ needed for hash-checked research import. Keep this private archive access
 controlled and back it up separately; the local directory alone is not a backup.
 Keep any original-account-to-public-alias mapping in private operator records.
 
-Research import must reject the altered publication copies when their frozen hashes
-do not match. Set `LEDGERQUANT_PRIVATE_EVIDENCE_ROOT` to the ignored
-`verified_bundle/` for an authorized local import. See [research operations](RESEARCH.md).
+The research import that consumed `verified_bundle/` was retired with the
+research-governance track; its code is preserved under the git tag
+`archive/research-governance-v1`. Altered publication copies must still never be
+treated as the hash-verified originals.
 The current capture feed prefix must be read from its existing private
 configuration, never inferred from a public alias. See [capture operations](CAPTURE.md).
 
