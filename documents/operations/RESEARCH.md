@@ -9,6 +9,25 @@ is no automatic economic evaluation, promotion or trading. The [execution
 record](../research/evaluations/agent_loop_bootstrap_20261009/REPORT.md) contains
 the first real run and the small process comparison.
 
+## Routine solo workflow
+
+Use the existing task, profile and campaign to run Research → Critic → service
+review. An eligible proposal can then be admitted to the supported development
+calculation. Inspect the stored proposal, critique, measurements and cost; keep
+blocked or inconclusive results visible. Supported configuration changes reuse
+this workflow and retain the previous run's inputs and history.
+
+No separate qualification pilot, fixed case-family count or second reviewer is
+required for ordinary bounded research. A descriptive check may use a small case
+set with its limitations stated. Certifying a new method lesson still needs the
+existing human review; economic validation and broker permissions keep their own
+gates. The already reviewed lesson is eligible for configured use without proving
+that it improves agents first. Its benefit remains unmeasured.
+
+The requirement-scope pilot below is archived. The remaining instructions include
+historical commands for traceability; historical campaign budgets do not reset,
+and replaying a command key is different from authorizing new inference.
+
 ## Ownership and files
 
 | Location | Responsibility |
@@ -509,27 +528,22 @@ the same human workflow. The plan owns the detailed thresholds, audit and
 reactivation requirements; none has yet been empirically qualified.
 
 
-### First requirement-scope pilot: design frozen, execution pending
+### Archived requirement-scope pilot
 
-The user selected a pilot with themselves as the human reference reviewer.
-The [protocol](../research/studies/requirement_scope_pilot_v1/PROTOCOL.md) defines
-`requirement_scope_pilot_v1`; its configuration and design manifest are in
-`configs/research/studies/requirement_scope_pilot_v1/`. Those files are study-design
-artifacts, **not** inputs accepted by the existing `process-suite` command.
+`requirement_scope_pilot_v1` stopped before execution with
+`INSUFFICIENT_FAMILY_DIVERSITY` and explicit **DO_NOT_START**. The [review
+status](../research/studies/requirement_scope_pilot_v1/REVIEW_STATUS.md) preserves
+all 24 decisions, rationale clarifications, family findings and declared
+`AI_ASSISTANT` reviewer provenance. These are not model-performance measurements
+or an independently human-reviewed reference set.
 
-The pilot fixes the paired history-only/method-feedback contrast, a preselected
-assessor-reliability arm, numerical screening rules, no retries and one terminal
-inspection. The model profile uses the existing historical price basis, which
-must be verified before execution. No campaign funds have been allocated and no
-provider call has been made for this study.
+The dedicated `ledgerquant.research.scope_pilot` package and its six commands have
+been retired. Exact source, dependency files and tests are preserved in the
+[implementation archive](../research/studies/requirement_scope_pilot_v1/IMPLEMENTATION.md).
+The [original review pages](../research/studies/requirement_scope_pilot_v1/review/README.md),
+protocol, cases and manifests remain historical records. Their blank forms and
+open prerequisites do not constitute an active operator task list.
 
-Use `readiness.json` to track missing gates: compatible harness/scorer, reviewed
-family and case inventory, human reference decisions, reference-store isolation,
-execution hashes and live source/budget checks. It is a preparation checklist,
-not a registry authorization. Finish the harness against development fixtures
-before exposing the candidate system to test cases; keep test labels out of the
-worker-readable research artifacts. The original assessments and released lesson
-remain authoritative registry records.
-
-A successful pilot can motivate a larger qualification study. It cannot grant
-`AUTO_ASSESS` or `AUTO_RELEASE_METHOD`; both human gates remain active.
+No provider call, budget allocation or automatic permission resulted from this
+pilot. Do not pass its study files to `process-suite`; that command uses its own
+existing supported format. Further routine research uses the workflow above.

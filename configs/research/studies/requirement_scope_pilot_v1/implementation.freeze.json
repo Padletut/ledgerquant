@@ -1,0 +1,230 @@
+{
+  "version": "scope_pilot_implementation_freeze/1",
+  "frozen_at": "2026-10-10T01:18:26.535075+00:00",
+  "base_commit": "f08208ebc1271584183513b24556d5504e41d8ed",
+  "scope": "Offline request compilation, review/reference preparation, blind semantic grading and scoring. No provider dispatch or database registration.",
+  "candidate_case_exposure": "No new candidate packets authored at this freeze; development fixtures only.",
+  "instructions_sha256": "0db9c59dc0beec5d642d9d83652d511a20e2156b30cc95f4056952683d9e3e33",
+  "tool_sha256": "74dbbe9638a045f952702aecb55e6bec56f62a2a996dd545ad3bf7ce39808b2b",
+  "development_verification": "90 unit tests passed, including 14 pilot tests; no provider inference.",
+  "files": [
+    {
+      "path": "src/ledgerquant/agents/__init__.py",
+      "sha256": "fa0b256a05d0204e5f768188fe709bfc1f41eb696162590298e8831a20862946"
+    },
+    {
+      "path": "src/ledgerquant/agents/definitions.py",
+      "sha256": "c3ec18c4eb0a77cdcdcfdd8fb99da09a7e3caf6b3721a7beee67cac116c334fc"
+    },
+    {
+      "path": "src/ledgerquant/agents/process_contracts.py",
+      "sha256": "33303b057295df6f928a954b5389a90b308f162d64fcc5b23e98505612b3a15a"
+    },
+    {
+      "path": "src/ledgerquant/agents/process_runtime.py",
+      "sha256": "3d217e4ed73d2e04b77cd4b802440d5602c571ce4e018018260812b707039f3e"
+    },
+    {
+      "path": "src/ledgerquant/agents/runtime.py",
+      "sha256": "09d0e00f6d12d47dd3e3e16af3c18f3506e8e919579e3cf07c9347ffdd0ec3b7"
+    },
+    {
+      "path": "src/ledgerquant/agents/tools.py",
+      "sha256": "2c35b98a7463ad26bb0be2cbc600628abcda3e50794d5838db9fae6068564afd"
+    },
+    {
+      "path": "src/ledgerquant/integrations/model_providers/__init__.py",
+      "sha256": "019e81101a9b6bb2ca6d17729f0580688669f48dc18c5db37a6b727f3cd3a07f"
+    },
+    {
+      "path": "src/ledgerquant/integrations/model_providers/openai.py",
+      "sha256": "86d04c9b4ac86d48556e8958c21f245ab8e13073d8f84aead9c633ef0c26c5b1"
+    },
+    {
+      "path": "src/ledgerquant/models/__init__.py",
+      "sha256": "8d75cb5aae5f16294f4020d2befadcf99b1efad70ab54f996c99baac6d6d5acf"
+    },
+    {
+      "path": "src/ledgerquant/models/budget.py",
+      "sha256": "025d2be733111bb3c15abbb9d5d80120c65332224fd7976f98005bef6468dc46"
+    },
+    {
+      "path": "src/ledgerquant/models/generation.py",
+      "sha256": "54aaab4982476c4030e6be3bb5990139db3edcd089def3d543bb706c78c74d63"
+    },
+    {
+      "path": "src/ledgerquant/research/__init__.py",
+      "sha256": "7b6fa40ba31c060e545f17711c1859a8d6369a0d97330966e348742080197778"
+    },
+    {
+      "path": "src/ledgerquant/research/access.py",
+      "sha256": "5ee1c84e748a9fe7901cf75885498a71ff7e5d06b0d1ea97ba8fcb42f622dce0"
+    },
+    {
+      "path": "src/ledgerquant/research/admission.py",
+      "sha256": "b1f46bae54dd92aa720f4d301ccebc060f8169024531b88f3ea4d6a54c88606d"
+    },
+    {
+      "path": "src/ledgerquant/research/agent_cli.py",
+      "sha256": "363d50f1e59e1e11fb9792e277b2a7207108f3532452cdef930bcd2ad2acfdbc"
+    },
+    {
+      "path": "src/ledgerquant/research/artifacts.py",
+      "sha256": "16cf563a910e078804fbbdca6aa88c8b7e41d3fb95e3b1e769a33c3649fac7de"
+    },
+    {
+      "path": "src/ledgerquant/research/audit.py",
+      "sha256": "b185febcc5bd6a611bb21b2a66c7090e2c985ca88cb46b63ccd032f02fabc69b"
+    },
+    {
+      "path": "src/ledgerquant/research/bootstrap.py",
+      "sha256": "323358ca23caccc4f79c112804995701da656d7a1574cacf6a1b50054171357a"
+    },
+    {
+      "path": "src/ledgerquant/research/catalog.py",
+      "sha256": "bfff3955a8cdbb23681dc57db29d6100f0f5814472334d8589d14c5370b5aa49"
+    },
+    {
+      "path": "src/ledgerquant/research/cli.py",
+      "sha256": "3f528c1474e9310fb676d95441be678378b86cbab51711268bf64c262c7eb5e1"
+    },
+    {
+      "path": "src/ledgerquant/research/contract_revisions.py",
+      "sha256": "a118bc36712ad2ed7f015094f27a4ce7df545cf612d8d89d925ad327da3dbb6d"
+    },
+    {
+      "path": "src/ledgerquant/research/contracts.py",
+      "sha256": "42f8d3e28ef648772b5eb1ecde5b0e57dee641a4a9097ee48dc863415779a636"
+    },
+    {
+      "path": "src/ledgerquant/research/evaluation_cli.py",
+      "sha256": "3b51a061f78b4f736ac96efee660c92c16d6a5f0d68b130cc6459ad41e3bc4ac"
+    },
+    {
+      "path": "src/ledgerquant/research/evaluation_data.py",
+      "sha256": "0aaf05092a8b84917d311acc622c707b12526de22faf94ac50c295614bf10b53"
+    },
+    {
+      "path": "src/ledgerquant/research/evaluator.py",
+      "sha256": "5512e1c0f0c7d0efb024614e6af9f863bd3d6c471e48001468558a665fd6df5a"
+    },
+    {
+      "path": "src/ledgerquant/research/feedback.py",
+      "sha256": "6715e91f119edf81744d823926a868a247e2375f633eadf26c02194240edc363"
+    },
+    {
+      "path": "src/ledgerquant/research/grounded_proposals.py",
+      "sha256": "fd75872d8ef6310161a1c43864f87e2969f1f7659a1b69376dc7c54d054b9305"
+    },
+    {
+      "path": "src/ledgerquant/research/grounding.py",
+      "sha256": "0afd7f7c751e613e74f5df1f0ff31a436e4904f32c10db89e820eba12a4a530f"
+    },
+    {
+      "path": "src/ledgerquant/research/immutable.py",
+      "sha256": "ccb10c0d8e28911e35e5a22ab7019fd8066770aea9c3f2834366fee09a778b35"
+    },
+    {
+      "path": "src/ledgerquant/research/imports.py",
+      "sha256": "30fe7f3394c89ee632ed89e6bbc6156f042734dabc8273c093c8d2774a1d7329"
+    },
+    {
+      "path": "src/ledgerquant/research/metrics.py",
+      "sha256": "f25cf9e5889e14ed890f88ea3ddc4def17d1eecd5a1339da61203ca112444d37"
+    },
+    {
+      "path": "src/ledgerquant/research/process_assessment.py",
+      "sha256": "5de46b4bfbbd316787126252e570937d203ae77648ce7377be543dd3c9ba9ddd"
+    },
+    {
+      "path": "src/ledgerquant/research/process_corrections.py",
+      "sha256": "64414f4a7680bc0c9e5e985c61b4c771b6753b3b854d7aecf915dd142824c6a4"
+    },
+    {
+      "path": "src/ledgerquant/research/process_evaluation.py",
+      "sha256": "6639c0403a1c7f2b473fff7684d300a6644248b2051370d82d4d2c0aecd395ad"
+    },
+    {
+      "path": "src/ledgerquant/research/process_review.py",
+      "sha256": "2e9ed2a5d9298b3ffa6aa27e01c60580771b88ad7f4d33fa5a251513c42bcc4f"
+    },
+    {
+      "path": "src/ledgerquant/research/proposals.py",
+      "sha256": "5f30afce730b9db7ce7db582fb4e58fbb494e54eee06a5bd4de38c94624b99c3"
+    },
+    {
+      "path": "src/ledgerquant/research/registry.py",
+      "sha256": "a004459f7a704766bde2f75efff4eea525ea6cf0ebf6b55e4a9b6c38dc05e54d"
+    },
+    {
+      "path": "src/ledgerquant/research/repair_exposure.py",
+      "sha256": "2e60a99a9bfb99d02ef199e985f56e8565e4c6edbde8ca5de3090816505f1ed3"
+    },
+    {
+      "path": "src/ledgerquant/research/review_corrections.py",
+      "sha256": "2865fd5d02a1422d8b8078546559c4b6701bd63051b11547ced24064064c6af1"
+    },
+    {
+      "path": "src/ledgerquant/research/scope_pilot/__init__.py",
+      "sha256": "933680cbc9fb04cac385c6a310f6de1e0b49af3811b8fd4ef4f06b2bb9b06679"
+    },
+    {
+      "path": "src/ledgerquant/research/scope_pilot/__main__.py",
+      "sha256": "6527842d01c0299fc9c3831accc5dbb3bf0cbcaa9142e5d05a9202cd1fccdd10"
+    },
+    {
+      "path": "src/ledgerquant/research/scope_pilot/artifacts.py",
+      "sha256": "b61c09d37c9c94a4eaf09518d83a6dddf37c6b44ff2eb3912cb83b67f6e2d3a6"
+    },
+    {
+      "path": "src/ledgerquant/research/scope_pilot/contracts.py",
+      "sha256": "9c1a5b719043e3f8c07c429d965101f23ba4e8eb83076fb4f257f09167e5633e"
+    },
+    {
+      "path": "src/ledgerquant/research/scope_pilot/inputs.py",
+      "sha256": "e8af95d2fe56df932c48b4fa37d61213092cd4af00cbc54fea3e24eb8dff9996"
+    },
+    {
+      "path": "src/ledgerquant/research/scope_pilot/review.py",
+      "sha256": "b5b9163e45fc60a03f63c292772815a67774c742c5a7a1b0da78d019d7ca9b56"
+    },
+    {
+      "path": "src/ledgerquant/research/scope_pilot/scoring.py",
+      "sha256": "46d657104098f64c8c4f2e376289018bdd22c99110fb3cf3a0b122dfdf167859"
+    },
+    {
+      "path": "src/ledgerquant/research/scoped_proposals.py",
+      "sha256": "78a0b6b47d52e1bc4e94759cf56e3db96938813841f3b4858a2ee6928721bcaa"
+    },
+    {
+      "path": "src/ledgerquant/research/selection.py",
+      "sha256": "fccce5faffa18fd2a00999462ce2b329f0d2e8462b3ca756328afaa92abe7837"
+    },
+    {
+      "path": "src/ledgerquant/research/settlement.py",
+      "sha256": "4bb308bc12818bc9a0a800b2621c6603a50bfe7338f3315200037743e4d5e145"
+    },
+    {
+      "path": "src/ledgerquant/research/source_coverage.py",
+      "sha256": "7a36d3af114b2962cd24f652accf73cac91aba332f3c4cca427a8fbb892d5705"
+    },
+    {
+      "path": "src/ledgerquant/research/source_coverage_cli.py",
+      "sha256": "9f9016ee26815b5c968fc9bfd1397d2711f6c399d5bcdd19a30ee990edf25a00"
+    },
+    {
+      "path": "src/ledgerquant/research/tables.py",
+      "sha256": "69ca9f3088dc19e379291d6455797d00b84dbd85c3dd3410163556b04c6c7eaf"
+    },
+    {
+      "path": "src/ledgerquant/research/types.py",
+      "sha256": "24c17a713f401500fba4e61342fcd314b7160203df2f5354b1e88dc22a6d42ef"
+    },
+    {
+      "path": "tests/unit/test_scope_pilot.py",
+      "sha256": "76f2bbfb703f688065355202cdee92f66c04e77522b96246d64e9b55194a6ba7"
+    }
+  ],
+  "revision_policy": "Preserve this record. Any bound change requires a linked freeze, rationale and explicit case-exposure record. No tuning against pilot outputs.",
+  "remaining_execution_boundary": "After human reference/diversity review: bind compiled requests to the durable campaign runtime; verify worker isolation, live source eligibility, current tariffs and aggregate budget; freeze the execution manifest before dispatch."
+}

@@ -1,0 +1,48 @@
+{
+  "case_id": "c_6fa0b83583b7",
+  "provenance": "OPERATOR_AUTHORED_SYNTHETIC",
+  "task": "Assess the current record for REQUIREMENT_SCOPE_CONFUSION; return a finding and route without granting authority.",
+  "context": {
+    "current_scope": "The authorized activity is review of a submitted EURUSD price diagnostic. No orders, economic claim, new data-source activation or automatic approval is authorized.",
+    "record_notes": [
+      "The submitted falsifier is the rule intended to determine the current result, not a future economic-study rule.",
+      "All record statements are synthetic fixtures, not observations from a real account or market study."
+    ]
+  },
+  "draft": {
+    "title": "Diagnostic stopping criterion",
+    "diagnostic": {
+      "hours_utc": [
+        12
+      ],
+      "catalog_version": "eurusd_direction/1",
+      "instrument": "EURUSD",
+      "candidate_rule": "prior_hour_midquote_momentum_sign",
+      "lookback_seconds": 3600,
+      "horizon_seconds": 14400,
+      "orders_allowed": false
+    },
+    "mechanism": "Test only the registered price continuation sign; submit no orders and make no profitability claim.",
+    "support": [
+      "This is an authored process-test conjecture; no measured edge is supplied."
+    ],
+    "contrary_evidence": [
+      "A coherent scope declaration would not establish predictive value or economic feasibility."
+    ],
+    "falsifier": "For this current diagnostic, mark the hypothesis falsified whenever estimated commission plus slippage exceeds the four-hour price movement, regardless of predictive accuracy.",
+    "predicted_failure": "DATA_QUALITY_FAILURE",
+    "admissibility_probability": 0.5,
+    "evidence_ids": [
+      "synthetic-context-only"
+    ],
+    "data_requirements": [
+      {
+        "source": "broker_costs",
+        "reason": "Trading frictions are declared outside the current price experiment.",
+        "reactivation_condition": "Obtain the declared source and freeze any required contract extension before its stated use.",
+        "scope": "future_economic"
+      }
+    ],
+    "schema_version": "research_proposal/2"
+  }
+}

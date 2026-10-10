@@ -1,0 +1,15 @@
+{
+  "version": "scope_pilot_candidate_inventory/1",
+  "authored_at": "2026-10-10T01:20:34.012400+00:00",
+  "implementation_freeze_sha256": "93ec99451c1dce9cc42647d5d1864ec5ba8dcd6044a15540a4e2d93bce497df7",
+  "study_sha256": "121c98c8cc2bbc99518abfc163770e9e55f560752aa7358203057e1932167fdc",
+  "cases_sha256": "d9b77fde320a93e4645d58906d6cc2cf3f60c26f3f07669993570dd72c476763",
+  "case_count": 24,
+  "provenance": "AI_ASSISTED_OPERATOR_AUTHORED_SYNTHETIC",
+  "reference_status": "AWAITING_HUMAN_REVIEW",
+  "family_diversity_status": "EIGHT_PROPOSED_GROUPINGS_NOT_VERIFIED",
+  "authoring_record_sha256": "9f7cf761f0c658acf04ab5c575e956869a5e31f0f4166c98c8f7f17617ac6ce1",
+  "authoring_record_operator_only_path": "data/research_control/operator/requirement_scope_pilot_v1/authoring_v1/authoring.json",
+  "retention": "Candidate packets immutable. Author targets are not human reference labels. Preserve changes as linked revisions with exposure; do not silently replace a case.",
+  "provider_calls_made": 0
+}

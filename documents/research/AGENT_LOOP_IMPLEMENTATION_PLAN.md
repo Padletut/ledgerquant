@@ -2,13 +2,17 @@
 
 **Date:** 10 October 2026
 
-**Revision:** 1.8.1 — freezes the first requirement-scope pilot design under the user-selected single-human-reviewer mode; aligned with architecture 2.15.1. The [pilot protocol](studies/requirement_scope_pilot_v1/PROTOCOL.md) links immutable design inputs and explicit execution-readiness gaps. No inference, campaign allocation or automation activation occurred. Revision 1.8 defines the planned, empirically gated delegation of process assessment and method-feedback release by validated class; aligned with architecture 2.15. This is a documentation change: the current human gate remains active, and no automatic assessment/release authority is implemented or granted. Revision 1.7.1 added readable process-review exports and a human review guide. Revision 1.7 implemented process-assessment and typed-feedback contracts (`process_assessment/1`, `research_feedback/1`, `reviewed_method_feedback/1`, migration `0004_process_feedback`). Work items 1 and 3 below are done in code; item 4 has not run. Revision 1.6 implemented the repair exposure gate; 1.7 widened its scan to every recorded outcome read and serialized family admissions after an adversarial review. Revision 1.5 introduced these contracts as text. Historical executions retain their original identities, corrections and invalidations.
+**Revision:** 1.11 — makes routine development practical for a solo operator, aligned with architecture 2.18. The stopped pilot's dedicated package and tests are archived; its source, cases, reviews and stop instruction are preserved. The active path uses the existing Research/Critic runtime and registry. Automatic assessment/release qualification is deferred until there is an operational need. No replacement experiment, provider call or automatic approval is enabled. Revision 1.10 established the small-interface/configuration guidance now applied by this cleanup.
+
+1.9 — implements the offline pilot preparation/scoring workflow and prepares 24 synthetic candidates for human review; aligned with architecture 2.16. Prompt, schema and scorer were frozen before candidate authoring. This pilot preparation is now stopped as `INSUFFICIENT_FAMILY_DIVERSITY`, with explicit `DO_NOT_START`. The follow-up declares reviewer type `AI_ASSISTANT`; rationale acceptance is retained without upgrading it to independent human reference authority. A different allocation requires a linked design; no provider execution is authorized. No model call or automatic authority has been enabled. See the [implementation record](studies/requirement_scope_pilot_v1/IMPLEMENTATION.md) and [review package](studies/requirement_scope_pilot_v1/review/README.md).
+
+1.8.1 — freezes the first requirement-scope pilot design under the user-selected single-human-reviewer mode; aligned with architecture 2.15.1. The [pilot protocol](studies/requirement_scope_pilot_v1/PROTOCOL.md) links immutable design inputs and explicit execution-readiness gaps. No inference, campaign allocation or automation activation occurred. Revision 1.8 defines the planned, empirically gated delegation of process assessment and method-feedback release by validated class; aligned with architecture 2.15. This is a documentation change: the current human gate remains active, and no automatic assessment/release authority is implemented or granted. Revision 1.7.1 added readable process-review exports and a human review guide. Revision 1.7 implemented process-assessment and typed-feedback contracts (`process_assessment/1`, `research_feedback/1`, `reviewed_method_feedback/1`, migration `0004_process_feedback`). Work items 1 and 3 below are done in code; item 4 has not run. Revision 1.6 implemented the repair exposure gate; 1.7 widened its scan to every recorded outcome read and serialized family admissions after an adversarial review. Revision 1.5 introduced these contracts as text. Historical executions retain their original identities, corrections and invalidations.
 
 **Status:** The bounded Research/Critic runtime, append-only registry, scoped tools, linked cost-scope revisions, operator admission and fixed-catalog development path are implemented. A real Mini revision of the original 12 UTC idea was admitted and developed; it underperformed the fitted baseline. All earlier attempts and corrections remain visible. Broad researcher-quality evaluation, new independent economic validation, MCP, RAG indexes and promotion remain pending. See the [linked-revision execution](evaluations/grounded_revision_20261009/REPORT.md) and [operations guide](../operations/RESEARCH.md).
 
-The current process-assessment, typed-feedback and repair exposure contracts below are **implemented**; see "Minimum records" and "Contract repair and corrected resubmission" for the exact behavior and limits. The delegation contract in [From human review to scoped automation](#from-human-review-to-scoped-automation) is **planned**. The held-out process suite and matched feedback comparison are **not** implemented or run; feedback benefit remains unmeasured. The six original `PROPOSED` assessments now have human-reviewed `REVIEWED` supersessions with declared outcome exposure. One user-authored requirement-scope method lesson is released and eligible for selection; no run has received it. See the [review results](reviews/process_assessments_20261010/reviewed/README.md).
+The current process-assessment, typed-feedback and repair exposure contracts below are **implemented**; see "Minimum records" and "Contract repair and corrected resubmission" for the exact behavior and limits. The delegation contract in [From human review to scoped automation](#from-human-review-to-scoped-automation) is **planned**. The paired pilot's offline preparation and scoring implementation is archived, outside the application and active test suite. The matched provider comparison has **not run**; feedback benefit remains unmeasured. The six original `PROPOSED` assessments now have human-reviewed `REVIEWED` supersessions with declared outcome exposure. One user-authored requirement-scope method lesson is released and eligible for selection; no run has received it. See the [review results](reviews/process_assessments_20261010/reviewed/README.md).
 
-Human review starts with the [readable assessment guide](reviews/process_assessments_20261010/README.md), not the hash index. `process-review` resolves each proposed finding's references into exact source text and shows the original action, rules, limitations and current integrity without writing a decision. Reviewers can accept, correct or leave findings unresolved; a reviewed record need not accept every allegation. Method feedback requires its cited assessments to be reviewed and current, not blanket approval of all six records. The first pilot design is now frozen; its reviewed case/reference inventory, compatible runner and final execution manifest are still required before the comparison can run.
+Human review starts with the [readable assessment guide](reviews/process_assessments_20261010/README.md), not the hash index. `process-review` resolves each proposed finding's references into exact source text and shows the original action, rules, limitations and current integrity without writing a decision. Reviewers can accept, correct or leave findings unresolved; a reviewed record need not accept every allegation. Method feedback requires its cited assessments to be reviewed and current, not blanket approval of all six records. The first pilot's frozen implementation is now archived. Its 24 cases and supplied decisions remain available as historical material. The follow-up accepts rationale criteria with a case 15 clarification, declares reviewer type `AI_ASSISTANT`, and rejects the eight-cluster premise through merges and unresolved separation. The pilot stays stopped; finishing its review or dispatch integration is outside the active work plan. See the [review status](studies/requirement_scope_pilot_v1/REVIEW_STATUS.md).
 
 This plan implements the first product slice in [ARCHITECTURE.md](../ARCHITECTURE.md), Section 14. Its outcome is an actual model-driven proposal, a separately recorded critique, a contract decision and evaluator-owned evidence. The agents generate and challenge research ideas; the registry and evaluator determine what was proposed and measured. The [Research Kernel plan](RESEARCH_KERNEL_PLAN.md) owns the source measurements and the two completed EURUSD diagnostics. The [data-availability record](../data/DATA_AVAILABILITY.md) owns unresolved source and broker-quote questions.
 
@@ -41,6 +45,13 @@ Critic runs in a fresh context containing the submitted draft and eligible evide
 ## 3. Minimum contracts and storage
 
 Implement domain types before API or MCP wrappers. Use an Alembic migration when each durable responsibility is implemented; keep source payloads and large model inputs as immutable artifacts with hashes and access-controlled references. PostgreSQL owns identities, constraints and event relationships, with schema-validated JSON only for bounded extensible contract payloads.
+
+This inventory describes responsibilities and durable facts. Reuse existing
+records and interfaces; it is not a requirement for a separate schema, table,
+file or human form for every row or every experiment. Supported parameter and
+prompt changes use versioned configuration. A new schema is needed when its
+meaning or compatibility changes. The authoritative design rule is
+[architecture Section 1.1](../ARCHITECTURE.md#11-small-stable-interfaces-and-configurable-workflows).
 
 | Contract | Minimum durable fields |
 | --- | --- |
@@ -104,159 +115,60 @@ A reviewed method lesson may follow a blocked or unmeasured proposal immediately
 
 #### From human review to scoped automation
 
-**Target and current boundary.** Human review establishes the initial trusted
-rubric, reference cases and release decisions. The intended steady-state loop
-automatically assesses recurring, validated process classes and releases bounded
-method feedback within delegated authority. Humans maintain that authority,
-adjudicate exceptions and audit its operation. The existing human gate remains
-active until its replacement passes the empirical and deployment gates below.
-No class currently has delegated authority; the six exposed historical reviews
-are development/reference material, not qualification evidence.
+**Deferred capability; no automatic authority is active.** Human review remains
+required to certify process findings and release method lessons until an
+empirically evaluated replacement is explicitly activated. Ordinary Research
+proposals, Critic responses, permitted development measurements and unreviewed
+assessment drafts can continue through existing workflows. They do not acquire
+review authority merely by being generated or stored.
 
-**Unit of delegation.** An assessment class is a versioned, bounded question, not
-an agent name or an entire defect taxonomy. Its contract fixes the defect code,
-subject role, proposal/rubric versions, source and visibility regime, required
-packet fields, allowed component/severity assignments, output labels and explicit
-exclusions. It also fixes the assessor implementation/model/prompt/tool versions,
-abstention and disagreement rules, and permitted downstream action. A finding
-about one requirement cannot certify the whole proposal. Multiple findings can
-be released together only if every required finding and their combination are
-within evaluated scope. A new hypothesis ID alone need not trigger review;
-unvalidated semantics or applicability do.
+Add automation when repeated operator work demonstrates a need. Reuse existing
+assessment, feedback and registry ownership; a bounded class can be configuration
+for an existing service. There is no requirement for a service, table or schema
+per defect class, or for qualification of the complete taxonomy before any useful
+research can run.
 
-Candidate first classes include consistency between typed current/future data
-requirements and declared diagnostic scope, or attribution between explicit
-source-population and claimed-population fields. Deterministic reference
-resolution can establish that a citation is authorized and exists; semantic
-support needs its own validated class. Free-text causality, novel payoff meaning
-and ambiguous family/exposure ancestry remain outside these initial candidates.
-These are candidate scopes to evaluate, not a declaration that they already work.
-
-**Two permissions.** `AUTO_ASSESS` permits an authenticated assessment service to
-record a qualified finding for the approved class. `AUTO_RELEASE_METHOD` separately
-permits a release service to publish a method lesson from qualified sources using
-an approved claim/applicability template or a separately evaluated derivation
-policy. Both permissions are planned. An automatically assessed source does not
-automatically authorize its narrative lesson. Free-form generalizations, changed
-counterexamples or broader applicability require human review until covered by
-a newly qualified release policy. `NOT_SUPPORTED` is scoped absence of support
-for an allegation; `UNRESOLVED` is an abstention, never a defect label or a reason
-to publish a negative lesson. Research and Critic cannot grant themselves either
-permission, change reference labels or decide their own assessment class.
-
-##### Qualification and rollout
-
-| Stage | Permitted operation | Required exit evidence |
-| --- | --- | --- |
-| 0. Human bootstrap — current | Operators record explicit human findings and lesson-release decisions. Candidate assessors may propose outputs without release authority. | Define the bounded class, independent reference/adjudication process and qualification study before running its held-out tests. |
-| 1. Offline qualification | Freeze the assessor and routing policy; evaluate them against withheld, independently adjudicated process families. All production decisions retain the human gate. | Meet every preregistered class-specific error, attribution, routing, coverage and support gate with the required uncertainty bounds. Failed or inconclusive qualification retains the human gate. |
-| 2. Shadow assessment and release | On consecutive eligible cases, record candidate findings and would-release lessons in quarantine. Human reviewers make the actual decisions without seeing candidate answers before their initial judgement. | Meet the frozen shadow-volume, duration, disagreement, source-integrity and end-to-end false-release gates. Record human disagreements and adjudicate them; quarantine has no path into agent context. |
-| 3. Scoped automatic assessment | After human authorization of the measured class/version, enable `AUTO_ASSESS` for a bounded canary population. Eligible findings may be recorded automatically; lesson release stays human unless separately qualified. | Audits and canaries satisfy the frozen error and escalation limits. To proceed to automatic release, qualify the derivation/routing policy on exact claims, sources, applicability and counterexamples, including downstream feedback behavior. |
-| 4. Scoped automatic release | After a separate activation decision, enable `AUTO_RELEASE_METHOD` for the qualified class/policy and bounded volume. Eligible cases complete without individual human approval. | Continuous integrity checks, scheduled unbiased audits and version/drift monitoring remain within their registered limits. Scope expansion requires a new qualification and activation record. |
-| Suspended | Stop the affected automatic permission and route pending cases to human review. Preserve previously recorded outputs and dependent context lineage. | Correct the cause, evaluate on eligible fresh cases, and obtain explicit reactivation; elapsed time or queue pressure cannot restore authority. |
-
-**Frozen empirical gates.** The qualification study specifies numerical error
-ceilings, minimum coverage, minimum independent family/cluster support,
-uncertainty method and confidence level, shadow duration/volume, audit sampling,
-latency/cost budget, stopping rule and tolerated incident rates **before** outcomes
-are read. The numerical qualification gates have not yet been selected; the
-[first pilot](studies/requirement_scope_pilot_v1/PROTOCOL.md) has separate frozen
-engineering screening thresholds and cannot qualify delegation. Any missing
-qualification value blocks delegation. Choosing a favorable threshold after seeing the test is a new
-development attempt with consumed test exposure.
-
-Qualification requires the registered upper error bounds to stay below each
-ceiling and lower coverage bounds to meet the minimum; insufficient support is
-inconclusive. Any observed unauthorized release, use of an invalid source, or
-bypass of a mandatory high-impact escalation fails qualification regardless of
-average scores. Neither zero observed errors nor passing fixtures alone proves
-that deployment risk is zero.
-
-- Measure false defect findings, missed supported defects, wrong component or
-  severity, invalid citations and incorrect scope separately. Report each class
-  and severity, with full confusion counts and their denominators; an overall
-  agreement score cannot compensate for a failed material-defect gate.
-- Measure the complete proposed route: correct automatic decisions, incorrect
-  automatic decisions, correct escalations and missed escalations. Report error
-  among automatically handled cases and coverage among **all** applicable cases.
-  Count abstentions, unknowns, refusals, invalid contexts and technical failures
-  explicitly. An assessor that defers everything cannot qualify through apparent
-  precision; a confident model assertion or model majority is no substitute for
-  measured error. Validate calibration if confidence controls routing.
-- For release, measure unsupported claims, source/authority violations, omitted
-  qualifications, broadened applicability and misleading repetition of one case.
-  Independently reviewed assessments alone do not validate the lesson writer.
-  Compare the frozen automated pipeline with the human-reviewed baseline at
-  matched scope/budgets, including downstream introduced defects and the allowed
-  non-inferiority margin for process quality. Feedback effectiveness remains a
-  separate measured claim; qualification does not imply market value.
-- Freeze references independently of the candidate assessor and subjects. Use
-  two independent initial human reviews for qualification references and preserve
-  disagreements/adjudications;
-  unresolved cases test abstention/routing rather than an invented correct label.
-  Separate related case families and time periods from training, prompt tuning
-  and lesson generation. Repetitions and Research/Critic views of one case remain
-  correlated. Include valid near misses, checker/harness faults, ambiguous cases,
-  new semantics and adversarial source text. Audit accepted **and** rejected or
-  escalated cases; synthetic fixtures alone cannot qualify live release.
-
-##### Mandatory human escalation
-
-| Trigger | Required handling |
+| Step | Evidence and decision |
 | --- | --- |
-| Ambiguity or insufficient evidence | Missing/conflicting rules, unresolvable references, unknown exposure, unclear predictive/administrative boundaries, uncertain component or inherited-versus-generated attribution, or `UNRESOLVED` findings go to human review. Persist the uncertainty and exact source packet; do not convert it into failure or release a lesson that depends on settling it. |
-| Novelty outside qualified scope | New contract/payoff semantics, unsupported source or visibility regimes, unvalidated rubric/language/input forms, or semantic family/duplicate/exposure questions beyond deterministic approved rules require adjudication and possibly a new class. Naming a familiar defect code cannot extend the class. |
-| Disagreement | Material disagreement between authorized assessors, between a checker and semantic assessment, with a human audit, or with a current authoritative reference suspends the disputed decision and requires human adjudication. Do not use majority vote, confidence or repeated sampling to bypass this route; materiality and routing rules are frozen before qualification. |
-| High impact | Changes to research success gates, family/exposure ancestry or holdout access; retrospective admission/promotion; capital, broker authorization or risk policy; broad causal/general research claims; and lessons used for promotion or model-weight training remain outside these process permissions. Human review and the owning service's existing gates remain required. |
-| Integrity or operational incident | Stale/superseded sources, invalid test contexts, suspected injection, missing invocation/version provenance, unrecognized model changes, drift, breached error/audit budgets or unavailable assessment services stop the affected route. Escalate with diagnostics; a checker defect is system evidence, never an automatic agent-error label. |
+| Define one useful scope | Record the question, eligible inputs, source/rubric and assessor versions, exclusions, proposed permission, error/coverage tolerances, budget and stopping rule before measuring the candidate. |
+| Evaluate without authority | Compare the frozen candidate with references withheld from it; include valid near misses, real prior failures and escalation cases. Record reference authorship and exposure, supported/missed defects, attribution, citation errors, escalation errors, abstentions and denominators. Use held-out related-case groups where claiming transfer; repetitions are not new independent cases. |
+| Observe in normal use | Keep actual decisions human-reviewed while recording candidate decisions and, for release, exact proposed lessons in quarantine. Check source integrity, applicability and errors on representative accepted and rejected cases. |
+| Activate a bounded permission | The operator reviews the measured error, coverage, uncertainty and cost against the predeclared tolerances. Activate only the supported scope and versions. Inconclusive evidence keeps that permission human-gated; it does not stop ordinary research. |
+| Audit and suspend | Sample ordinary cases as well as incidents. Suspend affected permissions on material errors, source invalidation, drift or unqualified semantic/version changes. Preserve history and require evidence for reactivation. |
 
-Each escalation records the triggering rule, class/policy version, packet and
-source hashes, candidate outputs/disagreements, missing evidence, responsible
-review queue and permitted next action. It blocks the affected assessment or
-lesson, while unrelated qualified classes may continue. Review may confirm,
-correct, leave unresolved, or propose a new class; a one-case adjudication does
-not expand delegated scope. Unresolved queues cannot force automatic release.
+A solo operator may author reference judgements before seeing candidate answers.
+Record shared authorship, development exposure and disagreements as limitations.
+Additional independent review is useful where judgement or impact warrants it;
+two human reviewers and eight families are not universal platform requirements.
+Evidence requirements must match the proposed authority. A small synthetic check
+can identify an engineering problem but cannot establish reliable live release
+by itself. Set support and uncertainty rules before an authority evaluation; do
+not lower them after seeing its results. The archived pilot keeps its original
+rules and `DO_NOT_START`; these changes do not reopen it.
 
-##### Authorization, audit and contract transition
+Assessment authority (`AUTO_ASSESS`) and lesson-release authority
+(`AUTO_RELEASE_METHOD`) remain separate decisions. The latter also needs measured
+support for exact claims, applicability, counterexamples and source validity of
+the produced lessons, plus checks for downstream introduced defects. Good source
+assessments alone cannot establish that the lesson writer is reliable. Neither
+permission grants economic success, admission, promotion or broker access.
 
-The registry owns an immutable delegation record binding class/scope,
-`AUTO_ASSESS` and/or `AUTO_RELEASE_METHOD`, assessor and derivation versions,
-qualification/shadow evidence IDs, frozen thresholds, human activation authority,
-activation/expiry times, volume limits, audit policy and suspension/reactivation
-history. The policy is enforced by services with separate identities and no
-self-grant capability. Fresh context or a different role name alone does not
-establish independent judgement; record shared model/provider ancestry and test
-correlated errors. Process permissions grant no evidence-write, admission,
-promotion or trading authority.
+**Cases that retain human review:** ambiguous/missing/conflicting evidence;
+novel semantics outside evaluated scope; material disagreement with an assessor,
+checker or reference; uncertain family/exposure ancestry; integrity faults; and
+high-impact changes to success criteria, holdout access, capital, risk, promotion
+or training authority. Store the reason and unresolved state. Block the affected
+certification or lesson release; other authorized work may continue. A model's
+confidence, majority vote or an overloaded queue cannot settle these exceptions.
 
-Future versioned assessment, feedback and selection contracts must explicitly
-record human versus delegated-machine authority, delegation ID, exact checker or
-model invocation and input/output hashes, routing result, release-policy version
-and audit eligibility. Never encode automatic approval by putting a bot name into
-the current `reviewer` string. Existing `process_assessment/1`,
-`research_feedback/1` and `reviewed_method_feedback/1` semantics remain pinned;
-older records are not retrospectively machine-certified. Implement and test this
-transition, including unauthorized self-release, stale/revoked authority, mixed
-qualified/unqualified findings and race/retry handling, before activation.
-
-At write/release and again before retrieval, verify current authority, source
-integrity and scope. Eligibility begins no earlier than all required sources,
-assessment, delegation activation and actual release; quarantine must not leak
-through summaries or caches. A random, stratified audit sample includes automatic
-accepts, negative findings and escalations, alongside targeted incident review.
-Record sampling probabilities and clustering; selected incidents alone cannot
-estimate the ordinary error rate. The audit schedule itself has a frozen budget
-and inspection rule.
-
-Version changes to the assessor, model behavior, prompts, rules, retrieval or
-derivation policy suspend affected permissions pending the registered
-requalification path; an unknown hosted-model change triggers the same route.
-Expiry, audit failures or authority revocation suspend unconsumed dependent
-feedback, with the affected scope/time range recorded and reviewed. Corrections
-propagate through source lineage; already supplied contexts and invocations stay
-immutable and are flagged for impact review. Historical replay preserves what
-was actually supplied. Automatic release resumes only through explicit,
-evidence-backed reactivation.
+Any future activation must record human versus machine authority, exact scope,
+versions, qualification evidence and permission state in the existing registry,
+and enforce them at assessment, release and retrieval. A bot name in today's
+`reviewer` string is insufficient. Test self-grant denial, source invalidation,
+stale/revoked authority, retries and rollback before enabling a permission.
+Historical assessments and contexts retain their original meaning. Automation
+qualification and the measured benefit of adding feedback are separate questions;
+neither establishes market value.
 
 #### Contract repair and corrected resubmission
 
@@ -367,6 +279,47 @@ Check temporal boundaries using each case's full feature and outcome intervals. 
 
 ## 5. Implementation increments and gates
 
+### Keep routine research separate from authority qualification
+
+The implementation priority remains a usable Research → Critic → evaluator →
+evidence loop. Reuse its registry, invocation accounting and runtime for supported
+agent and study configurations. Avoid adding a special runner or approval packet
+for each variation. Technical checks and descriptive measurements can guide
+development with their limited claims recorded; they do not require successful
+qualification of an automatic reviewer first.
+
+The process-assessor qualification workstream governs additional authority:
+automatic assessment and method release. Its human gate remains active. Economic
+validation and trading promotion retain their own evidence and safety gates.
+The eight-family condition belongs to the stopped pilot, not to all future
+Research/Critic work. That pilot's `DO_NOT_START` instruction remains in force.
+
+### Solo-project working path
+
+Use one bounded question and the existing task/profile/campaign records. Research
+submits a proposal, Critic comments, the service checks supported semantics, and
+the operator can admit an eligible calculation to the existing evaluator. Review
+the resulting proposal, critique, measurements and cost together. Keep failed,
+blocked and uncertain attempts in the same history. A development run can be
+useful without establishing independent transfer or economic value.
+
+For a supported prompt, model or feedback change, record a new effective version
+and reuse the same workflow. A small comparison may be descriptive, with its case
+count, relatedness and exposure visible. Use already reviewed lessons through the
+existing feedback selection policy; new unreviewed advice remains a proposal.
+There is no pilot-qualification prerequisite for using an eligible lesson. Do not
+claim that feedback helped until an actual comparison supports that claim.
+
+**Next work:** make the existing bounded workflow convenient to inspect and
+operate using its recorded runs and readable reports. Address a demonstrated
+usability gap with a focused change. Do not build another study harness, generic
+workflow engine or delegation framework as the next milestone. The retired pilot
+needs no more review forms or dispatch implementation. New provider work still
+uses an authorized task and remaining campaign budget; this cleanup starts none.
+
+The following increments describe the broader capabilities and their evidence
+boundaries. They are not prerequisites to complete every ordinary research run.
+
 | Increment | Implemented deliverable | Required verification before continuing |
 | --- | --- | --- |
 | 0. Freeze the first supported slice | Version the EURUSD diagnostic catalog, development-view and two-freeze schemas, baseline-selection rule, family/campaign budgets, chronological allocation policy and first process-suite design. | Map every permitted proposal field to supported evaluator behavior; unknown semantics fail closed; 2020/2021 labelled consumed; statistical inspection policy explicit; economic claims blocked until period-matched costs exist. |
@@ -430,17 +383,20 @@ This documentation audit inspected the architecture, plan, [registry tables](../
 
 **Already covered:** immutable attempts and corrections; scoped requirements; structured evidence and root-source deduplication; ex-ante versus outcome assessment; tentative causal explanations; held-out process suites; deferred fine-tuning. **Missing enforcement/evidence:** explicit behavior-change metrics on held-out tasks and qualification, authorization and monitoring of automatic assessment/release classes. Revision 1.8 specifies the latter path; it remains unimplemented. Distinct feedback source types, reviewed process-assessment records, integrity propagation from process/reference defects (revision 1.7) and the no-relevant-outcome gate for repair (revision 1.6) are implemented. The existing narrow `submit_process_assessment` answer and `CONTRACT_REVIEW_ASSESSMENT` admission record are not substitutes for those general records. V3 citation/scope checks also do not prove free-text causal or temporal applicability.
 
-The next implementation, when authorized, is bounded to this contract gap:
+Implementation history and deferred work:
 
 1. Done in 1.7: the assessment and feedback contracts are versioned (`process_assessment/1`, `research_feedback/1`) on two append-only tables; historical v1–v3 interpretation stays pinned. The repair-eligibility contract was versioned in 1.6.
 2. Done in 1.6: repair exposure and the outcome-free tool policy are enforced, including the admission recheck, with contract tests for unchanged-idea repair, post-label denial, unknown exposure, a changed source disguised as repair, intervening exposure, original-attempt accounting and append-only recheck/correction records. No market rerun occurred.
 3. Done in code in 1.7: invalidation propagation, attribution, type-specific eligibility, conjecture exclusion and outcome-free packets are enforced and tested, including the same action assessed before and after its development result with identical packet and assessment hashes. Six assessments of the historical drafts (Astra v1, Mini v2, the v3 correction; Research and Critic each) are prepared in `configs/research/process_assessments/` as `PROPOSED` inputs with the supported findings `REQUIREMENT_SCOPE_CONFUSION` (Astra, both roles), `EVIDENCE_MISATTRIBUTION` and `NON_PREDICTIVE_FALSIFIER` (Mini, both roles) and no supported agent defect for the v3 correction. They were recorded at 2026-10-09 23:04 UTC with ids equal to the prepared `expected_assessment_id` values. On 10 October, the user reviewed them and six `REVIEWED` supersessions were registered, with Critic deltas linked to reviewed Research records. Six supported, thirteen unsupported and two unresolved findings were retained. Both unresolved lineage findings remain attributed to the contract service. One user-authored requirement-scope lesson is released from the reviewed Astra pair; source hashes and selection eligibility were verified. Reviewers remain outcome-exposed. V3 inherited content and its valid citations/checker defect provide no evidence of newly learned independent capability. The original records remain unchanged; no new agent run occurred.
-4. Pilot design frozen in 1.8.1: [requirement_scope_pilot_v1](studies/requirement_scope_pilot_v1/PROTOCOL.md) specifies the class, paired feedback contrast, preselected assessor-reliability arm, candidate family allocation, single-human reference review, numerical screening rules, proposed budget and stopping rule. The user explicitly chose the pilot; it cannot qualify automatic authority. Keep feedback benefit and assessor reliability as distinct estimands with shared exposure. Next implement the compatible bounded pilot harness and blinded scorer on development fixtures, then author/review and freeze the test inventory and execution manifest. The full two-reviewer qualification track, inferential gates and real shadow study still require separate preregistration. Report inconclusive or negative results without expanding sampling.
-5. Planned implementation for later qualification, after its contract is frozen: add versioned class/delegation, authenticated authority and shadow-output records, routing, scoped permissions and source/revocation propagation. The pilot harness in item 4 grants none of these permissions. Keep automatic permissions inactive and the human gate active. Test unauthorized self-release, ambiguous/out-of-scope inputs, disagreement, stale authority, retry/race behavior and rollback using a disposable registry.
-6. Planned empirical qualification after separate execution authorization: run the bounded offline and shadow studies, preserving failures, abstentions and human disagreements. An independent evaluator computes the frozen metrics and eligibility; humans review the evidence and may activate only the qualified class/version. Assessment authority alone leaves method release human-gated.
-7. Planned steady-state entry: qualify the derivation/release policy and downstream behavior, explicitly activate bounded automatic release, then audit and expand only through new qualified scope. Preserve mandatory human escalations and automatic suspension/requalification; neither passing process checks nor released lessons change economic success or promotion gates.
+4. Archived in 1.11: [requirement_scope_pilot_v1](studies/requirement_scope_pilot_v1/IMPLEMENTATION.md) reached offline preparation only. Its source and 14 tests are preserved with the frozen hashes; the dedicated package and six commands have been removed from active code. All 24 cases and review decisions remain. Family diversity was unsupported, the follow-up declared `AI_ASSISTANT`, and the explicit `DO_NOT_START` remains. No provider call, complete human reference set, feedback-benefit result or automatic authority exists for this study.
+5. Deferred: automatic assessment and method release follow [From human review to scoped automation](#from-human-review-to-scoped-automation) when a repeated operating need justifies them. The current human gate remains. Build and empirically evaluate only the permission actually needed; no delegation framework is required for the current Research/Critic loop.
 
-Revisions 1.6 and 1.7 implemented items 1–3 without provider calls. Revision 1.8 adds the planned qualification/delegation path in items 4–7 without implementing or activating it. The first `HISTORY_ONLY` versus `HISTORY_PLUS_REVIEWED_METHODS` pilot now has a frozen design and one reviewed method lesson, with the user as its sole human reviewer. It still needs a compatible harness, reviewed cases/references, access-isolation checks and a final execution manifest/budget allocation. Full qualification remains a separate study requiring independent reference review. The current authorization covers preparing this design, not starting provider calls or granting automatic authority. Class scope, numerical error/coverage tolerances, support/sample size, shadow duration, audit limits and downstream non-inferiority margins remain inputs to freeze before evaluation. The human gate remains active through qualification and until explicit activation of the corresponding replacement permission. Generalization to open-ended/news research and economic value remains unmeasured. RAG, episodes and fine-tuning remain deferred until a specific retrieval or behavior need and a valid comparison justify them.
+The immediate path is the [solo-project working path](#solo-project-working-path).
+Historical freezes and review corrections remain evidence of what happened; they
+do not impose a new questionnaire on every future run. Feedback benefit, broad
+researcher quality, news-based research and economic value remain unmeasured.
+RAG, episodes and fine-tuning follow a demonstrated need and an appropriate
+comparison, using the existing source and result ownership.
 
 ## 6. Extend the same loop to Loop A
 

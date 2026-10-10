@@ -2,11 +2,15 @@
 
 **Date:** 10.10.2026
 
-**Version:** 2.15.1
+**Version:** 2.18
 
 **Status:** Target architecture with implemented live capture, offline EURUSD diagnostics and the bounded Research/Critic bootstrap described in Section 6.1. Broad discovery, independent new validation, promotion, trading agents and the operational frontend remain target state.
 
-**Revision scope:** 2.15.1 freezes the design of the [first requirement-scope feedback pilot](research/studies/requirement_scope_pilot_v1/PROTOCOL.md), using one human reviewer as selected by the user. The design binds existing history, one released lesson, the model profile, screening thresholds and a planned USD 3 ceiling. Test cases/references, a compatible harness and the execution manifest remain pending; no study has run and no automation is qualified. 2.15 defines the planned transition from human bootstrap review to empirically qualified automatic process assessment and method-feedback release, with separate scoped permissions, mandatory human escalation and revocation. No delegation is active or implemented; the current human gate remains until the replacement is empirically evaluated and explicitly activated. The [implementation plan, revision 1.8](research/AGENT_LOOP_IMPLEMENTATION_PLAN.md#from-human-review-to-scoped-automation), owns the detailed qualification and rollout gates.
+**Revision scope:** 2.18 adopts a solo-project operating scope and retires the stopped pilot's dedicated package, six commands and tests from active code. Its exact implementation is preserved in the [study archive](research/studies/requirement_scope_pilot_v1/IMPLEMENTATION.md); cases, reviews, freezes and `DO_NOT_START` remain intact. Routine research uses the existing runtime, configuration and registry. Automatic review/release qualification is deferred until needed; its current human gate remains active. See [Section 1.1](#11-small-stable-interfaces-and-configurable-workflows) and [implementation plan 1.11](research/AGENT_LOOP_IMPLEMENTATION_PLAN.md).
+
+2.16 built offline preparation for the requirement-scope pilot before 24 synthetic cases were authored. The [original review package](research/studies/requirement_scope_pilot_v1/review/README.md) and [review status](research/studies/requirement_scope_pilot_v1/REVIEW_STATUS.md) preserve all decisions and the declared `AI_ASSISTANT` reviewer provenance. Preparation stopped as `INSUFFICIENT_FAMILY_DIVERSITY`; no complete human reference set, provider execution or automatic authority followed. Revision 2.17 clarified adaptability; 2.18 archives the specialized implementation instead of generalizing it into another framework.
+
+2.15.1 freezes the design of the [first requirement-scope feedback pilot](research/studies/requirement_scope_pilot_v1/PROTOCOL.md), using one human reviewer as selected by the user. The design binds existing history, one released lesson, the model profile, screening thresholds and a planned USD 3 ceiling. That design freeze preceded implementation and candidate authoring; reviewed references and the execution manifest remain pending. No study has run and no automation is qualified. 2.15 defines the planned transition from human bootstrap review to empirically qualified automatic process assessment and method-feedback release, with separate scoped permissions, mandatory human escalation and revocation. No delegation is active or implemented; the current human gate remains until the replacement is empirically evaluated and explicitly activated. The [implementation plan, revision 1.9](research/AGENT_LOOP_IMPLEMENTATION_PLAN.md#from-human-review-to-scoped-automation), owns the detailed qualification and rollout gates.
 
 **Implemented foundation:** 2.14 implements the process-assessment and typed-feedback contracts that 2.12 specified: sealed pre-action packets and `process_assessment/1`, `research_feedback/1` with `METHOD_LESSON`, `EMPIRICAL_FINDING` and `CAUSAL_CONJECTURE`, the feedback policy `reviewed_method_feedback/1` with an exact selection manifest, and two append-only registry tables (migration `0004_process_feedback`). It also widens the 2.13 repair exposure scan to every recorded outcome read and serializes admissions per family. 2.13 implemented the repair exposure gate (`repair_exposure/1`, `research_grounding/2`, `research_tools/1+outcome_free_repair/1`). Measuring whether reviewed feedback changes later behavior remains pending. On 10 October 2026, explicit human review was recorded as six `REVIEWED` supersessions with declared outcome exposure; one user-authored requirement-scope method lesson was released. See the [review results](research/reviews/process_assessments_20261010/reviewed/README.md). Historical v1–v3 records and the admitted historical correction are unchanged.
 
@@ -29,6 +33,69 @@ LedgerQuant is an agent-driven, auditable platform for discovering and testing e
 - **Replaceable integrations:** model providers and broker platforms implement typed ports with verified capabilities. A provider or broker is activated only for the operations its adapter has passed.
 
 Configuration provides adaptability within a supported contract. A new agent using existing capabilities can be registered without source changes. A genuinely new capability, broker protocol or safety rule requires a reviewed implementation, contract tests and deployment. Arbitrary code stored in the database is not an extension mechanism.
+
+### 1.1 Small stable interfaces and configurable workflows
+
+Adaptability is an implementation requirement. Reuse the existing registry,
+runner and evaluator interfaces for supported variations. A new agent, prompt,
+model binding, portfolio profile, account or study configuration should normally
+create a versioned record. It should not require a new Python model, database
+table, service, CLI command or approval document for each variant.
+
+| Concern | How it changes |
+| --- | --- |
+| Identity, provenance, permissions, resource accounting and result ownership | Small shared contracts with explicit semantics; change their schema when meaning or compatibility changes. |
+| Agent instructions, supported tools/model bindings, profiles, accounts and schedules | Validated configuration and lifecycle events using the existing interfaces. |
+| Study cases, grouping, arms, repetitions, thresholds and review policy | One authoritative study configuration interpreted by supported evaluation logic; numerical choices are scoped to that study. |
+| A completed run or experiment | An immutable record of the effective configuration, inputs, implementation and outputs; later work gets its own identity and preserves exposure. |
+
+A new configuration version does not by itself require a new schema version.
+Add a contract only when an implemented boundary needs new enforceable semantics
+that the current interface cannot express. Keep draft editing lightweight;
+commitments attach to the stages that require them. Store related settings
+together and derive readable views and indexes from their authoritative records.
+
+Freezing a study preserves what was decided before its results were seen. It
+does not freeze the repository or prevent future studies from choosing different
+parameters. Record the relevant build/environment and semantic inputs for replay;
+run an old experiment against its pinned artifacts. Unrelated development should
+not require rewriting old freezes or maintaining the whole working tree at an
+old version. Changed questions or success rules retain new-attempt lineage and
+previous exposure, using the same supported contract shape where possible.
+
+Apply gates to the claim or authority they protect. Bounded development runs and
+descriptive diagnostics can inform ongoing research under their existing access,
+budget and review policies. Qualification for automatic process assessment,
+method release, economic promotion or live trading has additional evidence
+requirements. Failure of one qualification study limits that study's claim and
+authority; it is not a project-wide prohibition on further research. The current
+human gate stays active until its replacement is empirically qualified.
+
+For the private solo deployment, concentrate strict validation at consequential
+boundaries: feed identity, timestamps and units; broker/account permissions and
+order idempotency; spending limits; and ownership/provenance of measured results.
+An invalid item is rejected or quarantined at that boundary with a useful reason.
+Unrelated instruments, runs and collection continue when their own inputs remain
+valid. Missing research data can block a measurement without blocking storage or
+critique of the idea.
+
+Routine development needs the question, permitted data, model/tools, budget and
+stopping rule, followed by recorded inputs, outputs and results. Capture these
+through the existing task, campaign and registry records. Prompts and supported
+settings can change for the next run while earlier runs keep their actual inputs.
+There is no standing requirement to author another protocol, supply eight case
+families, find a second reviewer or freeze dozens of repository files. A small
+descriptive check can remain useful with limited support; stronger claims require
+appropriate evidence. Predeclared economic validation and automatic authority
+remain consequential boundaries.
+
+The specialized pilot is an archived, stopped experiment. Its package and six
+offline commands are no longer part of the application. Preserve its original
+counts, thresholds and implementation in the archive without applying them to
+future work. Keep the existing runtime and avoid a universal workflow language,
+new qualification service or per-study schema. Operator review is reserved for
+the decisions that need its authority; reviewing every ordinary agent response
+is not a prerequisite for another bounded research run.
 
 ## 2. Logical architecture
 
@@ -412,55 +479,39 @@ A versioned feedback policy filters source integrity, release status, authorizat
 
 **Implemented in 2.14.** A process assessment (`process_assessment/1`) is an operator record about one recorded action: the service builds a sealed packet holding only the task, the role's agent definition hashes, the frozen grounding context, the tool results that role received before its action, the exact draft or critique, the recorded contract review, deterministic service checks recomputed from the draft, and recorded knowledge about the test basis (context invalidation, review corrections). Operator decisions, design freezes, development results, candidate locks and later evidence are excluded, so the packet of one action is identical before and after its outcome exists. The assessor cites the packet hash; every finding names a defect code, `SUPPORTED`, `NOT_SUPPORTED` or `UNRESOLVED`, the responsible component (Research, Critic, contract service, test harness, reference/reviewer or unknown) and packet references. A supported agent finding must reference the agent's own action or inputs; an invalidated context yields no agent label; a disputed checker output cannot confirm an agent error; an agent version cannot assess itself; critic deltas link to the research-role assessment. Assessments supersede one another and record the assessor's own outcome exposure. Derived feedback (`research_feedback/1`) is typed: a method lesson requires reviewed, current assessments; an empirical finding requires released evidence and carries its exact scope; a conjecture is marked untested with a proposed test. Release state is derived: a superseded or unreviewed source, an invalidated evidence record, an invalidated process context or a later label correction suspends the dependent feedback. A run supplies feedback only through `feedback_policy` (`reviewed_method_feedback/1`): the service filters release state, cutoff and allowed types, excludes conjectures unless explicitly opted in, keeps one item per root lineage, and records the selected IDs, hashes and assembled input hash in the frozen context as arm `HISTORY_PLUS_REVIEWED_METHODS`; without a policy the arm is `HISTORY_ONLY`. Six assessments of the three historical drafts (Research and Critic each) were recorded at 2026-10-09 23:04 UTC (10 October local time) as `PROPOSED`, authored by an AI operator with declared outcome exposure. Explicit human review was recorded on 10 October as six `REVIEWED` supersessions, retaining the originals and `EXPOSED` status. The reviewer confirmed six supported, thirteen unsupported and two unresolved findings; both unresolved lineage findings remain attributed to the contract service. One user-authored requirement-scope `METHOD_LESSON` was released from the reviewed Astra pair, grouped as one process lineage. The reference-checker correction remains engineering evidence, and the inherited v3 content does not establish acquired independent agent capability. Read-only selection verified lesson eligibility; no run has yet received reviewed methods. See the [review results and source records](research/reviews/process_assessments_20261010/reviewed/README.md).
 
-**Planned delegation of process assessment and release (2.15).** Human review is
-the bootstrap trust boundary. The steady-state Agent Loop may automatically
-assess and release feedback for explicitly validated process classes; humans
-qualify those classes, adjudicate exceptions and audit operation. The current
-human gate stays in force until the replacement has passed empirical evaluation
-and an authorized human activates its exact scope. No class has that authority
-today, and the six exposed historical reviews do not qualify one.
+**Deferred delegation of process assessment and release.** Human review remains
+the bootstrap trust boundary for certified findings and method release. Ordinary
+Research/Critic work continues through the existing runtime. Automatic authority
+is an optional later capability for demonstrated repetitive work, with the
+[implementation plan](research/AGENT_LOOP_IMPLEMENTATION_PLAN.md#from-human-review-to-scoped-automation)
+owning its evaluation and escalation rules. No class has delegated authority.
 
-An assessment class binds a bounded question, defect code, subject role,
-contract/rubric versions, source/visibility regime, permitted labels and
-component/severity assignments, assessor versions and exclusions. Permission to
-record qualified findings (`AUTO_ASSESS`) and permission to release method
-feedback (`AUTO_RELEASE_METHOD`) are separate planned capabilities. A lesson
-also needs an evaluated derivation policy preserving the source's claim,
-applicability and counterexamples. Qualification of one field or class grants no
-blanket proposal approval, empirical success, admission or trading authority.
+The transition is: define one bounded question and proposed permission; evaluate
+against withheld references; observe candidate decisions in normal use with human
+review; then explicitly activate only the scope supported by measured error,
+coverage and uncertainty. Record versions, budget, stopping rules and tolerances
+before the authority evaluation. A solo operator can supply reference judgements
+with authorship and exposure disclosed. Additional independent review depends on
+the judgement and impact; fixed reviewer or family counts are study choices.
+Insufficient evidence keeps the affected permission human-gated.
 
-The transition is human bootstrap → withheld-family qualification → shadow
-assessment/release with actual human decisions → bounded automatic assessment →
-separately qualified automatic release. Each transition requires preregistered
-numeric error and coverage thresholds, independent support, uncertainty,
-budgets/stopping rules and activation evidence. Measure wrong findings, missed
-defects, attribution, missed escalations and false releases, including their
-denominators and audit coverage. Downstream feedback behavior must be evaluated;
-agent agreement, high confidence or valid JSON cannot activate authority.
-Thresholds and evaluation designs are still to be frozen in the bounded study.
+Permission to record qualified findings (`AUTO_ASSESS`) and permission to release
+method feedback (`AUTO_RELEASE_METHOD`) remain separate. The latter also needs an
+evaluated derivation policy preserving source claims and applicability, with
+checks for downstream introduced defects. Use the existing registry for scope,
+versions, evidence and activation/suspension history; add only the fields needed
+when implementing that permission. Today's `reviewer` string cannot confer
+machine authority. Research and Critic cannot certify themselves or promote their
+own measured results.
 
-Ambiguous or insufficient evidence, unvalidated semantics or applicability,
-material assessor/checker/reference disagreement, uncertain family/exposure
-ancestry, invalid context/source integrity and high-impact decisions continue to
-escalate to humans. High-impact cases include changes to success gates, holdout
-access, promotion, capital/risk permissions and use of lessons for model-weight
-training. A familiar defect name cannot expand scope. A new hypothesis within a
-validated class may receive automatic process checks; its economic status still
-belongs to the independent evaluator and existing gates. Unknown cases abstain
-and enter the review queue; backlog or cost pressure cannot authorize release.
-
-The registry owns the versioned delegation, human activation, empirical evidence,
-validity period, audit/volume limits and suspension history; services enforce it
-at assessment, release and retrieval. Future contract versions must distinguish
-human review from machine assessment under a specific delegation. The current
-operator `reviewer` string is not an automation authorization mechanism. Research
-and Critic cannot certify themselves or grant release authority. Scope/version
-changes, drift, expired/revoked authority and breached audit limits suspend the
-affected automation and feedback pending review/requalification. Original
-assessments, released versions and previously supplied contexts remain auditable.
-The [delegation contract](research/AGENT_LOOP_IMPLEMENTATION_PLAN.md#from-human-review-to-scoped-automation)
-defines the planned fields, escalation rules, rollout and rollback; implementation
-and empirical qualification remain outstanding.
+Ambiguity, unsupported novelty, material disagreement, uncertain family/exposure
+ancestry, invalid source/context integrity and high-impact changes continue to
+escalate to humans. High impact includes success gates, holdout access, promotion,
+capital/risk and model-training authority. Escalation blocks the affected decision
+or release; unrelated authorized work continues. Audits, source invalidation,
+drift and unqualified version changes can suspend automation and dependent
+feedback. Keep original records and supplied contexts auditable. The human gate
+remains until an empirically evaluated replacement is explicitly activated.
 
 Access to frozen holdout outcomes is reserved for the independent evaluator and authorized reviewers after candidate selection. Research agents see permitted development evidence and released validation summaries; neither feedback nor memory allows a new success definition in response to a failed validation.
 
