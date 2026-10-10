@@ -1,0 +1,175 @@
+{
+  "mode": "RETROSPECTIVE_DEVELOPMENT_QUOTE_PROXY",
+  "design_sha256": "77ea7cfdb4c0d39a7415f3112ebf54b0f715f4f04f424819e30285fb97743d0f",
+  "measurement_code_sha256": "73873993adf30e8c69036c213cc3dcdd4abc01aa15a9a4e848ed6b8c4da3e391",
+  "case_artifact_sha256": "de0f05211a190454510c1bc219452fcccd1945c445a3e16d222d8f17b60bf69a",
+  "days": [
+    {
+      "date_utc": "2020-02-11",
+      "scheduled_anchors": 30,
+      "eligible_intents": 30,
+      "ineligible_anchors": 0,
+      "tied_signal_anchors": 0,
+      "all_take": {
+        "taken": 30,
+        "skipped": 0,
+        "quote_pnl_per_ounce": 9.59
+      },
+      "iqr_overlay": {
+        "taken": 30,
+        "skipped": 0,
+        "quote_pnl_per_ounce": 9.59
+      },
+      "recent_spread_baseline": {
+        "taken": 30,
+        "skipped": 0,
+        "quote_pnl_per_ounce": 9.59
+      },
+      "iqr_minus_all_take_per_ounce": 0.0,
+      "iqr_minus_recent_spread_per_ounce": 0.0
+    },
+    {
+      "date_utc": "2020-04-14",
+      "scheduled_anchors": 30,
+      "eligible_intents": 30,
+      "ineligible_anchors": 0,
+      "tied_signal_anchors": 0,
+      "all_take": {
+        "taken": 30,
+        "skipped": 0,
+        "quote_pnl_per_ounce": -25.82
+      },
+      "iqr_overlay": {
+        "taken": 0,
+        "skipped": 30,
+        "quote_pnl_per_ounce": 0.0
+      },
+      "recent_spread_baseline": {
+        "taken": 0,
+        "skipped": 30,
+        "quote_pnl_per_ounce": 0.0
+      },
+      "iqr_minus_all_take_per_ounce": 25.82,
+      "iqr_minus_recent_spread_per_ounce": 0.0
+    },
+    {
+      "date_utc": "2020-06-09",
+      "scheduled_anchors": 30,
+      "eligible_intents": 30,
+      "ineligible_anchors": 0,
+      "tied_signal_anchors": 0,
+      "all_take": {
+        "taken": 30,
+        "skipped": 0,
+        "quote_pnl_per_ounce": -15.98
+      },
+      "iqr_overlay": {
+        "taken": 1,
+        "skipped": 29,
+        "quote_pnl_per_ounce": -2.11
+      },
+      "recent_spread_baseline": {
+        "taken": 3,
+        "skipped": 27,
+        "quote_pnl_per_ounce": -3.64
+      },
+      "iqr_minus_all_take_per_ounce": 13.87,
+      "iqr_minus_recent_spread_per_ounce": 1.53
+    },
+    {
+      "date_utc": "2020-08-11",
+      "scheduled_anchors": 30,
+      "eligible_intents": 30,
+      "ineligible_anchors": 0,
+      "tied_signal_anchors": 0,
+      "all_take": {
+        "taken": 30,
+        "skipped": 0,
+        "quote_pnl_per_ounce": -21.82
+      },
+      "iqr_overlay": {
+        "taken": 0,
+        "skipped": 30,
+        "quote_pnl_per_ounce": 0.0
+      },
+      "recent_spread_baseline": {
+        "taken": 0,
+        "skipped": 30,
+        "quote_pnl_per_ounce": 0.0
+      },
+      "iqr_minus_all_take_per_ounce": 21.82,
+      "iqr_minus_recent_spread_per_ounce": 0.0
+    },
+    {
+      "date_utc": "2020-10-13",
+      "scheduled_anchors": 30,
+      "eligible_intents": 30,
+      "ineligible_anchors": 0,
+      "tied_signal_anchors": 0,
+      "all_take": {
+        "taken": 30,
+        "skipped": 0,
+        "quote_pnl_per_ounce": 21.51
+      },
+      "iqr_overlay": {
+        "taken": 29,
+        "skipped": 1,
+        "quote_pnl_per_ounce": 22.24
+      },
+      "recent_spread_baseline": {
+        "taken": 29,
+        "skipped": 1,
+        "quote_pnl_per_ounce": 22.49
+      },
+      "iqr_minus_all_take_per_ounce": 0.73,
+      "iqr_minus_recent_spread_per_ounce": -0.25
+    },
+    {
+      "date_utc": "2020-12-08",
+      "scheduled_anchors": 30,
+      "eligible_intents": 30,
+      "ineligible_anchors": 0,
+      "tied_signal_anchors": 0,
+      "all_take": {
+        "taken": 30,
+        "skipped": 0,
+        "quote_pnl_per_ounce": -22.55
+      },
+      "iqr_overlay": {
+        "taken": 30,
+        "skipped": 0,
+        "quote_pnl_per_ounce": -22.55
+      },
+      "recent_spread_baseline": {
+        "taken": 28,
+        "skipped": 2,
+        "quote_pnl_per_ounce": -20.68
+      },
+      "iqr_minus_all_take_per_ounce": 0.0,
+      "iqr_minus_recent_spread_per_ounce": -1.87
+    }
+  ],
+  "totals": {
+    "scheduled_anchors": 180,
+    "eligible_intents": 180,
+    "ineligible_anchors": 0,
+    "tied_signal_anchors": 0,
+    "all_take": {
+      "taken": 180,
+      "skipped": 0,
+      "quote_pnl_per_ounce": -55.07
+    },
+    "iqr_overlay": {
+      "taken": 90,
+      "skipped": 90,
+      "quote_pnl_per_ounce": 7.17
+    },
+    "recent_spread_baseline": {
+      "taken": 90,
+      "skipped": 90,
+      "quote_pnl_per_ounce": 7.76
+    },
+    "iqr_minus_all_take_per_ounce": 62.24,
+    "iqr_minus_recent_spread_per_ounce": -0.59
+  }
+}

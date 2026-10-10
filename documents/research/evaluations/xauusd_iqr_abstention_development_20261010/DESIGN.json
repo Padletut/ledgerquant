@@ -1,0 +1,35 @@
+{
+  "study_id": "xauusd_iqr_abstention_development_20261010",
+  "status": "RETROSPECTIVE_DEVELOPMENT_DESIGN",
+  "parent_exploratory_draft_sha256": "fd25e0dd6b0cd0542d6a67f488c046e6eb0e194c0b1c17e750c8bf5cf2826263",
+  "idea_relation": "Operator-defined child question. It retains the high-IQR abstention action but replaces the parent's unrealizable taken-versus-skipped realized-fill comparison with a 15-minute quote-only round-trip P/L proxy on synthetic order intents. It does not measure actual execution-cost or adverse-fill outcomes.",
+  "source": "2020 broker server tick backfill verified by the existing quote-quality evaluator",
+  "dates_utc": [
+    "2020-02-11",
+    "2020-04-14",
+    "2020-06-09",
+    "2020-08-11",
+    "2020-10-13",
+    "2020-12-08"
+  ],
+  "case_artifact_sha256": "de0f05211a190454510c1bc219452fcccd1945c445a3e16d222d8f17b60bf69a",
+  "thresholds_usd_per_ounce": {
+    "prior_30m_spread_iqr": 0.085,
+    "previous_15m_spread_p95": 0.245
+  },
+  "intent_population": "One synthetic one-ounce XAUUSD marketable entry at each 15-minute anchor from 08:30 through 15:45 UTC on each listed date, if prior quotes and entry/exit quotes satisfy freshness rules. Long when the latest pre-anchor mid exceeds the latest mid strictly before T-15 minutes; short when it is lower; no intent on an exact tie. Exit 15 minutes after the anchor. No actual strategy generated these orders.",
+  "quote_rule": "Use the first source quote at or after entry T and exit T+15 minutes, each no more than five seconds late. Signal mids use the last source quotes strictly before T and T-15 minutes, each no more than 30 seconds old. A missing or stale quote marks the scheduled anchor ineligible before policy comparison.",
+  "take_value": "Quote-only round-trip P/L in USD per ounce: long = exit bid - entry ask; short = entry bid - exit ask. No fills, commissions, financing, price impact or slippage are observed or assumed.",
+  "skip_value": "Zero executed quote P/L. The unobserved counterfactual is the same intent's quote-only take value; overlay minus all-take value is the negative sum of take values for skipped intents. It is an estimate from the quote tape, not a realized skipped-order fill.",
+  "policies": {
+    "all_take": "Take every eligible intent.",
+    "iqr_overlay": "Skip an eligible intent when its prior-30-minute spread IQR is greater than 0.085 USD per ounce; otherwise take.",
+    "recent_spread_baseline": "Skip an eligible intent when the previous completed 15-minute window's spread p95 is greater than 0.245 USD per ounce; otherwise take."
+  },
+  "threshold_provenance": "Both fixed thresholds are medians of already inspected 2020 development features in the existing quote-quality cases (IQR across 192 anchors; previous-window p95 across 186 consecutive-anchor pairs). They were selected with 2020 data visible. This measurement is not independent validation.",
+  "comparison": "Report scheduled, eligible, ineligible and tied anchors; each policy's skipped and taken counts and quote-only P/L per ounce; overlay minus all-take and overlay minus recent-spread baseline per day and across days. Retain all days; no outcome-based filtering.",
+  "independence_unit": "Day; six preselected dates only. Do not treat 15-minute anchors as independent trials.",
+  "cost_sensitivity": "For any unknown round-trip non-spread cost c in USD per ounce per taken order, net policy value equals reported quote-only P/L minus c times the number of taken orders. Report break-even cost comparisons algebraically; do not claim broker-net profit.",
+  "visibility": "Historical source available_at is unknown. This is retrospective event-time simulation, not historical decision replay or live executable pricing.",
+  "validation_boundary": "Do not read 2021 quote outcomes in this study. A separate measurement design, source/cost checks and independent review are required before any 2021 evaluation."
+}
