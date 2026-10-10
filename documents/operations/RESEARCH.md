@@ -18,6 +18,11 @@ a bounded task JSON with the question and any `source_refs` or
 command; its report and `replay` show the exact idea, Critic review, inputs,
 model calls and budget use. A source reference only identifies material named
 in the task; it does not certify its content or decision-time availability.
+Use `replay --run-id RUN_ID --format text` for a short view of the recorded
+idea, Critic feedback, status, lineage and resource reservations. The default
+`replay --run-id RUN_ID` returns the complete JSON record, including exact
+inputs and tool results. The text view is for inspection; it does not assess
+the idea or change its evidence status.
 The result remains `EXPLORATORY_UNMEASURED` with no assigned family. `admit`
 cannot send this record into the EURUSD diagnostic evaluator. A later measured
 hypothesis needs a reviewed evaluator and a separate frozen contract.

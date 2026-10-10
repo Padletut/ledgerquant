@@ -21,6 +21,7 @@ from ledgerquant.research.imports import load_legacy_bundle
 from tests.private_evidence import private_evidence_root
 from ledgerquant.research.proposals import Critique, Proposal
 from ledgerquant.research.registry import Registry, RegistryError, append, artifact, now
+from ledgerquant.research.run_summary import render_run_summary
 from ledgerquant.research.types import canonical, digest
 from tests.unit.test_agent_catalog import proposal_payload
 
@@ -94,6 +95,8 @@ def test_cli_can_register_ideas_without_a_legacy_bundle():
         "--campaign", "ideas", "--profile", "profile.json"])
     assert args.bundle is None
     assert args.workflow == "idea_exploration"
+    assert parser().parse_args(["replay", "--run-id", "existing"]).format == "json"
+    assert parser().parse_args(["replay", "--run-id", "existing", "--format", "text"]).format == "text"
 
 
 def test_bounded_idea_run_records_critique_and_cannot_enter_evaluator(monkeypatch):
@@ -150,6 +153,11 @@ def test_bounded_idea_run_records_critique_and_cannot_enter_evaluator(monkeypatc
     assert registry.get(t.critiques, run_id)["draft_id"] == run_id
     assert report["research_records"]["draft"]["body"]["question"] == idea_payload()["question"]
     assert report["research_records"]["critique"]["body"]["concerns"]
+    summary = render_run_summary(report)
+    assert "Recorded status: EXPLORATORY_UNMEASURED" in summary
+    assert idea_payload()["question"] in summary
+    assert "Needs event-time source coverage" in summary
+    assert "Reserved USD:" in summary and "not billed cost" in summary
     with pytest.raises(RegistryError, match="EXPLORATORY_IDEA_NOT_EVALUABLE"):
         admit(registry, Admission(draft_id=run_id, draft_sha256=draft["artifact_id"], actor="operator",
             action="ADMIT_DEVELOPMENT", reason="Unsupported evaluator", objection_resolutions={}))
@@ -170,6 +178,7 @@ def test_bounded_idea_run_records_critique_and_cannot_enter_evaluator(monkeypatc
     assert lineage["parent_draft_id"] == run_id
     assert lineage["parent_critique_sha256"] == registry.get(t.critiques, run_id)["artifact_id"]
     assert revision["research_records"]["draft"]["body"]["related_draft_ids"] == [run_id]
+    assert f"Parent idea draft: {run_id}" in render_run_summary(revision)
     assert not any(tool["result"].get("error") == "LINEAGE_REFERENCE_NOT_IN_TASK" for tool in revision["tools"])
     assert registry.read(registry.get(t.drafts, run_id)["artifact_id"])["title"] == idea_payload()["title"]
     revision_input = revision["invocations"][1]["request"]["input"][0]["content"]
@@ -215,4 +224,8 @@ def test_bounded_idea_run_records_critique_and_cannot_enter_evaluator(monkeypatc
     stored = {item["kind"]: item["body"] for item in measured_report["research_records"]["commitments"]}
     assert stored["DESIGN_FREEZE"]["origin_idea"] == frozen["origin_idea"]
     assert stored["CANDIDATE_LOCK"]["status"] == lock["status"]
+    measured_summary = render_run_summary(measured_report)
+    assert 'diagnostic:' in measured_summary
+    assert 'mechanism:' in measured_summary
+    assert 'DESIGN_FREEZE:' in measured_summary
     engine.dispose()

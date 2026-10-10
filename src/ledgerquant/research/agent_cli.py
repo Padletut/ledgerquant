@@ -50,6 +50,7 @@ def parser():
                              help="Model profile JSON; defaults to explicitly configured MODEL_PROFILE_FILE.")
     replay = commands.add_parser("replay")
     replay.add_argument("--run-id", required=True)
+    replay.add_argument("--format", choices=["json", "text"], default="json")
     admission = commands.add_parser("admit")
     admission.add_argument("--decision", required=True)
     review_correction = commands.add_parser("correct-contract-review")
@@ -118,6 +119,10 @@ def main():
                 result = runner(registry, provider).run(read(args.config), args.command_key, read(args.task))
         elif args.command == "replay":
             result = registry.report(args.run_id)
+            if args.format == "text":
+                from .run_summary import render_run_summary
+                print(render_run_summary(result), end="")
+                return
         elif args.command == "admit":
             result = admit(registry, Admission.model_validate(read(args.decision)))
         elif args.command == "correct-contract-review":
