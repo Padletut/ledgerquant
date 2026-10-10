@@ -2,7 +2,11 @@
 
 **Date:** 10 October 2026
 
-**Revision:** 1.16.1 — refines Research and Critic instructions under the existing `idea_exploration/2` schema, aligned with architecture 2.23.1. Unmeasured costs, latency and evaluator gaps limit conclusions, not hypothesis proposals. An abstention idea must name a strategy or order population and the comparison to taking its otherwise eligible orders. Critic challenges both invented economic claims and premature parking. Parking may reflect low priority or an idea that cannot yet be formulated; neither is measured falsification. The [XAUUSD v2 run](evaluations/xauusd_quote_quality_followup_v2_20261010/REPORT.md) motivated this correction; it remains an immutable parked attempt. No new contract version, provider run or economic evaluation is part of this revision.
+**Revision:** 1.17.1 — aligns with architecture 2.24.1: Research primarily improves the Executor's contextual judgement, rather than discovering static trading rules. Historical data, released agent decisions, Research RAG, episodic memory and eventual model training are candidate inputs or interventions; each must show its own benefit against a matched agent baseline. This revision changes the plan, not implemented behavior.
+
+1.17 made a prospective LLM Executor in shadow mode the next milestone, aligned with architecture 2.24. The existing price-only diagnostic and XAUUSD synthetic-order study are development controls, not the intended trading intelligence.
+
+1.16.1 refined Research and Critic instructions under `idea_exploration/2`, aligned with architecture 2.23.1. Missing costs, latency and evaluator support limit conclusions, not hypothesis proposals. An abstention idea names an order population and comparator; parking does not imply measured falsification. The [XAUUSD v2 run](evaluations/xauusd_quote_quality_followup_v2_20261010/REPORT.md) motivated that instruction change and remains immutable.
 
 1.16 implemented a parked exploratory outcome and explicit model-authored Critic scope labels in `idea_exploration/2`, aligned with architecture 2.23. A weak idea can end with a reason and revisit condition; no invented market decision is needed. A parked record remains in the existing registry, can be revisited by a later idea run and cannot be mapped directly into measurement. The 2020 XAUUSD outcomes remain development-exposed and the 2021 outcomes unopened.
 
@@ -26,7 +30,7 @@ The current process-assessment, typed-feedback and repair exposure contracts bel
 
 Human review starts with the [readable assessment guide](reviews/process_assessments_20261010/README.md), not the hash index. `process-review` resolves each proposed finding's references into exact source text and shows the original action, rules, limitations and current integrity without writing a decision. Reviewers can accept, correct or leave findings unresolved; a reviewed record need not accept every allegation. Method feedback requires its cited assessments to be reviewed and current, not blanket approval of all six records. The first pilot's frozen implementation is now archived. Its 24 cases and supplied decisions remain available as historical material. The follow-up accepts rationale criteria with a case 15 clarification, declares reviewer type `AI_ASSISTANT`, and rejects the eight-cluster premise through merges and unresolved separation. The pilot stays stopped; finishing its review or dispatch integration is outside the active work plan. See the [review status](studies/requirement_scope_pilot_v1/REVIEW_STATUS.md).
 
-This plan implements the first product slice in [ARCHITECTURE.md](../ARCHITECTURE.md), Section 14. Its outcome is an actual model-driven proposal, a separately recorded critique, a contract decision and evaluator-owned evidence. The agents generate and challenge research ideas; the registry and evaluator determine what was proposed and measured. The [Research Kernel plan](RESEARCH_KERNEL_PLAN.md) owns the source measurements and the two completed EURUSD diagnostics. The [data-availability record](../data/DATA_AVAILABILITY.md) owns unresolved source and broker-quote questions.
+The implemented portion of this plan is the earlier Research/Critic slice in [ARCHITECTURE.md](../ARCHITECTURE.md), Section 14. It produced model-driven research proposals and critiques, not agent-driven market decisions. The next product slice is the prospective shadow Executor below. Research will use its recorded decisions, historical development data and released outcomes to propose improvements to that agent's judgement; the independent evaluator measures those changes. The [Research Kernel plan](RESEARCH_KERNEL_PLAN.md) owns the source measurements and the two completed EURUSD diagnostics. The [data-availability record](../data/DATA_AVAILABILITY.md) owns unresolved source and broker-quote questions.
 
 ## 1. Starting state and bounded first use case
 
@@ -34,9 +38,14 @@ The repository currently has an isolated live-capture service, PostgreSQL/Alembi
 
 The first diagnostic agent run uses EURUSD source coverage, the released structured evidence and a declared development view. Research/Discovery submits **one** proposal or authorized linked revision per run, as fixed by its task; Critic returns **one** typed review. A repair is another attempt, not a new discovery. There is no unbounded debate or automatic search expansion in this slice. Every run records its configured model, tool and resource budgets before invocation. The diagnostic submission tool rejects payoffs outside its schema; `idea_exploration` can instead retain the question, rationale, task-supplied references, suggested lineage and missing measurement capabilities for Critic review, or park the question with a reason. The result is `EXPLORATORY_UNMEASURED` or `EXPLORATORY_PARKED`, with no family assignment, contract freeze or evaluator admission. A new validation window and any economic success gate belong to a later frozen hypothesis. The price-only slice and exploratory idea workflow test orchestration and research discipline; they cannot establish the value of future news/semantic agents or unrestricted discovery ability.
 
-The first slice has no order placement, portfolio allocation, strategy promotion or live Executor. The same agent runner and evidence contracts later support Loop A and a shadow Executor without changing who owns risk or measured outcomes.
+The implemented research slice has no order placement, portfolio allocation,
+strategy promotion or live Executor. Its registry and invocation accounting
+are useful foundations, but do not demonstrate that an LLM can identify market
+setups. The next slice must measure that behavior directly in prospective
+shadow decisions. Static rules remain simple controls and data-quality probes,
+not prerequisites for the agent to consider a market setup.
 
-**Implementation entry decision.** Start with one supported, typed EURUSD **price-only fixed-horizon directional diagnostic** family using the existing source and evaluator conventions, with no order or net-payoff claim. A materially new decision timing, target or horizon is Loop B; a rule variation under an unchanged target/payoff is Loop A and needs a registered baseline. For this implemented measurement path, the contract service admits only event-selection rules and calculations implemented by a reviewed evaluator version; the agent cannot submit executable code or extend the evaluator schema by prose. This admission rule does not define the eventual scope of CFD research ideas. Before accepting a first proposal for measurement, freeze this catalog's schema, permissible development source view, baseline rules, trial/resource budget and chronological holdout-allocation policy. Import the 2020/2021 attempts as released prior evidence, not evaluation windows. A future idea-intake path must preserve unsupported historical or prospective hypotheses and their capability or data gaps without pretending that they have been evaluated.
+**Historical entry decision.** The first supported measurement path was one typed EURUSD **price-only fixed-horizon directional diagnostic** family using the existing source and evaluator conventions, with no order or net-payoff claim. A materially new decision timing, target or horizon is Loop B; a rule variation under an unchanged target/payoff is Loop A and needs a registered baseline. That finite catalog admits only calculations implemented by its reviewed evaluator. This restriction does not apply to exploratory ideas or define the Executor's setup search. The 2020/2021 attempts remain released prior evidence, not new evaluation windows; unsupported ideas retain their capability or data gaps without pretending to have been evaluated.
 
 ## 2. Ownership and end-to-end flow
 
@@ -229,6 +238,21 @@ Before ranking or context assembly, enforce feedback type, current source integr
 
 Model-weight training is deferred. First compare a no-feedback agent against structured evidence feedback, then optionally against structured evidence plus Research RAG/episodes on matched, predeclared research tasks. Measure citation accuracy, correct failure interpretation, duplicate avoidance, contract completeness, Critic detection of unsupported assumptions, valid frozen proposals, independent evidence yield, latency and cost. Store every proposal, including nulls, and assess whether the added context improves the **research process**, not just the apparent backtest score. If enough diverse, reviewed examples later exist, a versioned fine-tuning attempt can target bounded behavior such as contract completeness or failure-taxonomy interpretation. It needs a separately held-out family/time evaluation and a supported provider; binary “winner/loser” labels or training on unreleased validation outcomes are unsuitable.
 
+The Executor has a separate improvement target: quality of its decisions over a
+fixed population of market opportunities. Research may analyze historical
+development cases and released shadow episodes to find recurring judgement
+errors, missing context, unjustified certainty, missed abstentions and missed
+setups. It can propose one bounded change to the Executor's prompt, tools,
+market-knowledge retrieval, episodic memory or model binding while the decision
+and payoff stay fixed. Compare that version with the pinned contextual agent on
+the same eligible information and resource budget; record all opportunities,
+including no-signal and failures. Historical cases can guide development, but
+a modern model's reading of backfilled news is retrospective inference. Claims
+of improved live judgement need new prospective or otherwise genuinely
+independent evidence. Fine-tuning is a later candidate only when suitable
+labelled examples, provider capability and a separate evaluation exist; it is
+not the default meaning of learning from an episode.
+
 Keep feedback arms isolated: fix each evidence/memory snapshot at run start and prevent one arm's critique, lessons or outcomes from entering another. Reflection improving a benchmark does not establish that a trading mechanism was learned. Include cases where a gross effect fails costs, required data are absent, a valid repair has no exposed outcome, a proposed repair has already seen labels, and corrected evidence invalidates an earlier lesson. When revisions are enabled, measure correctly detected defects, repairs and newly introduced defects separately; retain the first proposal and the alleged versus independently supported defect. Verify that feedback preserves these distinctions and improves the registered task metrics before expanding memory (Section 8).
 
 ### Holdout inventory and depletion rule
@@ -293,12 +317,12 @@ Check temporal boundaries using each case's full feature and outcome intervals. 
 
 ### Keep routine research separate from authority qualification
 
-The implementation priority remains a usable Research → Critic → evaluator →
-evidence loop. Reuse its registry, invocation accounting and runtime for supported
-agent and study configurations. Avoid adding a special runner or approval packet
-for each variation. Technical checks and descriptive measurements can guide
-development with their limited claims recorded; they do not require successful
-qualification of an automatic reviewer first.
+The Research → Critic → evaluator → evidence path is implemented for bounded
+questions and remains available. The next product priority is a contextual LLM
+Executor in prospective shadow mode. Reuse the registry, invocation accounting
+and runtime where their contracts fit; add only the decision and data boundaries
+the shadow slice actually needs. Technical checks and fixed-rule controls may
+guide development, but more such rules are not a prerequisite for the Executor.
 
 The process-assessor qualification workstream governs additional authority:
 automatic assessment and method release. Its human gate remains active. Economic
@@ -329,13 +353,48 @@ existing feedback selection policy; new unreviewed advice remains a proposal.
 There is no pilot-qualification prerequisite for using an eligible lesson. Do not
 claim that feedback helped until an actual comparison supports that claim.
 
-**Next work:** use the existing bounded workflow on one authorized, exposed
-development question and inspect whether Research parks it or retains a
-concrete market decision and payoff. Critic's scope labels are model-authored
-claims, not ground truth; an operator checks material disagreement. A later
-measurement still needs its own frozen rule and data gate. Do not build another
-study harness, workflow engine or delegation framework for this step. The
-retired pilot needs no more review forms or dispatch implementation.
+**Next work:** build the narrow prospective shadow-decision path below. The
+existing exploratory workflow can continue to collect new hypotheses, but
+should not consume the main implementation effort by repeatedly converting
+LLM setup discovery into hand-written price rules. The retired pilot needs no
+more review forms or dispatch implementation.
+
+### First contextual Executor slice
+
+1. Verify one prospective broker quote feed and its observation, receipt and
+   usable-at times. Choose one available CFD instrument for the pilot because
+   its feed can be checked, not because the LLM is restricted to that symbol in
+   the product. A small scheduler creates every declared decision opportunity;
+   it never preselects a trade direction or setup.
+2. Assemble a bounded point-in-time context: current bid/ask, recent movement,
+   spread and feed quality, with source IDs and missing-state markers. Add raw
+   news, macro or broker sentiment only when their actual live availability is
+   recorded. A historical news archive or retrospectively generated semantic
+   label is not silently eligible as live context.
+3. Pin one verified model, instructions and typed output. At each opportunity,
+   the Executor may choose `NO_SIGNAL` or propose a CFD setup with instrument,
+   side, entry/expiry, horizon, cited observations, invalidation, uncertainty
+   and reason. The model chooses the setup and direction. A validator rejects
+   unsupported or stale actions; shadow mode sends nothing to the broker.
+4. Freeze an initial payoff and simple no-trade/control comparison before the
+   prospective schedule starts. Store every opportunity, exact assembled input,
+   model call, output, reason and later outcome, including no-signal, invalid,
+   stale and failed calls. Evaluate the full opportunity population,
+   and distinguish decision-time process quality, simulated quote payoff and
+   actual broker execution evidence. Avoid evaluating only attractive signals.
+5. Research reviews released decisions and failures, Critic challenges proposed
+   changes, and Loop A compares one prompt, context or decision-policy change
+   at a time against the pinned baseline. Loop B may propose a different CFD
+   decision/payoff without needing a static-rule representation. No measured
+   payoff or good single trade grants live order authority.
+
+**Slice acceptance:** a prospective run retains every scheduled case, whether
+`NO_SIGNAL`, a candidate or a failure; exact source and model
+lineage is replayable as recorded output; the model, rather than a fixed entry
+rule, selects actions; the evaluator reports all cases and uncertainty under a
+predeclared payoff. A run containing no valid candidate remains an honest
+measured behavior, not an excuse to fabricate trades. Live execution, broad
+instrument coverage, RAG, memory and a full frontend are separate milestones.
 
 The following increments describe the broader capabilities and their evidence
 boundaries. They are not prerequisites to complete every ordinary research run.
@@ -356,7 +415,7 @@ boundaries. They are not prerequisites to complete every ordinary research run.
 
 **Research-evidence acceptance:** increment 6 and a subsequent 7b cycle require an actually eligible frozen proposal, an independent newly allocated window, evaluator-owned evidence and a later agent run that consumes the released result without promoting its lesson to measured truth. Method-feedback stage 7a can proceed without a market result. This milestone can remain pending while engineering acceptance is complete; `BLOCKED_DATA_REQUIREMENT`, data-quality failures and `NO_INDEPENDENT_WINDOW` are honest outcomes, not reasons to fabricate a passing candidate. A positive trading result is not required. Further model providers, RAG/memory policies, MCP and frontend breadth follow their own demonstrated need and gates.
 
-**Original first work item, completed for the finite catalog:** extract the diagnostic's supported semantics into a versioned domain catalog, with design-freeze, candidate-lock and import contracts against existing hashes and focused acceptance/rejection tests. Unsupported horizons, sources and economic payoffs remain explicit. Statistical computation for new confirmatory claims remains a gate at increment 6. The next bounded work item is specified after the execution history below.
+**Original first work item, completed for the finite catalog:** extract the diagnostic's supported semantics into a versioned domain catalog, with design-freeze, candidate-lock and import contracts against existing hashes and focused acceptance/rejection tests. Unsupported horizons, sources and economic payoffs remain explicit. Statistical computation for new confirmatory claims remains a gate at increment 6. The current next product slice is the contextual Executor described above; the following record preserves earlier execution and deferred research work.
 
 ### Implemented slice and acceptance limits
 
@@ -389,7 +448,7 @@ The v3 step is complete. The 18-run process regression matched 4/6 reference ans
 
 The same-idea correction was admitted, frozen, developed and locked. Development measured 129/130 anchors: 48.84% candidate accuracy versus 54.26% for its development-fitted baseline. This contradicts the registered conjecture in the development period; no alternative hours were sampled afterward. `NO_INDEPENDENT_WINDOW` is a limitation recorded in the candidate lock, not a predictive success label. There were 20 runs including the recovery, 44 provider calls and USD 1.540033 in retained reservations. Both campaigns are exhausted. Further work requires a separately bounded question; current evidence does not justify broad autonomous search or economic promotion.
 
-### Feedback-semantics audit and next bounded work item
+### Feedback-semantics audit and historical follow-up
 
 This documentation audit inspected the architecture, plan, [registry tables](../../src/ledgerquant/research/tables.py), [process contracts](../../src/ledgerquant/agents/process_contracts.py), [scorer](../../src/ledgerquant/research/process_evaluation.py), revision/tool checks and the recorded executions/corrections below. It did not rerun inference, rescore the database or alter any historical artifact.
 

@@ -2,11 +2,15 @@
 
 **Date:** 10.10.2026
 
-**Version:** 2.23.1
+**Version:** 2.24.1
 
 **Status:** Target architecture with implemented live capture, offline EURUSD diagnostics, a development-only XAUUSD quote-quality diagnostic, a bounded Research/Critic diagnostic workflow and an exploratory idea workflow with linked revisions and parked attempts. Broad autonomous discovery, independent new validation, promotion, trading agents and the operational frontend remain target state.
 
-**Revision scope:** 2.23.1 refines the Research and Critic instructions within `idea_exploration/2` after the [XAUUSD parked run](research/evaluations/xauusd_quote_quality_followup_v2_20261010/REPORT.md). Unmeasured costs, latency or missing evaluator support limit claims and measurement, not the ability to propose a testable hypothesis. For abstention, a proposal must identify the strategy or order population whose trades might be skipped and the economic comparison. Parking remains available for low-priority or currently unformulable ideas; it is not a measured failure. This is a new hashed agent-instruction version under the same tool and data schema, with no new contract version, table, evaluator or trading authority.
+**Revision scope:** 2.24.1 clarifies that Research primarily improves the agents' contextual market judgement through measured changes to context, instructions, tools, retrieval, memory and, where supported and justified, model training. It does not primarily search for static trading rules. No agent-learning method is assumed effective without comparison on the same decision task.
+
+2.24 made the LLM Executor's contextual setup discovery the next product milestone. Fixed price rules remain optional controls and data diagnostics. The next slice is prospective shadow decisions from source-backed market context, before broker order authority. This changed implementation priority, not an implemented runtime or the authority of existing research results.
+
+2.23.1 refined Research and Critic instructions within `idea_exploration/2` after the [XAUUSD parked run](research/evaluations/xauusd_quote_quality_followup_v2_20261010/REPORT.md). Unmeasured costs, latency or missing evaluator support limit conclusions, not hypothesis proposals. An abstention proposal identifies the orders it could skip and the economic comparison. Parking remains available without implying measured failure. The instruction hashes changed under the same tool and data schema; no new contract, table, evaluator or trading authority was added.
 
 2.23 added `idea_exploration/2` to the existing runner. Research can submit a revised market idea or park a question with a reason and revisit condition; Critic reviews either record and labels decision, payoff and exposure scope. These labels are model-authored review claims, not certified facts or evaluator decisions. Parked attempts retain lineage, cannot be admitted or used as a measurement source, and can be revisited by a later exploratory run. Version 1 definitions and recorded runs remain unchanged.
 
@@ -36,7 +40,7 @@
 
 ## 1. Purpose and design rules
 
-LedgerQuant is an agent-driven, auditable research and trading platform focused on Contract for Difference (CFD) markets. Research agents autonomously discover, propose, critique and refine market hypotheses across supported CFD instruments and strategies. Evaluation establishes empirical evidence under controlled data and measurement boundaries, while independent broker, account and risk controls govern live execution.
+LedgerQuant is an agent-driven, auditable research and trading platform focused on Contract for Difference (CFD) markets. At decision time, an Executor agent analyzes eligible market context, identifies a possible setup and proposes a bounded trading action or `NO_SIGNAL`. Research agents discover, critique and refine the Executor's decision process and new market/payoff questions. Evaluation establishes empirical evidence under controlled data and measurement boundaries, while independent broker, account and risk controls govern live execution. A deterministic trigger or baseline may schedule and test the agent; it does not choose the agent's setups or trading direction.
 
 The platform must preserve flexible research exploration without requiring every hypothesis to fit an existing evaluator catalog. Evaluator capabilities constrain what can currently be measured, not what agents are permitted to investigate. A Next.js/TypeScript console lets operators inspect and manage the system through supported workflows. Every agent run and trading decision must retain the exact configuration and information that produced it.
 
@@ -173,7 +177,7 @@ The boxes are logical responsibilities, not a requirement for one service per bo
 
 The control plane manages definitions and deployment intent. The data plane ingests observations and builds point-in-time context. The decision plane runs configured agents. The execution plane owns order authorization, dispatch and reconciliation. A research plane reads permitted snapshots and proposes hypotheses; an independent evaluator writes measured evidence, and promotion remains a controlled registry transition. The research plane has no direct path to the broker. A component accesses another component's state through its contract; it does not bypass ownership with ad hoc cross-module database writes.
 
-The first agent-driven vertical path is research, ahead of the full trading stack:
+The research path was implemented first to establish audit and evidence ownership:
 
 ```text
 Released evidence + permitted development data → Research/Discovery proposal
@@ -187,7 +191,22 @@ Released evidence + permitted development data → Research/Discovery proposal
                                   released results → later agent runs
 ```
 
-The agent runtime schedules and records bounded runs; it does not own proposal acceptance, validation outcomes or promotion. This path can run with one conformance-tested model provider and a small tool set before live execution, broad broker integrations or the complete console exist. Agents may learn from released failures, including the 2021 EURUSD temporal failure, but inspected 2020–2021 outcomes cannot become untouched validation for a revised hypothesis.
+The agent runtime schedules and records bounded runs; it does not own proposal acceptance, validation outcomes or promotion. Agents may learn from released failures, including the 2021 EURUSD temporal failure, but inspected 2020–2021 outcomes cannot become untouched validation for a revised hypothesis.
+
+The next product slice is a **prospective shadow Executor**, ahead of further
+static-rule discovery. A scheduler offers each eligible instrument to a pinned
+LLM at declared decision times or source events. The model sees only available,
+source-backed broker quotes and any other eligible raw or derived context; it
+may discover a setup, choose a direction and propose a time-limited action, or
+return `NO_SIGNAL`. The trigger defines when to ask, not what to trade. Record
+every scheduled opportunity, including no-signal, stale-context and inference
+failure cases, so evaluation cannot select only attractive model outputs.
+Shadow mode records decisions and later outcomes but sends no broker orders.
+Start with a feed whose prospective timestamps can be verified; add news,
+sentiment and further CFD instruments as their source and availability
+contracts become usable. Historical backfill can support labelled retrospective
+experiments but cannot stand in for this prospective test of a contemporary
+model's decisions.
 
 ## 3. Domain model and sources of truth
 
@@ -278,6 +297,17 @@ Observation → PIT context (RAG + eligible episodes)
 ```
 
 Decision events record input observation IDs, retrieved artifact and episode IDs, agent and portfolio versions, allocation and account IDs, epoch, model-binding and prompt or question-set/decision-policy versions, output schema, result, timestamps and reason codes. Each model invocation records an immutable reference to its exact assembled input, content hash, model and step identity, output and timing; this also preserves lineage when a capability composes several models. A candidate action becomes executable only after policy checks, account capacity reservation and durable dispatch intent succeed.
+
+For an LLM Executor, the typed result carries the selected instrument and
+side, or `NO_SIGNAL`; the proposed entry and expiry, decision horizon,
+setup thesis, cited input observations, invalidation conditions and
+uncertainty are recorded with the decision. These are model proposals, not
+broker facts or proof of positive expected value. A decision policy validates
+them against the deployment's allowed action space and context freshness.
+Research can change the model instructions, context assembly, candidate
+features or decision policy as versioned Loop A experiments. It does not need
+to encode the winning setup as a static entry rule. A changed action space,
+horizon or payoff question follows Loop B and receives its own evaluation.
 
 The signal workflow is `CREATED → AUTHORIZED → DISPATCHED → ACKNOWLEDGED → BROKER_ACCEPTED → PARTIALLY_FILLED/FILLED → RECONCILED`, with explicit `REJECTED`, `EXPIRED`, `CANCELLED` and `UNKNOWN_PENDING_RECONCILIATION` paths. Transitions are appended as events; a current-status projection may be updated for queries. A timeout leaves uncertain broker state to reconcile before retrying an order. Every command uses a stable `signal_id` and an idempotency key. Retries must not create a second broker order.
 
@@ -390,6 +420,18 @@ An evaluation suite fixes dataset and source snapshots, temporal splits, expecte
 
 Evaluate the complete decision contract, including retrieval, memory, prompt or typed-question contract, model and policy versions. Gates cover retrieval relevance and evidence coverage, citation faithfulness where applicable, temporal leakage, schema validity, justified abstention, unsafe actions, capital-limit violations, latency and cost. Typed decision models are also measured for class/score accuracy, probability calibration, coverage at each abstention threshold and stability across instruments and time windows. Market-data eligibility is evaluated against the frozen hypothesis requirements at each decision and settlement window, with eligible, stale, missing and excluded cases counted separately. Trading metrics use the same market window and execution assumptions for candidate and baseline, report sample sizes and uncertainty, and keep simulated outcomes distinct from broker-observed outcomes. A passing offline score does not authorize live trading.
 
+For setup discovery, freeze the **opportunity population** before outcomes:
+which instruments and times or events invoke the Executor, the context it may
+see, its action space, expiry and settlement rule. Score the full population,
+including `NO_SIGNAL`, rather than only model-proposed trades. Compare the
+LLM policy with a no-trade baseline and a simple, declared control under the
+same observation and cost assumptions. For a shadow action, a quote-derived
+counterfactual is a simulation, not a fill; no-signal has zero executed P/L,
+while any claim about a missed trade needs a separately defined comparator.
+Review decision quality from decision-time evidence before exposing outcomes,
+then evaluate later payoff and costs separately. Static rules can be controls
+or source diagnostics without becoming the intended trading intelligence.
+
 Judge a trading decision by the **information and obligations available when it was made**. The independent evaluator keeps three linked assessments, with distinct timestamps and evidence owners:
 
 | Assessment | Eligible evidence | What it determines |
@@ -410,7 +452,7 @@ The optimizer cannot read the frozen holdout while generating candidates, promot
 
 ## 6. Two self-improvement loops and structured evidence
 
-The research system has two explicit loops. Both can lead from hypotheses to measured evidence; neither directly changes a live deployment.
+The research system has two explicit loops. Both can lead from hypotheses to measured evidence; neither directly changes a live deployment. Its primary subject is the **agent's decision-making behavior**: what context it sees, how it interprets that context, when it abstains and whether its proposed action is justified. Historical market data, released decisions and outcomes are material for developing and comparing agent versions, subject to their actual visibility and exposure limits. A static trading rule is optional as a control or diagnostic; finding one is not the purpose of Research.
 
 Research/Discovery may record, critique and refine a CFD market idea before a compatible evaluator or data source exists. Keep its question, rationale, suggested lineage and known measurement gaps; do not assign a measured failure to an untested idea. A reviewed evaluator catalog limits which ideas can proceed to computation, frozen validation and economic claims. An unsupported instrument, decision rule or payoff identifies a capability gap for later implementation; it does not forbid investigation or force the agent to recast the idea as an existing EURUSD diagnostic. Freeze the full decision, data, payoff and success definitions when an idea is ready for independent validation, before its outcomes are inspected.
 
@@ -422,7 +464,7 @@ For a measurable derivative, an operator supplies the source idea draft ID and a
 
 | Loop | Research question | Contract boundary |
 | --- | --- | --- |
-| **A — improve an existing decision system** | Can a prompt, typed question set, model, feature, retrieval, memory or decision-rule change improve the current Executor? | The decision target and payoff contract stay fixed. Compare a candidate with the current baseline under the same evaluation and cost assumptions. |
+| **A — improve an existing decision system** | Can a prompt, model, tool, market-context assembly, RAG policy, episodic memory, fine-tuned model or decision policy improve the current Executor's setup recognition, abstention and action quality? | The decision target and payoff contract stay fixed. Compare a candidate with the current agent baseline under the same opportunity population, evaluation and cost assumptions. |
 | **B — discover a new payoff contract** | Is there another decision and payoff for which observable information has stable economic value? | Register new decision, feature, payoff and cost contracts before validation. A changed payoff is a new hypothesis, even if it reuses an existing agent. |
 
 The measured research path is `PROPOSE → FREEZE CONTRACT → DEVELOP → INDEPENDENT TEMPORAL VALIDATION → COST/STRESS VALIDATION → PROSPECTIVE SHADOW → APPROVAL`. An exploratory idea can remain before freeze while its data and evaluator gaps are addressed. A Critic or Discovery agent can submit candidates and inspect permitted evidence, but the evaluation service computes outcomes and the promotion authority controls status. Loop B may produce a new agent capability, portfolio policy or execution mode; such changes follow the normal code and risk review before deployment.
@@ -577,7 +619,7 @@ Research-agent quality is not validation pass rate alone: evaluate falsifiabilit
 
 Separate execution of Research and Critic does not imply independent errors. Process evaluation audits accepted and rejected drafts, uses versioned rubrics and reference labels, compares single-agent/Critic/simple controls at matched total cost, and keeps held-out process tasks separate from prompt-development cases. Once those test results influence changes, they are exposed evidence too. Review judgements remain distinct from evaluator-owned economic measurements.
 
-Remembering an attempt, interpreting it correctly and improving later behavior require different checks: history coverage, attribution/lineage correctness, then reduced error rates on held-out process tasks. Citing prior IDs or increasing market pass rate proves none of the later steps. Report requirement confusion, evidence misattribution, weak falsifiers, unsupported causal claims and Critic missed/introduced defects separately, with valid task denominators, related-template clusters, budget and uncertainty. The existing Astra invalidation and Mini regressions do not establish general behavioral improvement. Structured feedback and process assessment precede any decision to add Research RAG, episodic memory or fine-tuning.
+Remembering an attempt, interpreting it correctly and improving later behavior require different checks: history coverage, attribution/lineage correctness, then reduced error rates on held-out process tasks. Citing prior IDs or increasing market pass rate proves none of the later steps. Report requirement confusion, evidence misattribution, weak falsifiers, unsupported causal claims and Critic missed/introduced defects separately, with valid task denominators, related-template clusters, budget and uncertainty. The existing Astra invalidation and Mini regressions do not establish general behavioral improvement. For the Executor, compare a plain contextual baseline with each proposed RAG, memory, prompt, tool or training change on matched decision opportunities; score ex-ante decision quality separately from later payoff. Research RAG lessons are not automatically eligible as live market facts. Add these capabilities when their source contract and measured benefit justify them.
 
 Evaluation reports show the number of related trials, all preregistered windows, results by pair and period, net costs, drawdown, calibration, uncertainty and failure reasons. A promising isolated backtest is insufficient for `SHADOW_ELIGIBLE`. Prospective evidence is collected after registration under the same decision and payoff definitions. Any exceptional override is recorded with its reason and approver; it does not rewrite the original result.
 
@@ -793,15 +835,20 @@ Only necessary ingress endpoints are published. Internal services use isolated n
 
 ## 14. Implementation sequence
 
-The live-capture bootstrap and offline EURUSD audits preserve source data and test the evaluator path. The 2021 temporal failure shows why agent proposals and independent evidence must be developed together. The first three items below form one research-agent product slice; they do not depend on live trading. A complete multi-year tick archive is useful for reuse but follows each frozen hypothesis's information requirements. The exact research gates are in [RESEARCH_KERNEL_PLAN.md](research/RESEARCH_KERNEL_PLAN.md).
+The live-capture bootstrap and offline audits preserve data and establish parts
+of the research ledger, but they are not the trading product. The next
+implementation slice must demonstrate the LLM making source-backed decisions
+on prospective market observations. Complete only the feed, context and audit
+pieces needed for that slice before broadening infrastructure. A complete
+archive and each new evaluator follow measured needs and their data contracts.
 
-1. Build the minimal agent foundation: stable agent/run IDs, immutable versions of instructions and model bindings, one conformance-tested model provider, typed proposal outputs, bounded tool permissions and budgets, and an append-only invocation/tool-call ledger. Expose the first research operations through application-service ports and a narrow MCP adapter when an agent host needs that protocol.
-2. Give the research path real authority boundaries: a structured hypothesis/trial/evidence registry, source-backed development views, access-controlled validation data, contract freeze, an independent evaluator and explicit release of measured results. Preserve the existing 2020 and 2021 attempts as known family evidence; neither is a fresh holdout.
-3. Run the first multi-agent Loop B workflow: Research/Discovery proposes a new decision or payoff from permitted evidence, Critic checks assumptions and data sufficiency, the contract service freezes an approved candidate, and the evaluator alone measures it against an untouched registered window. Record every proposed, rejected and evaluated attempt. Provide a small typed control API and Next.js view for agent runs, hypotheses and evidence.
-4. Add market-knowledge and research-knowledge retrieval, then eligible episodic memory, as versioned and evaluated tool/context policies. Keep actual and hypothetical `available_at` modes distinct. Start Loop A comparisons when an existing Executor decision contract and baseline exist; freeze each change and compare it through the evaluator.
-5. Complete the separate market-data cBot and authenticated ingestion path with source identity, symbol mapping, canonical observations, a durable ingress journal, Redis consumer groups, immutable tick chunks, archive manifests, feed-health reporting and point-in-time visibility. Continue prospective collection while the research-agent slice is built.
-6. Introduce an Executor in research and shadow modes using pinned agent/model versions, typed decisions, source-backed context and recorded-output replay. Measure its decisions without granting order authority. Expand the console with real Agents, Evaluations, Market Data and Deployments views as the corresponding API contracts exist.
-7. Adapt the existing execution cBot and establish account, portfolio, allocation, reservation, risk and reconciliation contracts. Complete the observation-to-order vertical path in demo mode before live eligibility; keep broker-side protective behavior and account-scoped authorization independent of the agent runtime.
+1. Retain the implemented Research/Critic history and released EURUSD/XAUUSD evidence with its limited claims. Do not spend the next increment inventing more fixed-rule strategies as a prerequisite to the Executor.
+2. Establish one verified prospective broker feed and a small point-in-time context assembler for one CFD instrument. Include quote freshness, source IDs and an explicit unavailable state; add raw news or sentiment only after their own live availability is verified. A full Redis/archive rollout is not a prerequisite for the first bounded shadow run.
+3. Run one pinned LLM Executor in `SHADOW`: at every registered opportunity it chooses `NO_SIGNAL` or a typed, time-limited setup and candidate action from the eligible context. Persist the exact input, output, version, timestamps and failures. Dispatch no orders. Provide an operator-readable run view through the existing service boundary before building a broad console.
+4. Freeze that Executor's opportunity population and payoff for a prospective evaluation. Score all scheduled decisions, compare no-trade and simple controls, and separate ex-ante decision quality from later quote-derived outcomes. Research and Critic use the released record to propose one-at-a-time Loop A changes to the model instructions, context or decision policy; the evaluator, not the agents, measures them.
+5. Use Loop B for genuinely different decisions, instruments, horizons or payoffs, including ideas that require new data or evaluator support. Freeze each measurable derivative before independent validation; do not force it into the old EURUSD catalog. Add market-knowledge/research retrieval and eligible memory as versioned context policies when source coverage and comparison justify them.
+6. Extend market ingestion with the durable journal, Redis consumer groups, immutable tick chunks, archive manifests, feed-health reporting and recovery as data volume and replay requirements demand. Continue prospective collection throughout.
+7. Adapt the existing execution cBot and establish account, portfolio, allocation, reservation, risk and reconciliation contracts. Complete the observation-to-order vertical path in demo mode before live eligibility; broker-side protective behavior and account-scoped authorization remain independent of the agent runtime.
 8. Make the trading path restart-safe with outbox/inbox idempotency, account serialization, journal and stream replay, archive checkpoint recovery, feed-gap recovery and broker-state recovery. Validate the Compose/Portainer deployment, health checks, backup/restore and full Execution/Accounts/Portfolios views. Add prospective gates and controlled promotion before live activation.
 9. Add further conformance-tested OpenAI, Claude, TypeSafe Jev, Ollama, LM Studio and local Llama-runtime adapters, plus broker API, MT4, MT5 and NinjaTrader integrations as each reaches its required capability gate. Scale API, frontend and workers independently when measured load or isolation requires it.
 
