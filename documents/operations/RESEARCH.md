@@ -26,7 +26,10 @@ To revise an idea after Critic feedback, start another idea run whose task has
 `parent_idea_draft_id` set to the prior run's draft ID. Research and Critic both
 receive the exact earlier idea and Critic review. The new run appends an
 `IDEA_REVISION` link; the first draft and review remain unchanged. Include any
-source references the revision may cite in the new task.
+source references the revision may cite in the new task. Research may list the
+parent in the draft's optional `related_draft_ids` without copying it into the
+task's separate `related_draft_ids` list. The task parent and `IDEA_REVISION`
+event remain the authoritative link even if that optional draft list is empty.
 
 To measure a related question that the existing catalog actually supports,
 start a diagnostic run with `source_idea_draft_id` and a nonempty

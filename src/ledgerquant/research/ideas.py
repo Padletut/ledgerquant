@@ -37,7 +37,7 @@ class IdeaCritique(Record):
 
 
 def references_allowed(task: object, source_refs: tuple[str, ...], related_draft_ids: tuple[str, ...] = ()) -> bool:
-    """Model citations must come from the immutable operator task."""
+    """Allow cited sources and drafts already named by the immutable task."""
     if not isinstance(task, dict):
         return False
     sources = task.get("source_refs", ())
@@ -45,7 +45,11 @@ def references_allowed(task: object, source_refs: tuple[str, ...], related_draft
     if any(not isinstance(items, (list, tuple)) or not all(isinstance(item, str) for item in items)
            for items in (sources, related)):
         return False
-    return set(source_refs) <= set(sources) and set(related_draft_ids) <= set(related)
+    permitted_drafts = set(related)
+    parent = task.get("parent_idea_draft_id")
+    if isinstance(parent, str) and parent:
+        permitted_drafts.add(parent)
+    return set(source_refs) <= set(sources) and set(related_draft_ids) <= permitted_drafts
 
 
 def recorded_idea(connection, draft_id: str) -> dict:

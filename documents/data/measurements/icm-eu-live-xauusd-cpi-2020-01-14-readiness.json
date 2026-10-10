@@ -1,0 +1,65 @@
+{
+  "assessment_type": "source_readiness_only",
+  "assessed_on": "2026-10-10",
+  "cpi_directional_outcome_computed": false,
+  "quote_quality_spread_component_inspected": true,
+  "research_exposure": "The full-window spread distribution and quote gaps were inspected. Treat 2020-01-14 as source-audit exposed, not an untouched validation date for quote-quality research.",
+  "source": {
+    "broker": "IC Markets EU Ltd",
+    "account_number": null,
+    "environment": "live",
+    "symbol": "XAUUSD",
+    "server_identity": null,
+    "data_mode": "ctrader_cli_server_ticks",
+    "cli_image_digest": "sha256:285484fad431e0ffa4ca96662e82ea66cead93c97cf0e3c46006e80cab4734ba",
+    "exporter_algo_sha256": "ba1c8f8002d12c584337d339f5ececd57422a20808e63e1613947f751d5c1315",
+    "run_id": "xauusd_cpi_20200114_readiness_cli510",
+    "raw_manifest_path": "data/ctrader_tick_exports/cpi_readiness_20200114/xauusd_cpi_20200114_readiness_cli510.manifest.json",
+    "raw_log_path": "data/ctrader_tick_exports/cpi_readiness_20200114/xauusd_cpi_20200114_readiness_cli510.cli.log",
+    "csv_sha256": "aab7ea1a5a24106b6cc593b8d7df8d94bdaa93b5de1f260f69c308b85dbf0d8b",
+    "csv_bytes": 203045,
+    "manifest_csv_hash_and_size_verified": true
+  },
+  "release_anchor": {
+    "event": "US CPI for December 2019",
+    "scheduled_at_utc": "2020-01-14T13:30:00Z",
+    "basis": "BLS archived release says 08:30 EST",
+    "source_url": "https://www.bls.gov/news.release/archives/cpi_01142020.htm",
+    "actual_feed_available_at": null,
+    "consensus_available_at": null
+  },
+  "window": {
+    "start_utc": "2020-01-14T13:25:00Z",
+    "end_exclusive_utc": "2020-01-14T13:50:00Z",
+    "first_tick_utc": "2020-01-14T13:25:00.239Z",
+    "last_tick_utc": "2020-01-14T13:49:59.641Z",
+    "row_count": 4098,
+    "rows_before_release_in_window": 651,
+    "rows_first_minute_after_scheduled_release": 232,
+    "rows_next_fourteen_minutes": 2386,
+    "rows_minutes_15_to_20_after_release": 829,
+    "first_quote_after_scheduled_release_ms": 155,
+    "largest_intertick_gap_seconds": 4.25,
+    "nonpositive_quote_rows": 0,
+    "crossed_quote_rows": 0,
+    "equal_bid_ask_rows": 0,
+    "median_sampled_spread_usd_per_oz": 0.08,
+    "p95_sampled_spread_usd_per_oz": 0.13,
+    "maximum_sampled_spread_usd_per_oz": 0.33,
+    "spread_quantile_method": "sorted observations, rounded index (n-1) * quantile"
+  },
+  "limitations": [
+    "One event window does not establish historical XAUUSD coverage across CPI events.",
+    "The quote timestamp is not proof of when a CPI print or consensus became available to a decision system.",
+    "Historical broker quote fidelity and executable spread are unverified.",
+    "Commission, slippage and event-time fill behavior are unmeasured.",
+    "No pre-release historical core CPI consensus with source, revision and availability timestamps was acquired.",
+    "This is broker-history backfill retrieved in 2026, not recorded 2020 decision-time replay."
+  ],
+  "cli_control": {
+    "older_image_digest": "sha256:a0f0c22d5bbe31db8de6e91b6caad9b8061b52d9133426aa6242848469c208e9",
+    "result": "Message expected after data loading for both XAUUSD and EURUSD; no cBot start record. This is not evidence of absent XAUUSD ticks.",
+    "xauusd_failure_log_path": "data/ctrader_tick_exports/cpi_readiness_20200114/xauusd_cpi_20200114_readiness_legacy_failure.cli.log",
+    "eurusd_control_log_path": "data/ctrader_tick_exports/cpi_readiness_20200114/eurusd_control_legacy_failure.cli.log"
+  }
+}

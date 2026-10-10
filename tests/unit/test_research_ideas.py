@@ -80,6 +80,9 @@ def test_exploration_has_separate_tools_and_definition():
 def test_citations_must_be_in_the_frozen_task():
     task = {"source_refs": ["macro-calendar"], "related_draft_ids": ["prior-idea"]}
     assert references_allowed(task, ("macro-calendar",), ("prior-idea",))
+    linked_task = {"parent_idea_draft_id": "prior-idea"}
+    assert references_allowed(linked_task, (), ("prior-idea",))
+    assert not references_allowed(linked_task, (), ("invented-parent",))
     assert not references_allowed(task, ("invented",))
     assert not references_allowed(task, (), ("invented-parent",))
     assert not references_allowed({"source_refs": "macro-calendar"}, ("macro-calendar",))
@@ -154,6 +157,7 @@ def test_bounded_idea_run_records_critique_and_cannot_enter_evaluator(monkeypatc
 
     revised = {**idea_payload(), "title": "CFD event response after Critic review",
         "rationale": "Test the delayed response only after source timing and revision rules are known.",
+        "related_draft_ids": [run_id],
         "measurement_gaps": ["A reviewed event-time evaluator and source audit are still needed."]}
     idea = Idea.model_validate(revised).model_dump(mode="json")
     provider = Scripted()
@@ -164,6 +168,8 @@ def test_bounded_idea_run_records_critique_and_cannot_enter_evaluator(monkeypatc
     lineage = next(event["detail"] for event in revision["events"] if event["kind"] == "IDEA_REVISION")
     assert lineage["parent_draft_id"] == run_id
     assert lineage["parent_critique_sha256"] == registry.get(t.critiques, run_id)["artifact_id"]
+    assert revision["research_records"]["draft"]["body"]["related_draft_ids"] == [run_id]
+    assert not any(tool["result"].get("error") == "LINEAGE_REFERENCE_NOT_IN_TASK" for tool in revision["tools"])
     assert registry.read(registry.get(t.drafts, run_id)["artifact_id"])["title"] == idea_payload()["title"]
     revision_input = revision["invocations"][1]["request"]["input"][0]["content"]
     assert canonical(registry.read(registry.get(t.critiques, run_id)["artifact_id"])) in revision_input
