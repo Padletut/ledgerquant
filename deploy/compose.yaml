@@ -133,6 +133,36 @@ services:
       migrate:
         condition: service_completed_successfully
 
+  # Database browser for development, reachable from this machine only by default.
+  pgadmin:
+    image: dpage/pgadmin4:9.9@sha256:5d9624a93634d1c5e595619cc57b1d330758120d1baf445fa97300c0c1fc3c0a
+    restart: unless-stopped
+    # The image supports any UID in group 0; this UID can read the local secret files.
+    user: "${LEDGERQUANT_SECRET_UID:-1000}:0"
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    # The image's Python binary carries this file capability and cannot start without it.
+    cap_add:
+      - NET_BIND_SERVICE
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${LEDGERQUANT_PGADMIN_EMAIL:-admin@ledgerquant.dev}
+      PGADMIN_DEFAULT_PASSWORD_FILE: /run/secrets/pgadmin_password
+      PGADMIN_LISTEN_PORT: "5050"
+      PGADMIN_SERVER_JSON_FILE: /pgadmin4/servers.json
+      PGADMIN_CONFIG_UPGRADE_CHECK_ENABLED: "False"
+    secrets:
+      - pgadmin_password
+    ports:
+      - "${LEDGERQUANT_PGADMIN_BIND:-127.0.0.1}:${LEDGERQUANT_PGADMIN_PORT:-5050}:5050"
+    volumes:
+      - ./pgadmin-servers.json:/pgadmin4/servers.json:ro
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 secrets:
   postgres_password:
     file: ${LEDGERQUANT_POSTGRES_PASSWORD_FILE:-../credentials/postgres.pwd}
@@ -140,8 +170,11 @@ secrets:
     file: ${LEDGERQUANT_COLLECTOR_TOKEN_FILE:-../credentials/collector-token.txt}
   fred_api_key:
     file: ${LEDGERQUANT_FRED_API_KEY_FILE:-../credentials/fred-api.key}
+  pgadmin_password:
+    file: ${LEDGERQUANT_PGADMIN_PASSWORD_FILE:-../credentials/pgadmin.pwd}
 
 volumes:
   postgres_data:
   caddy_data:
   caddy_config:
+  pgadmin_data:

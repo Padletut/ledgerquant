@@ -1,0 +1,13 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "LedgerQuant",
+      "Group": "Servers",
+      "Host": "postgres",
+      "Port": 5432,
+      "MaintenanceDB": "ledgerquant",
+      "Username": "ledgerquant",
+      "SSLMode": "prefer"
+    }
+  }
+}
