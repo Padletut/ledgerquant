@@ -96,5 +96,6 @@
   "trial_budget": 1,
   "search_space": "No optimization; one deterministic candidate rule and one development-frozen baseline.",
   "failure_reasons": ["DATA_QUALITY_FAILURE", "INSUFFICIENT_SUPPORT", "TEMPORAL_FAILURE"],
-  "validation_release_rule": "After independent evaluation, release the full case audit and metric report, including null and failed results. A changed rule, threshold, source or window becomes a new child hypothesis and does not reuse this validation as untouched holdout."
+  "validation_release_rule": "After independent evaluation, release the full case audit and metric report, including null and failed results. A changed rule, threshold, source or window becomes a new child hypothesis and does not reuse this validation as untouched holdout.",
+  "_publication_redaction": {"status": "NON_AUTHORITATIVE_PUBLIC_COPY", "original_sha256": "edb0bf2a3fe9aade8170cd8bcdf08d85b50c921e8417446ccab5dd70b1eb77a8", "original_location": "ignored local private_publication_archive", "note": "Account identity was redacted. Use the preserved original for hash-checked replay."}
 }

@@ -136,5 +136,6 @@
     "Current published IC Markets EU hours do not certify the account-specific schedule in 2020.",
     "Cross-symbol rows do not prove that EURUSD was open or executable at that instant.",
     "The scan excludes cross-date pauses, including weekends and holidays; those need separate schedule evidence."
-  ]
+  ],
+  "_publication_redaction": {"status": "NON_AUTHORITATIVE_PUBLIC_COPY", "original_sha256": "0ce4c597a87da6135600c278e1770c5618a2bb00522673e7c942e7fbdbc54956", "original_location": "ignored local private_publication_archive", "note": "Account identity was redacted. Use the preserved original for hash-checked replay."}
 }

@@ -13,6 +13,7 @@ from ledgerquant.research import tables as t
 from ledgerquant.research.admission import Admission, admit
 from ledgerquant.research.bootstrap import bootstrap, invalidate_evidence
 from ledgerquant.research.imports import load_legacy_bundle
+from tests.private_evidence import private_evidence_root
 from ledgerquant.research.registry import RegistryError
 from ledgerquant.research.types import canonical, digest
 from tests.integration.test_research_registry import registered
@@ -60,7 +61,7 @@ class Scripted:
 
 def setup(registered, payload=None, contract_version=1):
     registry, _, profile = registered
-    config = bootstrap(registry, load_legacy_bundle(Path(__file__).parents[2]), profile,
+    config = bootstrap(registry, load_legacy_bundle(private_evidence_root()), profile,
         CampaignPolicy(max_runs=1, max_invocations=9, max_reserved_tokens=500000, max_usd=1), "runtime-" + uuid4().hex,
         contract_version=contract_version)
     payload = payload or proposal_payload()

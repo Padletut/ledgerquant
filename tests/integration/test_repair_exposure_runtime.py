@@ -2,7 +2,6 @@
 
 from hashlib import sha256
 import json
-from pathlib import Path
 from uuid import uuid4
 
 import pytest
@@ -19,6 +18,7 @@ from ledgerquant.research.contract_revisions import RevisionSubmission, resolve_
 from ledgerquant.research.grounding import frozen_context
 import ledgerquant.research.admission as admission_module
 from ledgerquant.research.imports import load_legacy_bundle
+from tests.private_evidence import private_evidence_root
 from ledgerquant.research.registry import RegistryError
 from ledgerquant.research.repair_exposure import RepairDenied
 from ledgerquant.research.review_corrections import ReviewCorrection, correct_review
@@ -32,13 +32,12 @@ from tests.unit.test_agent_catalog import proposal_payload
 from tests.unit.test_grounded_proposals import critique_payload, grounded_payload
 
 
-ROOT = Path(__file__).parents[2]
 LEGACY = ["eurusd_four_hour_direction_2020_v1", "eurusd_four_hour_direction_2021_replication_v1"]
 
 
 def narrowed_bundle(hours):
     """Test fixture only: the legacy evidence re-declared on other hours so a repair can be unexposed."""
-    bundle = load_legacy_bundle(ROOT)
+    bundle = load_legacy_bundle(private_evidence_root())
     suffix = "_fixture_hours_" + "_".join(map(str, hours))
     for item, attempt, window in zip(bundle["evidence"], bundle["attempts"], bundle["windows"], strict=True):
         contract = json.loads(attempt["contract"])
@@ -133,7 +132,7 @@ def register_narrowed_v3(registry, profile, bundle):
 
 def test_strict_repair_is_denied_in_the_exposed_family_before_any_provider_call(registered):
     registry, _, profile = registered
-    parent, corrected = blocked_parent(registry, profile, load_legacy_bundle(ROOT), [12], LEGACY)
+    parent, corrected = blocked_parent(registry, profile, load_legacy_bundle(private_evidence_root()), [12], LEGACY)
     config = register_v3(registry, profile)
     strict = StrictTransport(profile)
     report = Runner(registry, strict).run(config, "strict-" + uuid4().hex, repair_task(parent, corrected, "premeasurement_repair"))
@@ -230,7 +229,7 @@ def test_intervening_development_result_denies_strict_admission_durably(register
 
 def test_strict_task_needs_a_recorded_defect_reference_and_an_explicit_policy(registered):
     registry, _, profile = registered
-    parent, corrected = blocked_parent(registry, profile, load_legacy_bundle(ROOT), [12], LEGACY)
+    parent, corrected = blocked_parent(registry, profile, load_legacy_bundle(private_evidence_root()), [12], LEGACY)
     config = register_v3(registry, profile)
     wrong = repair_task(parent, corrected, "premeasurement_repair")
     wrong["revision_authorizations"][0]["defect_reference"]["sha256"] = "f" * 64

@@ -1611,5 +1611,6 @@
     "created_at": "2026-10-09T23:04:19.725723+00:00"
   },
   "exported_at": "2026-10-09T23:32:27.445350+00:00",
-  "current_packet_sha256": "7f5d6af5f8ed589d56bfc6b533b2b10e76cd7a81459eeb25dd4a88fcd0d2b6b5"
+  "current_packet_sha256": "7f5d6af5f8ed589d56bfc6b533b2b10e76cd7a81459eeb25dd4a88fcd0d2b6b5",
+  "_publication_redaction": {"status": "NON_AUTHORITATIVE_PUBLIC_COPY", "original_sha256": "6dd69c56c94d5894d74c81255a538eec622b3ac97ed6753844fb1a05e6256091", "original_location": "ignored local private_publication_archive", "note": "Account identity was redacted. Use the preserved original for hash-checked replay."}
 }

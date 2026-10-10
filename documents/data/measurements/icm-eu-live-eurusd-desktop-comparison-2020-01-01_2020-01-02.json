@@ -68,5 +68,6 @@
     "The Desktop CSV lacks embedded account, source-mode and timezone metadata; these are operator-confirmed and aligned with CLI UTC by exact row matches.",
     "Desktop and CLI may use the same cTrader server history. Matching rows validate extraction consistency, not independent broker quote fidelity or executable cost.",
     "The compared days do not establish continuous coverage from 2020 onward."
-  ]
+  ],
+  "_publication_redaction": {"status": "NON_AUTHORITATIVE_PUBLIC_COPY", "original_sha256": "e8fcbc4f788e7cd85ef4edc149233cca0514f56f056ff691b64044f5bc819ba7", "original_location": "ignored local private_publication_archive", "note": "Account identity was redacted. Use the preserved original for hash-checked replay."}
 }

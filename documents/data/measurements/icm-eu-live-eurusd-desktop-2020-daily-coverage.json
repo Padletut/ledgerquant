@@ -2840,5 +2840,6 @@
       "max_gap_start_time": "04:46:49.278",
       "max_gap_end_time": "04:47:46.996"
     }
-  }
+  },
+  "_publication_redaction": {"status": "NON_AUTHORITATIVE_PUBLIC_COPY", "original_sha256": "43b9e5c4ceaec0639efb417b0be0271916af55f6b91662b891bd6571226f8fca", "original_location": "ignored local private_publication_archive", "note": "Account identity was redacted. Use the preserved original for hash-checked replay."}
 }

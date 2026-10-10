@@ -1,15 +1,12 @@
-from pathlib import Path
 
 import pytest
 
 from ledgerquant.research.imports import load_legacy_bundle
-
-
-ROOT = Path(__file__).parents[2]
+from tests.private_evidence import REPO, private_evidence_root
 
 
 def test_legacy_import_verifies_artifacts_and_retains_failed_replication():
-    bundle = load_legacy_bundle(ROOT)
+    bundle = load_legacy_bundle(private_evidence_root())
     assert len(bundle["evidence"]) == 2
     assert bundle["evidence"][1]["payload"]["gate_decision"] == "TEMPORAL_FAILED"
     assert all(item["payload"]["related_trial_count"] == 1 for item in bundle["evidence"])
@@ -22,3 +19,8 @@ def test_legacy_import_verifies_artifacts_and_retains_failed_replication():
 def test_import_refuses_missing_artifact_without_substitution(tmp_path):
     with pytest.raises(ValueError, match="artifact"):
         load_legacy_bundle(tmp_path)
+
+
+def test_import_refuses_public_redacted_artifacts():
+    with pytest.raises(ValueError, match="hash mismatch"):
+        load_legacy_bundle(REPO)

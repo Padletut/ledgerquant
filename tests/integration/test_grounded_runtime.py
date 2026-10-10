@@ -15,6 +15,7 @@ from ledgerquant.research.contract_revisions import RevisionSubmission, resolve_
 from ledgerquant.research.grounding import frozen_context, build_context
 from ledgerquant.research.grounded_proposals import ProposalV3
 from ledgerquant.research.imports import load_legacy_bundle
+from tests.private_evidence import private_evidence_root
 from ledgerquant.research.registry import RegistryError, now
 from ledgerquant.research.review_corrections import ReviewCorrection, correct_review
 from ledgerquant.research.types import canonical, digest
@@ -65,7 +66,7 @@ class GroundedTransport(Scripted):
 
 
 def register_v3(registry, profile):
-    return bootstrap(registry, load_legacy_bundle(Path(__file__).parents[2]), profile,
+    return bootstrap(registry, load_legacy_bundle(private_evidence_root()), profile,
         CampaignPolicy(max_runs=2, max_invocations=20, max_reserved_tokens=1000000, max_usd=1),
         "grounded-" + uuid4().hex, contract_version=3)
 

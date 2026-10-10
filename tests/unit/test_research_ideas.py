@@ -18,6 +18,7 @@ from ledgerquant.research import tables as t
 from ledgerquant.research.admission import Admission, admit
 from ledgerquant.research.bootstrap import bootstrap
 from ledgerquant.research.imports import load_legacy_bundle
+from tests.private_evidence import private_evidence_root
 from ledgerquant.research.proposals import Critique, Proposal
 from ledgerquant.research.registry import Registry, RegistryError, append, artifact, now
 from ledgerquant.research.types import canonical, digest
@@ -180,7 +181,7 @@ def test_bounded_idea_run_records_critique_and_cannot_enter_evaluator(monkeypatc
         return append(connection, table, normalized)
 
     monkeypatch.setattr("ledgerquant.research.bootstrap.append", sqlite_bootstrap_append)
-    diagnostic = bootstrap(registry, load_legacy_bundle(Path(__file__).parents[2]), profile,
+    diagnostic = bootstrap(registry, load_legacy_bundle(private_evidence_root()), profile,
         CampaignPolicy(max_runs=1, max_invocations=1, max_reserved_tokens=10000, max_usd=1),
         "sqlite-diagnostic")
     source_id = revision["run"]["id"]

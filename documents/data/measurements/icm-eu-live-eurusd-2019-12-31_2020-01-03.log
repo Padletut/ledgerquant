@@ -1,3 +1,4 @@
+# PUBLICATION-REDACTED COPY; original SHA-256 10a1c3237faa825e287dbb6446812d3e87467939ec465025e448086dc8bb3d7c; exact original is in ignored local private_publication_archive.
 Info | CBot instance [probe, EURUSD, h1] started.
 31/12/2019 00:00:00.460 | Info | TICK_PROBE_START symbol=EURUSD account=ACCOUNT_REDACTED target_utc=2020-01-01T00:00:00.0000000Z server_first_reported_utc=2019-07-08T00:00:00.0000000Z load_older_history=False
 03/01/2020 21:56:58.353 | Info | TICK_PROBE_DAY symbol=EURUSD account=ACCOUNT_REDACTED date_utc=2019-12-31 ticks=26382 first_utc=2019-12-31T00:00:01.4210000Z last_utc=2019-12-31T18:59:48.6470000Z invalid_quotes=0

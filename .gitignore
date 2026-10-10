@@ -1,5 +1,7 @@
 # Env
 .env
+.env.*
+!.env.example
 .venv/
 .pytest_cache/
 __pycache__/

@@ -61,5 +61,6 @@
     "result": "Message expected after data loading for both XAUUSD and EURUSD; no cBot start record. This is not evidence of absent XAUUSD ticks.",
     "xauusd_failure_log_path": "data/ctrader_tick_exports/cpi_readiness_20200114/xauusd_cpi_20200114_readiness_legacy_failure.cli.log",
     "eurusd_control_log_path": "data/ctrader_tick_exports/cpi_readiness_20200114/eurusd_control_legacy_failure.cli.log"
-  }
+  },
+  "_publication_redaction": {"status": "NON_AUTHORITATIVE_PUBLIC_COPY", "original_sha256": "09bf4968434847f5b9245d77fa2c694fa99ecae31675a3260028d51c1efedd52", "original_location": "ignored local private_publication_archive", "note": "Account identity was redacted. Use the preserved original for hash-checked replay."}
 }

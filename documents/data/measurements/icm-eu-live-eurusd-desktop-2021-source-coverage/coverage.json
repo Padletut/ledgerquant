@@ -69,5 +69,6 @@
   "source_file": "data/ctrader_tick_exports/desktop_reference/LedgerQuant.LiveCapture EURUSD t1 20180522-20261008.csv",
   "source_contract_sha256": "edb0bf2a3fe9aade8170cd8bcdf08d85b50c921e8417446ccab5dd70b1eb77a8",
   "measurement_code_sha256": "cc45889413b9458134550ee0608af3b0b5f5b01a3b2df48d135be36754c4e805",
-  "generated_at_utc": "2026-10-09T17:47:19Z"
+  "generated_at_utc": "2026-10-09T17:47:19Z",
+  "_publication_redaction": {"status": "NON_AUTHORITATIVE_PUBLIC_COPY", "original_sha256": "e0c2df54e4f86a1f2f7229be33a866dbc4854c5b78b253c7fe63017a70efa288", "original_location": "ignored local private_publication_archive", "note": "Account identity was redacted. Use the preserved original for hash-checked replay."}
 }

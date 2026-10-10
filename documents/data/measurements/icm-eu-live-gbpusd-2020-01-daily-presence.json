@@ -196,5 +196,6 @@
     "The probe retained day summaries, not all GBPUSD tick rows for the month.",
     "The reported server-first date is not the earliest tick proven retrievable through this method.",
     "The backtest end argument is not an independently verified exclusive event-time bound."
-  ]
+  ],
+  "_publication_redaction": {"status": "NON_AUTHORITATIVE_PUBLIC_COPY", "original_sha256": "07506881e403855a7e4c863f6b659bc818d0536c5499953d30ca0baba556ee2f", "original_location": "ignored local private_publication_archive", "note": "Account identity was redacted. Use the preserved original for hash-checked replay."}
 }

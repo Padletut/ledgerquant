@@ -143,8 +143,17 @@ Create the operator/worker control directories, generate a strong worker passwor
 in its secret file and copy the selected versioned profile, policy and task into
 the corresponding control directories. Export the verified legacy bundle:
 
+The published research artifacts have account identity redacted and are not
+hash-verifiable originals. Set `LEDGERQUANT_PRIVATE_EVIDENCE_ROOT` to a local,
+ignored directory containing the original `documents/` tree before exporting.
+The original files must retain their bytes and relative paths; the local
+publication archive's `verified_bundle` is one such directory. Do not import
+the public copies or relax the artifact hash checks.
+
 ```bash
-PYTHONPATH=src .venv/bin/python -m ledgerquant.research.agent_cli export-legacy --root . > data/research_control/operator/legacy-bundle.json
+export LEDGERQUANT_PRIVATE_EVIDENCE_ROOT=data/private_publication_archive/account_redaction_20261010/verified_bundle
+umask 077
+PYTHONPATH=src .venv/bin/python -m ledgerquant.research.agent_cli export-legacy --root "$LEDGERQUANT_PRIVATE_EVIDENCE_ROOT" > data/research_control/operator/legacy-bundle.json
 docker compose -f deploy/compose.yaml -f deploy/compose.research.yaml run --rm --no-deps research-operator provision-worker --password-file /run/secrets/research_worker_password
 docker compose -f deploy/compose.yaml -f deploy/compose.research.yaml run --rm --no-deps research-operator register --bundle /control/legacy-bundle.json --profile /control/openai_astra_bootstrap.profile.json --policy /control/openai_astra_bootstrap.policy.json --campaign openai_astra_bootstrap_20261009 --contract-version 1 > data/research_control/worker/registration.json
 ```

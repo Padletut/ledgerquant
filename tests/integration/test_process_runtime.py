@@ -7,6 +7,7 @@ from ledgerquant.agents.process_runtime import ProcessRunner, checklist
 from ledgerquant.models.generation import Generation, ToolCall
 from ledgerquant.research.bootstrap import bootstrap
 from ledgerquant.research.imports import load_legacy_bundle, LEGACY_IDS
+from tests.private_evidence import private_evidence_root
 from ledgerquant.research.process_evaluation import schedule, score, compact_report
 from ledgerquant.research.types import canonical
 from tests.integration.test_research_registry import registered
@@ -28,7 +29,7 @@ class ProcessTransport(Scripted):
 
 def test_three_process_arms_are_real_or_explicitly_deterministic(registered):
     registry, _, profile = registered
-    config = bootstrap(registry, load_legacy_bundle(Path(__file__).parents[2]), profile,
+    config = bootstrap(registry, load_legacy_bundle(private_evidence_root()), profile,
         CampaignPolicy(max_runs=3, max_invocations=6, max_reserved_tokens=200000, max_usd=1),
         "process-test-" + uuid4().hex, "process_review")
     reports = []
@@ -61,7 +62,7 @@ def test_three_process_arms_are_real_or_explicitly_deterministic(registered):
 
 def test_scoped_process_binding_and_schema(registered):
     registry, _, profile = registered
-    config = bootstrap(registry, load_legacy_bundle(Path(__file__).parents[2]), profile,
+    config = bootstrap(registry, load_legacy_bundle(private_evidence_root()), profile,
         CampaignPolicy(max_runs=3, max_invocations=6, max_reserved_tokens=200000, max_usd=1),
         "scoped-process-" + uuid4().hex, "process_review", contract_version=2)
     frozen = json.loads((Path(__file__).parents[2] / "configs/research/contract_requirements_suite.json").read_text())
@@ -79,7 +80,7 @@ def test_grounded_process_freezes_context_and_does_not_duplicate_raw_evidence(re
     from ledgerquant.research import tables as t
     from tests.unit.test_grounded_proposals import grounded_payload
     registry, _, profile = registered
-    config = bootstrap(registry, load_legacy_bundle(Path(__file__).parents[2]), profile,
+    config = bootstrap(registry, load_legacy_bundle(private_evidence_root()), profile,
         CampaignPolicy(max_runs=1, max_invocations=3, max_reserved_tokens=200000, max_usd=1),
         "grounded-process-" + uuid4().hex, "process_review", contract_version=3)
     manifest = registry.read(registry.get(t.snapshots, config["snapshot_id"])["manifest_id"])

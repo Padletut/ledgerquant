@@ -4,9 +4,7 @@ from hashlib import sha256
 import json
 from pathlib import Path
 
-
-REPO = Path(__file__).parents[2]
-HYPOTHESES = REPO / "documents/research/hypotheses"
+from tests.private_evidence import private_evidence_root
 
 
 def _json(path: Path) -> dict:
@@ -14,12 +12,14 @@ def _json(path: Path) -> dict:
 
 
 def test_2021_replication_changes_only_identity_lineage_and_validation_window():
-    parent_path = HYPOTHESES / "eurusd_four_hour_direction_2020_v1.json"
-    child_path = HYPOTHESES / "eurusd_four_hour_direction_2021_replication_v1.json"
+    repo = private_evidence_root()
+    hypotheses = repo / "documents/research/hypotheses"
+    parent_path = hypotheses / "eurusd_four_hour_direction_2020_v1.json"
+    child_path = hypotheses / "eurusd_four_hour_direction_2021_replication_v1.json"
     parent = _json(parent_path)
     child = _json(child_path)
-    selection_path = REPO / "documents/research/evaluations/eurusd_four_hour_direction_2020_v1/selection"
-    evidence_path = REPO / "documents/research/evaluations/eurusd_four_hour_direction_2020_v1/evaluation"
+    selection_path = repo / "documents/research/evaluations/eurusd_four_hour_direction_2020_v1/selection"
+    evidence_path = repo / "documents/research/evaluations/eurusd_four_hour_direction_2020_v1/evaluation"
     selection = _json(selection_path / "selection.json")
 
     for field in (
@@ -46,10 +46,10 @@ def test_2021_replication_changes_only_identity_lineage_and_validation_window():
         "validation_window_basis": "next_complete_calendar_year_after_parent_validation",
         "parent_validation_was_inspected": True,
     }
-    freeze = _json(HYPOTHESES / "eurusd_four_hour_direction_2021_replication_v1.freeze.json")
+    freeze = _json(hypotheses / "eurusd_four_hour_direction_2021_replication_v1.freeze.json")
     assert freeze["contract_sha256"] == sha256(child_path.read_bytes()).hexdigest()
     assert freeze["hypothesis_id"] == child["hypothesis_id"]
-    coverage_path = REPO / freeze["prevalidation_source_coverage_path"]
+    coverage_path = repo / freeze["prevalidation_source_coverage_path"]
     coverage = _json(coverage_path)
     assert sha256(coverage_path.read_bytes()).hexdigest() == freeze["prevalidation_source_coverage_sha256"]
     assert coverage["contains_predictions_or_outcomes"] is False

@@ -139,5 +139,6 @@
     "parent_baseline_class": "PREDICT_NON_UP",
     "validation_window_basis": "next_complete_calendar_year_after_parent_validation",
     "parent_validation_was_inspected": true
-  }
+  },
+  "_publication_redaction": {"status": "NON_AUTHORITATIVE_PUBLIC_COPY", "original_sha256": "e0def15777b1a1317faf63eca4b68e7a6e6137346b0e32d60b7e18f3e7c85363", "original_location": "ignored local private_publication_archive", "note": "Account identity was redacted. Use the preserved original for hash-checked replay."}
 }

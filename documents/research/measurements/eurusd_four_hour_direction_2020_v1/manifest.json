@@ -103,5 +103,6 @@
     }
   },
   "contains_predictions_or_outcome_prices": false,
-  "generated_at_utc": "2026-10-09T17:07:49Z"
+  "generated_at_utc": "2026-10-09T17:07:49Z",
+  "_publication_redaction": {"status": "NON_AUTHORITATIVE_PUBLIC_COPY", "original_sha256": "8f13ae0c24395aad6f3f659416cffa547217305b9a79cc6d3ee7487355b2ea23", "original_location": "ignored local private_publication_archive", "note": "Account identity was redacted. Use the preserved original for hash-checked replay."}
 }

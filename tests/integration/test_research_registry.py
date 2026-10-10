@@ -15,6 +15,7 @@ from ledgerquant.models.generation import ModelProfile
 from ledgerquant.research import tables as t
 from ledgerquant.research.bootstrap import bootstrap, invalidate_evidence
 from ledgerquant.research.imports import load_legacy_bundle
+from tests.private_evidence import private_evidence_root
 from ledgerquant.research.registry import BudgetExceeded, Registry, RegistryError
 from tests.unit.test_agent_catalog import proposal_payload
 from tests.unit.test_requirement_scope import scoped_proposal
@@ -40,7 +41,7 @@ def registered():
                            max_output_tokens=512, max_request_bytes=40000, timeout_seconds=10,
                            max_steps_per_agent=4, input_usd_per_million=0, output_usd_per_million=0,
                            max_run_usd=1, price_basis="test fixture", knowledge_exposure="test fixture")
-    bundle = load_legacy_bundle(Path(__file__).parents[2])
+    bundle = load_legacy_bundle(private_evidence_root())
     policy = CampaignPolicy(max_runs=2, max_invocations=2, max_reserved_tokens=8000, max_usd=1)
     config = bootstrap(registry, bundle, profile, policy, "test-" + uuid4().hex)
     yield registry, config, profile
@@ -109,7 +110,7 @@ def test_role_denial_does_not_write_draft_and_reads_are_required(registered):
 
 def test_current_cost_field_can_be_corrected_before_draft_is_recorded(registered):
     registry, _, profile = registered
-    config = bootstrap(registry, load_legacy_bundle(Path(__file__).parents[2]), profile,
+    config = bootstrap(registry, load_legacy_bundle(private_evidence_root()), profile,
         CampaignPolicy(max_runs=1, max_invocations=2, max_reserved_tokens=8000, max_usd=1),
         "field-correction-" + uuid4().hex, contract_version=2)
     run, _ = start(registry, config)
@@ -131,7 +132,7 @@ def test_current_cost_field_can_be_corrected_before_draft_is_recorded(registered
 def test_concurrent_money_reservations_cannot_exceed_campaign(registered):
     registry, _, profile = registered
     charged = profile.model_copy(update={"input_usd_per_million": 10, "output_usd_per_million": 50})
-    config = bootstrap(registry, load_legacy_bundle(Path(__file__).parents[2]), charged,
+    config = bootstrap(registry, load_legacy_bundle(private_evidence_root()), charged,
         CampaignPolicy(max_runs=2, max_invocations=10, max_reserved_tokens=100000, max_usd=0.10), "money-" + uuid4().hex)
     run, _ = start(registry, config)
     def reserve(step):

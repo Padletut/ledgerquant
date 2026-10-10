@@ -25,6 +25,9 @@ component, schema, adapter, dataset or capability already exists.
 - Do not silently broaden a research task, search space, dataset, instrument
   universe, evaluation window or success criterion.
 - Do not commit unless the user explicitly requests a commit.
+- Before publishing or committing, check staged files for real account identifiers
+  and other private broker metadata. Keep byte-exact evidence originals in
+  ignored private storage; label any public redaction as non-authoritative.
 
 ## 2. Sources of truth and ownership
 

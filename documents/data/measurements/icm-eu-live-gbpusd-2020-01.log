@@ -1,3 +1,4 @@
+# PUBLICATION-REDACTED COPY; original SHA-256 425feae4cf6569092e3ca80e0880140c1980d41435ac1154bc6a3f0ba0ed4a65; exact original is in ignored local private_publication_archive.
 31/12/2019 00:00:00.490 | Info | TICK_PROBE_START symbol=GBPUSD account=ACCOUNT_REDACTED target_utc=2020-01-01T00:00:00.0000000Z server_first_reported_utc=2019-07-08T00:00:00.0000000Z load_older_history=False
 31/01/2020 21:56:57.652 | Info | TICK_PROBE_DAY symbol=GBPUSD account=ACCOUNT_REDACTED date_utc=2019-12-31 ticks=60158 first_utc=2019-12-31T00:00:02.0030000Z last_utc=2019-12-31T18:59:59.8300000Z invalid_quotes=0
 31/01/2020 21:56:57.652 | Info | TICK_PROBE_DAY symbol=GBPUSD account=ACCOUNT_REDACTED date_utc=2020-01-01 ticks=2852 first_utc=2020-01-01T22:01:00.3000000Z last_utc=2020-01-01T23:59:59.5980000Z invalid_quotes=0
