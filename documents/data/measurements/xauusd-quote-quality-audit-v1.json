@@ -1,0 +1,250 @@
+{
+  "status": "DEVELOPMENT_DESCRIPTIVE_ONLY",
+  "sampling_sha256": "afbe35cbd7fd3333f48835efe4750721b5e838266c084a0983cddc5b3fd51d8a",
+  "source": {
+    "broker": "IC Markets EU Ltd",
+    "account_ref": "icm_eu_live_research",
+    "account_identity_location": "ignored local exporter manifests and probe logs only",
+    "environment": "live",
+    "symbol": "XAUUSD",
+    "mode": "cTrader CLI server ticks",
+    "cli_image_digest": "sha256:285484fad431e0ffa4ca96662e82ea66cead93c97cf0e3c46006e80cab4734ba",
+    "probe_algo_sha256": "5383109425a17ae6702f48ac879794bdacbdf0417c05feae66edfe9298ac50d6",
+    "export_algo_sha256": "ba1c8f8002d12c584337d339f5ececd57422a20808e63e1613947f751d5c1315",
+    "server_identity": null,
+    "actual_historical_available_at": null,
+    "broker_name_basis": "cli_accounts_asserted"
+  },
+  "coverage_probes": [
+    {
+      "date_utc": "2020-02-11",
+      "phase": "development",
+      "ticks_on_date": 112468,
+      "first_event_utc": "2020-02-11T00:00:00.3990000Z",
+      "last_event_utc": "2020-02-11T23:59:56.3960000Z",
+      "invalid_quotes_on_date": 0,
+      "run_duplicate_timestamps": 0,
+      "run_reversed_timestamps": 0,
+      "log_sha256": "76cd5a9d8dbb08978a9696754475cc8cb7a70fe621a3afbc31a3bb2e6557a815"
+    },
+    {
+      "date_utc": "2020-04-14",
+      "phase": "development",
+      "ticks_on_date": 123110,
+      "first_event_utc": "2020-04-14T00:00:00.2460000Z",
+      "last_event_utc": "2020-04-14T23:59:49.4320000Z",
+      "invalid_quotes_on_date": 0,
+      "run_duplicate_timestamps": 0,
+      "run_reversed_timestamps": 0,
+      "log_sha256": "55a16f8c2c0c16dc093e3d4d9c04aed1e61dbc3f2a3fe41d2afee948c02b1f64"
+    },
+    {
+      "date_utc": "2020-06-09",
+      "phase": "development",
+      "ticks_on_date": 122125,
+      "first_event_utc": "2020-06-09T00:00:00.2910000Z",
+      "last_event_utc": "2020-06-09T23:59:59.5390000Z",
+      "invalid_quotes_on_date": 0,
+      "run_duplicate_timestamps": 0,
+      "run_reversed_timestamps": 0,
+      "log_sha256": "9ad8f7975f55462b555f21758b266625c1666dd59c21c86223ee854b616868c7"
+    },
+    {
+      "date_utc": "2020-08-11",
+      "phase": "development",
+      "ticks_on_date": 188097,
+      "first_event_utc": "2020-08-11T00:00:00.2750000Z",
+      "last_event_utc": "2020-08-11T23:59:59.6110000Z",
+      "invalid_quotes_on_date": 0,
+      "run_duplicate_timestamps": 0,
+      "run_reversed_timestamps": 0,
+      "log_sha256": "6f5f94974ba6b5eb27aeab7fc8e12752711174ed89899a943e1fe8ba1a461b26"
+    },
+    {
+      "date_utc": "2020-10-13",
+      "phase": "development",
+      "ticks_on_date": 151081,
+      "first_event_utc": "2020-10-13T00:00:00.2470000Z",
+      "last_event_utc": "2020-10-13T23:59:54.3960000Z",
+      "invalid_quotes_on_date": 0,
+      "run_duplicate_timestamps": 0,
+      "run_reversed_timestamps": 0,
+      "log_sha256": "f4b6484f3c0b7f5ed8fc39f3e7e98350d51f325942292910a750229f73745f61"
+    },
+    {
+      "date_utc": "2020-12-08",
+      "phase": "development",
+      "ticks_on_date": 100107,
+      "first_event_utc": "2020-12-08T00:00:00.2890000Z",
+      "last_event_utc": "2020-12-08T23:59:59.3620000Z",
+      "invalid_quotes_on_date": 0,
+      "run_duplicate_timestamps": 0,
+      "run_reversed_timestamps": 0,
+      "log_sha256": "edfe57756526abe2c91f5b31e16559ab0dc776c3319a966a312f1f060d2bc744"
+    },
+    {
+      "date_utc": "2021-02-09",
+      "phase": "validation_metadata_only",
+      "ticks_on_date": 140117,
+      "first_event_utc": "2021-02-09T00:00:00.5920000Z",
+      "last_event_utc": "2021-02-09T23:59:58.8320000Z",
+      "invalid_quotes_on_date": 0,
+      "run_duplicate_timestamps": 0,
+      "run_reversed_timestamps": 0,
+      "log_sha256": "33af8784014b3126ebb0a4d267118306d6456fcdc99a93d87be4013b4e03014b"
+    },
+    {
+      "date_utc": "2021-04-13",
+      "phase": "validation_metadata_only",
+      "ticks_on_date": 129789,
+      "first_event_utc": "2021-04-13T00:00:00.3030000Z",
+      "last_event_utc": "2021-04-13T23:59:59.9030000Z",
+      "invalid_quotes_on_date": 0,
+      "run_duplicate_timestamps": 0,
+      "run_reversed_timestamps": 0,
+      "log_sha256": "3206a545dfbe814c33fe25875e1b24bab8302863ecd91780a52209e5e5f9bcc6"
+    },
+    {
+      "date_utc": "2021-06-08",
+      "phase": "validation_metadata_only",
+      "ticks_on_date": 100685,
+      "first_event_utc": "2021-06-08T00:00:00.2640000Z",
+      "last_event_utc": "2021-06-08T23:59:59.2520000Z",
+      "invalid_quotes_on_date": 0,
+      "run_duplicate_timestamps": 0,
+      "run_reversed_timestamps": 0,
+      "log_sha256": "2e4dcdc53f46cf45ba0b5dc94bb6b58d63dacd46ccef080a753d19813ee62656"
+    },
+    {
+      "date_utc": "2021-08-10",
+      "phase": "validation_metadata_only",
+      "ticks_on_date": 105155,
+      "first_event_utc": "2021-08-10T00:00:00.2560000Z",
+      "last_event_utc": "2021-08-10T23:59:59.4210000Z",
+      "invalid_quotes_on_date": 0,
+      "run_duplicate_timestamps": 0,
+      "run_reversed_timestamps": 0,
+      "log_sha256": "7b19e4376ab7ee20fec38a5cc39ca82ea74f81a57f0e39862dd2d9883d68d51a"
+    },
+    {
+      "date_utc": "2021-10-12",
+      "phase": "validation_metadata_only",
+      "ticks_on_date": 115212,
+      "first_event_utc": "2021-10-12T00:00:00.3050000Z",
+      "last_event_utc": "2021-10-12T23:59:55.6060000Z",
+      "invalid_quotes_on_date": 0,
+      "run_duplicate_timestamps": 0,
+      "run_reversed_timestamps": 0,
+      "log_sha256": "fa3dafe44a4c726fc8b86b1cd8374df9094e60f7ab70299815f71a5ff145646b"
+    },
+    {
+      "date_utc": "2021-12-14",
+      "phase": "validation_metadata_only",
+      "ticks_on_date": 89136,
+      "first_event_utc": "2021-12-14T00:00:00.5700000Z",
+      "last_event_utc": "2021-12-14T23:59:48.7540000Z",
+      "invalid_quotes_on_date": 0,
+      "run_duplicate_timestamps": 0,
+      "run_reversed_timestamps": 0,
+      "log_sha256": "ad8bc824ff026f89d01278687840ee18c10d2b6430d28d287683676f6e4a7a41"
+    }
+  ],
+  "development": {
+    "question": "Within each selected 2020 date, do higher ranks of prior 30-minute spread variability accompany higher ranks of next-15-minute spread stress?",
+    "selected_dates": [
+      "2020-02-11",
+      "2020-04-14",
+      "2020-06-09",
+      "2020-08-11",
+      "2020-10-13",
+      "2020-12-08"
+    ],
+    "total_exported_rows": 406015,
+    "total_scheduled_anchors": 192,
+    "total_measurable_anchors": 192,
+    "total_insufficient_source_anchors": 0,
+    "per_date": [
+      {
+        "date_utc": "2020-02-11",
+        "source_rows": 54182,
+        "measurable_cases": 32,
+        "insufficient_source_cases": 0,
+        "spearman_within_day": 0.41843976021903745,
+        "manifest_sha256": "c4657aa9d516cfbb9a2fb892bffc4ddb1042f7c5ed1fc2fd64d78ccbac8c2db8",
+        "data_sha256": "b8ab0381df030f6bca778bf5bca1d6207621bac5d29b08a1f0ccf24d354f4592"
+      },
+      {
+        "date_utc": "2020-04-14",
+        "source_rows": 63278,
+        "measurable_cases": 32,
+        "insufficient_source_cases": 0,
+        "spearman_within_day": 0.3602131029268898,
+        "manifest_sha256": "b61ac7ece941b8535541d8c5d183108a57882a2f3cf78e03faea3ddd45f913b0",
+        "data_sha256": "022650181e691e37b68b916668e506bb576b974958dbf180b85e042dd9490ab3"
+      },
+      {
+        "date_utc": "2020-06-09",
+        "source_rows": 69532,
+        "measurable_cases": 32,
+        "insufficient_source_cases": 0,
+        "spearman_within_day": -0.01914747619010663,
+        "manifest_sha256": "3ed0ebc7b78d30989153a05ce1a8b6b80fb432dd375e92d821ffd532eab26591",
+        "data_sha256": "aa07ecce7696cdb3571d9057a27f41e4cd322c6efc73b58407a95b18cb3cc6c6"
+      },
+      {
+        "date_utc": "2020-08-11",
+        "source_rows": 87135,
+        "measurable_cases": 32,
+        "insufficient_source_cases": 0,
+        "spearman_within_day": 0.4756902667097316,
+        "manifest_sha256": "6a4d41145fbcc9620ddd54dab1d9e0494f98485eae1da7e762e239e6edde59e8",
+        "data_sha256": "1da7e17777f0affee718027e444b68c32e07534acf45cd968a8105195de39ea6"
+      },
+      {
+        "date_utc": "2020-10-13",
+        "source_rows": 76640,
+        "measurable_cases": 32,
+        "insufficient_source_cases": 0,
+        "spearman_within_day": 0.5561983213991678,
+        "manifest_sha256": "52e231ebcef16b067c3c692cfff99225b9beafc4d5e50063e162e5edcd113b79",
+        "data_sha256": "bc342020d109a2dcf76187df9da32660277d980196e52e83aeabea330a3aabd7"
+      },
+      {
+        "date_utc": "2020-12-08",
+        "source_rows": 55248,
+        "measurable_cases": 32,
+        "insufficient_source_cases": 0,
+        "spearman_within_day": -0.1684111054479285,
+        "manifest_sha256": "b5be9b2bf2a448135688fc66e04b9dbb44a9c66c9bb5d3c093b4d0e8871bf465",
+        "data_sha256": "46d81d6088c563f98a73c0ab8398270b4735b003d11fb8b0c5441e129570da4f"
+      }
+    ],
+    "full_case_artifact_local_path": "data/ctrader_tick_exports/xauusd_quote_quality_dev_v1/development_evaluation.json",
+    "full_case_artifact_sha256": "de0f05211a190454510c1bc219452fcccd1945c445a3e16d222d8f17b60bf69a",
+    "superseded_numeric_calculation": {
+      "reason": "Float bid/ask subtraction created artificial distinct ranks for numerically equal spreads. Decimal subtraction and 8-decimal metric normalization corrected the development calculation; no 2021 quote outcomes were opened.",
+      "old_case_artifact_sha256": "1e741f6bc3714dab4c546e2125cc9242866bd2c9bc7fb8b50926028a1f86a23c",
+      "old_sampling_sha256": "ed4b3c2f6526c3f34e240745d2a19f8efee2613d8e52c5e54bcb45c44e62fc62",
+      "old_case_artifact_local_path": "data/ctrader_tick_exports/xauusd_quote_quality_dev_v1/development_evaluation_before_precision_fix.json"
+    }
+  },
+  "validation": {
+    "selected_dates": [
+      "2021-02-09",
+      "2021-04-13",
+      "2021-06-08",
+      "2021-08-10",
+      "2021-10-12",
+      "2021-12-14"
+    ],
+    "quote_payloads_exported": false,
+    "outcomes_computed": false,
+    "status": "SEALED_PRICE_OUTCOMES"
+  },
+  "limitations": [
+    "Six selected Tuesdays are a feasibility sample, not a representative or independent validation set. Overlapping 15-minute anchors within a day are correlated.",
+    "The per-day rank associations do not establish incremental predictive value beyond current spread, an executable threshold, abstention benefit or economic payoff.",
+    "Broker quote fidelity, actual 2020/2021 availability times, server identity and execution costs remain unverified.",
+    "Some probe and export containers were removed after the cBot completion line, before the CLI trade summary appeared; the probe/export cBots contain no trading calls."
+  ]
+}

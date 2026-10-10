@@ -1,0 +1,28 @@
+{
+  "status": "DATE_SELECTION_PREDECLARED; DEVELOPMENT_MEASUREMENT_DEFINED_AFTER_2020_SOURCE_AUDIT; NUMERIC_PRECISION_CORRECTED_AFTER_INITIAL_DEVELOPMENT_CALCULATION",
+  "source": "IC Markets EU Ltd live research account (local account identity retained only in ignored source manifests), cTrader CLI server-tick backtest",
+  "purpose": "Assess XAUUSD quote-stream coverage and timestamp integrity for the exploratory 30-minute warmup / 15-minute outcome idea; no economic or execution claim",
+  "development_dates_utc": ["2020-02-11", "2020-04-14", "2020-06-09", "2020-08-11", "2020-10-13", "2020-12-08"],
+  "validation_dates_utc": ["2021-02-09", "2021-04-13", "2021-06-08", "2021-08-10", "2021-10-12", "2021-12-14"],
+  "coverage_probe": "For each date, inspect only source observation count, first/last timestamp, invalid quote count, duplicate/reversed timestamp count and largest gap. Validation-date prices, spreads and outcomes remain sealed until a candidate and measurement contract are frozen.",
+  "prospective_analysis_interval_utc": "08:00–16:00 on each selected date, with preceding 30 minutes and following 15 minutes available for boundary checks",
+  "excluded_exposed_date_utc": "2020-01-14",
+  "selection_rule": "One fixed Tuesday in each alternate month, chosen before these new source probes. Dates are a feasibility sample, not a random or representative market sample.",
+  "exposure_history": "The date list and 2021 metadata-only policy preceded the new probes. The measurement question and 30-second gate were fixed after inspection of 2020 source/spread distributions but before any 2021 quote payload. The numeric precision correction followed one 2020 development calculation; its superseded artifact remains retained locally and identified by hash in the audit.",
+  "limitations": "Historical tick callbacks do not establish historical decision availability, independent broker quote fidelity or executable costs. The 2021 metadata probe consumes source-availability blindness but not price-outcome blindness.",
+  "development_measurement_v1": {
+    "freeze_stage": "DEFINED_AFTER_2020_DEVELOPMENT_SOURCE_AND_SPREAD_AUDIT_BEFORE_ANY_2021_PRICE_OUTCOME_ACCESS",
+    "question": "Within each selected 2020 date, do higher ranks of prior 30-minute spread variability accompany higher ranks of next-15-minute spread stress?",
+    "mode": "RETROSPECTIVE_DEVELOPMENT_DESCRIPTIVE",
+    "anchors_utc": "08:15, 08:30, ..., 16:00 at 15-minute spacing on each selected date",
+    "lookback": "[anchor - 30 minutes, anchor)",
+    "outcome": "[anchor, anchor + 15 minutes)",
+    "sampling": "At each integer UTC second, use the latest quote whose event_time is <= that second. Never fill from a later tick.",
+    "numeric_method": "Compute bid/ask spread with decimal subtraction, then use linearly interpolated percentile position p*(n-1); normalize reported USD-per-ounce metrics to 8 decimal places before rank ties are assigned. This precision clarification supersedes an initial float-subtraction development calculation and was made without opening 2021 quote outcomes.",
+    "quality_gate": "Every second in both windows must have a quote at most 30 seconds old; otherwise retain the anchor with INSUFFICIENT_SOURCE and no metric.",
+    "input_metric": "IQR of one-second bid/ask spreads, in USD per ounce, over the lookback",
+    "outcome_metric": "95th percentile of one-second bid/ask spreads, in USD per ounce, over the next 15 minutes",
+    "summary": "Report case metrics and per-day Spearman rank correlation; the day, not the overlapping anchor, is the independence unit. No p-value, economic payoff, threshold, live abstention or promotion claim.",
+    "validation_policy": "Do not open 2021 quote payloads or compute 2021 outcomes in this slice. A later candidate must be frozen before any such evaluation."
+  }
+}
