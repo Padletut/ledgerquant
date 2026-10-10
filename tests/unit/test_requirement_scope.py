@@ -1,7 +1,8 @@
 import pytest
 from pydantic import ValidationError
 
-from ledgerquant.research.proposals import Critique, Proposal, review
+from ledgerquant.agents.tools import ResearchTools
+from ledgerquant.research.proposals import Critique, Proposal, review, requirement_scope_error
 from ledgerquant.research.scoped_proposals import ProposalV2, CritiqueV2, parse_proposal, parse_critique
 from ledgerquant.research.types import digest
 from tests.unit.test_agent_catalog import proposal_payload
@@ -31,6 +32,26 @@ def test_current_missing_source_blocks_but_current_costs_contradict_catalog():
         proposal = ProposalV2.model_validate(scoped_proposal("current_diagnostic", source))
         result = review(proposal, critique_for(proposal), set(proposal.evidence_ids), set())
         assert (result.status, result.reasons) == (status, (reason,))
+
+
+def test_only_current_cost_requirement_needs_field_correction():
+    assert requirement_scope_error(ProposalV2.model_validate(scoped_proposal("current_diagnostic", "broker_costs")))
+    assert not requirement_scope_error(ProposalV2.model_validate(scoped_proposal("future_economic", "broker_costs")))
+    assert not requirement_scope_error(ProposalV2.model_validate(scoped_proposal("current_diagnostic", "raw_news")))
+
+
+def test_current_cost_field_returns_retryable_feedback_before_persistence():
+    tools = ResearchTools.__new__(ResearchTools)
+    tools.contract_version = 2
+    tools.required_reads = set()
+    tools.reads = set()
+    tools.submission_policy = "proposal_or_authorized_revision"
+    tools.submitted = False
+    result = tools._perform_in_transaction(None, "submit_hypothesis_draft",
+        ProposalV2.model_validate(scoped_proposal("current_diagnostic")))
+    assert result["error"] == "REQUIREMENT_CONTRADICTION"
+    assert result["field"] == "data_requirements"
+    assert tools.submitted is False
 
 
 def test_scope_is_required_and_never_inferred_from_prose():

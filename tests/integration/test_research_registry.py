@@ -17,6 +17,7 @@ from ledgerquant.research.bootstrap import bootstrap, invalidate_evidence
 from ledgerquant.research.imports import load_legacy_bundle
 from ledgerquant.research.registry import BudgetExceeded, Registry, RegistryError
 from tests.unit.test_agent_catalog import proposal_payload
+from tests.unit.test_requirement_scope import scoped_proposal
 
 
 @pytest.fixture
@@ -104,6 +105,27 @@ def test_role_denial_does_not_write_draft_and_reads_are_required(registered):
     for name in ("read_source_coverage", "read_released_evidence", "read_development_snapshot"):
         assert "error" not in research.execute(call["id"], name, {})
     assert research.execute(call["id"], "submit_hypothesis_draft", proposal_payload())["status"] == "PROPOSED"
+
+
+def test_current_cost_field_can_be_corrected_before_draft_is_recorded(registered):
+    registry, _, profile = registered
+    config = bootstrap(registry, load_legacy_bundle(Path(__file__).parents[2]), profile,
+        CampaignPolicy(max_runs=1, max_invocations=2, max_reserved_tokens=8000, max_usd=1),
+        "field-correction-" + uuid4().hex, contract_version=2)
+    run, _ = start(registry, config)
+    call = registry.reserve_invocation(run["id"], config["versions"]["research"], 0, {})
+    research = ResearchTools(registry, run["id"], "research")
+    for name in ("read_source_coverage", "read_released_evidence", "read_development_snapshot"):
+        assert "error" not in research.execute(call["id"], name, {})
+    first = research.execute(call["id"], "submit_hypothesis_draft", scoped_proposal("current_diagnostic"))
+    assert first["error"] == "REQUIREMENT_CONTRADICTION"
+    assert research.submitted is False
+    with registry.engine.connect() as connection:
+        assert connection.execute(select(t.drafts.c.id).where(t.drafts.c.run_id == run["id"])).scalar_one_or_none() is None
+    second = research.execute(call["id"], "submit_hypothesis_draft", scoped_proposal("future_economic"))
+    assert second["status"] == "PROPOSED"
+    assert research.submitted is True
+    assert registry.read(registry.get(t.drafts, run["id"])["artifact_id"])["data_requirements"][0]["scope"] == "future_economic"
 
 
 def test_concurrent_money_reservations_cannot_exceed_campaign(registered):

@@ -7,7 +7,7 @@ from sqlalchemy import func, select
 
 from ledgerquant.research import tables as t
 from ledgerquant.research.catalog import classify
-from ledgerquant.research.proposals import Critique, Proposal, review
+from ledgerquant.research.proposals import Critique, Proposal, review, requirement_scope_error
 from ledgerquant.research.scoped_proposals import contract_types, parse_proposal, parse_critique, REQUIREMENT_RULES
 from ledgerquant.research.grounding import recorded_context
 from ledgerquant.research.contract_revisions import RevisionSubmission, resolve_revision
@@ -159,6 +159,9 @@ class ResearchTools:
             raise RegistryError("AUTHORIZED_REVISION_REQUIRED")
         if name == "submit_contract_revision":
             arguments = resolve_revision(arguments, recorded_context(c, self.run_id))
+        if name == "submit_hypothesis_draft" and requirement_scope_error(arguments):
+            return {"error": "REQUIREMENT_CONTRADICTION", "field": "data_requirements",
+                    "detail": "No draft was submitted. broker_costs is not a current input to this price diagnostic; correct scope and resubmit."}
         if name in {"submit_hypothesis_draft", "submit_contract_revision"}:
             family, loop, signature = classify(arguments.diagnostic)
             key = artifact(c, arguments)

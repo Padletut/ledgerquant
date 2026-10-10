@@ -49,6 +49,16 @@ class ReviewDecision(Record):
     loop: str
 
 
+def requirement_scope_error(proposal: Proposal) -> bool:
+    """A current broker-cost input contradicts the price-only diagnostic."""
+    from .scoped_proposals import ProposalV2
+
+    return isinstance(proposal, ProposalV2) and any(
+        item.source == "broker_costs" and item.scope == "current_diagnostic"
+        for item in proposal.data_requirements
+    )
+
+
 def review(proposal: Proposal, critique: Critique, evidence_ids: set[str], known_signatures: set[str], grounding=None) -> ReviewDecision:
     from .catalog import classify
     from .types import digest
@@ -81,7 +91,7 @@ def review(proposal: Proposal, critique: Critique, evidence_ids: set[str], known
         reasons.append("UNKNOWN_EVIDENCE")
     if (signature in known_signatures or loop == "DUPLICATE") and not corrected_revision:
         reasons.append("DUPLICATE")
-    if scoped and any(item.source == "broker_costs" for item in current):
+    if requirement_scope_error(proposal):
         reasons.append("REQUIREMENT_CONTRADICTION")
     if reasons:
         status = "REJECTED"

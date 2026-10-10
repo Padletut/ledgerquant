@@ -2,11 +2,15 @@
 
 **Date:** 10.10.2026
 
-**Version:** 2.18
+**Version:** 2.20
 
 **Status:** Target architecture with implemented live capture, offline EURUSD diagnostics and the bounded Research/Critic bootstrap described in Section 6.1. Broad discovery, independent new validation, promotion, trading agents and the operational frontend remain target state.
 
-**Revision scope:** 2.18 adopts a solo-project operating scope and retires the stopped pilot's dedicated package, six commands and tests from active code. Its exact implementation is preserved in the [study archive](research/studies/requirement_scope_pilot_v1/IMPLEMENTATION.md); cases, reviews, freezes and `DO_NOT_START` remain intact. Routine research uses the existing runtime, configuration and registry. Automatic review/release qualification is deferred until needed; its current human gate remains active. See [Section 1.1](#11-small-stable-interfaces-and-configurable-workflows) and [implementation plan 1.11](research/AGENT_LOOP_IMPLEMENTATION_PLAN.md).
+**Revision scope:** 2.20 restores the CFD research and trading mandate and separates open research-idea exploration from admission to a supported evaluator. The current EURUSD catalog still bounds what the implemented runtime can submit and measure; broader idea capture is target state. See [Section 6](#6-two-self-improvement-loops-and-structured-evidence) and [implementation plan 1.13](research/AGENT_LOOP_IMPLEMENTATION_PLAN.md).
+
+2.19 let Research correct a deterministically invalid `broker_costs` requirement scope in the same bounded run before a draft was recorded. The tool returns a field error and records the attempted call; a corrected submission can proceed without a new review process. Already recorded drafts and later measurements keep their lineage and exposure. See [Section 1.1](#11-small-stable-interfaces-and-configurable-workflows).
+
+2.18 adopted a solo-project operating scope and retired the stopped pilot's dedicated package, six commands and tests from active code. Its exact implementation is preserved in the [study archive](research/studies/requirement_scope_pilot_v1/IMPLEMENTATION.md); cases, reviews, freezes and `DO_NOT_START` remain intact. Routine research uses the existing runtime, configuration and registry. Automatic review/release qualification is deferred until needed; its current human gate remains active.
 
 2.16 built offline preparation for the requirement-scope pilot before 24 synthetic cases were authored. The [original review package](research/studies/requirement_scope_pilot_v1/review/README.md) and [review status](research/studies/requirement_scope_pilot_v1/REVIEW_STATUS.md) preserve all decisions and the declared `AI_ASSISTANT` reviewer provenance. Preparation stopped as `INSUFFICIENT_FAMILY_DIVERSITY`; no complete human reference set, provider execution or automatic authority followed. Revision 2.17 clarified adaptability; 2.18 archives the specialized implementation instead of generalizing it into another framework.
 
@@ -20,7 +24,9 @@
 
 ## 1. Purpose and design rules
 
-LedgerQuant is an agent-driven, auditable platform for discovering and testing economic decisions, then deploying supported decisions under controlled execution. Research/Discovery agents propose hypotheses, Critic agents challenge them, and Executor agents make bounded decisions. Independent evaluation and broker/account controls determine what those proposals and decisions are allowed to become. A Next.js/TypeScript console lets operators inspect and manage the system through supported workflows. Every agent run and trading decision must retain the exact configuration and information that produced it.
+LedgerQuant is an agent-driven, auditable research and trading platform focused on Contract for Difference (CFD) markets. Research agents autonomously discover, propose, critique and refine market hypotheses across supported CFD instruments and strategies. Evaluation establishes empirical evidence under controlled data and measurement boundaries, while independent broker, account and risk controls govern live execution.
+
+The platform must preserve flexible research exploration without requiring every hypothesis to fit an existing evaluator catalog. Evaluator capabilities constrain what can currently be measured, not what agents are permitted to investigate. A Next.js/TypeScript console lets operators inspect and manage the system through supported workflows. Every agent run and trading decision must retain the exact configuration and information that produced it.
 
 - **Explicit ownership:** agent, portfolio, account, market data, decision and execution concepts have distinct owners and contracts.
 - **Single source of truth (SSOT):** versioned configuration and audit history live in the registry and ledger; immutable source artifacts have authoritative references there. Committed tick chunks in durable archive storage, indexed by PostgreSQL manifests, are the historical market-data record. Current broker positions, balances and fills come from the broker and are reconciled into the ledger. Redis streams, search indexes and cached views are bounded runtime projections.
@@ -32,7 +38,7 @@ LedgerQuant is an agent-driven, auditable platform for discovering and testing e
 - **Focused modules:** business rules belong in domain and application modules, adapters handle external systems, and entry points only assemble components.
 - **Replaceable integrations:** model providers and broker platforms implement typed ports with verified capabilities. A provider or broker is activated only for the operations its adapter has passed.
 
-Configuration provides adaptability within a supported contract. A new agent using existing capabilities can be registered without source changes. A genuinely new capability, broker protocol or safety rule requires a reviewed implementation, contract tests and deployment. Arbitrary code stored in the database is not an extension mechanism.
+Configuration provides adaptability within a supported operational contract. A new agent using existing capabilities can be registered without source changes. Research ideas may range beyond implemented data sources, evaluators and broker adapters; those limits are recorded as measurement or deployment gaps. A genuinely new executable capability, broker protocol or safety rule requires a reviewed implementation, contract tests and deployment. Arbitrary code stored in the database is not an extension mechanism.
 
 ### 1.1 Small stable interfaces and configurable workflows
 
@@ -54,6 +60,15 @@ Add a contract only when an implemented boundary needs new enforceable semantics
 that the current interface cannot express. Keep draft editing lightweight;
 commitments attach to the stages that require them. Store related settings
 together and derive readable views and indexes from their authoritative records.
+
+A deterministic field error during proposal submission is feedback within the
+current run. The attempted tool call is recorded, but no draft is committed;
+Research may correct the field within its existing step and spending limits.
+This currently handles a `broker_costs` requirement incorrectly declared as a
+current input to the price-only diagnostic. A recorded draft or measured result
+cannot be rewritten; any later correction keeps its original attempt and
+exposure. This distinction requires no extra reviewer or study for an unsaved
+field correction.
 
 Freezing a study preserves what was decided before its results were seen. It
 does not freeze the repository or prevent future studies from choosing different
@@ -361,6 +376,8 @@ The optimizer cannot read the frozen holdout while generating candidates, promot
 ## 6. Two self-improvement loops and structured evidence
 
 The research system has two explicit loops. Both create hypotheses and evidence; neither directly changes a live deployment.
+
+Research/Discovery may record, critique and refine a CFD market idea before a compatible evaluator or data source exists. Keep its question, rationale, lineage and known measurement gaps; do not assign a measured failure to an untested idea. A reviewed evaluator catalog limits which ideas can proceed to computation, frozen validation and economic claims. An unsupported instrument, decision rule or payoff identifies a capability gap for later implementation; it does not forbid investigation or force the agent to recast the idea as an existing EURUSD diagnostic. Freeze the full decision, data, payoff and success definitions when an idea is ready for independent validation, before its outcomes are inspected. This broader idea-intake path is planned; the implemented Research submission schema and evaluator currently cover only the bounded EURUSD diagnostic catalog.
 
 | Loop | Research question | Contract boundary |
 | --- | --- | --- |

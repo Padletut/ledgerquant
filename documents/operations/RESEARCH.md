@@ -17,6 +17,12 @@ calculation. Inspect the stored proposal, critique, measurements and cost; keep
 blocked or inconclusive results visible. Supported configuration changes reuse
 this workflow and retain the previous run's inputs and history.
 
+For v2/v3 price diagnostics, a draft submission that declares `broker_costs` as
+`current_diagnostic` returns a field error before the draft is stored. Research
+can resubmit with the corrected scope during the same run, subject to its normal
+step and spending limits. The attempted call remains in the trace; no operator
+action is needed for this unsaved correction.
+
 No separate qualification pilot, fixed case-family count or second reviewer is
 required for ordinary bounded research. A descriptive check may use a small case
 set with its limitations stated. Certifying a new method lesson still needs the
