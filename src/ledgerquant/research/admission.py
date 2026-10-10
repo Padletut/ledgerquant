@@ -31,8 +31,12 @@ def admit(registry, command: Admission):
         draft = c.execute(select(t.drafts).where(t.drafts.c.id == command.draft_id).with_for_update()).mappings().one()
         if draft["artifact_id"] != command.draft_sha256:
             raise RegistryError("DRAFT_HASH_MISMATCH")
-        _serialize_family(c, draft["family_id"])
         run = c.execute(select(t.runs).where(t.runs.c.id == draft["run_id"])).mappings().one()
+        definition_id = c.execute(select(t.agent_versions.c.definition_id).where(
+            t.agent_versions.c.id == run["research_version"])).scalar_one()
+        if value(c, definition_id).get("workflow") == "idea_exploration":
+            raise RegistryError("EXPLORATORY_IDEA_NOT_EVALUABLE")
+        _serialize_family(c, draft["family_id"])
         snapshot = c.execute(select(t.snapshots.c.manifest_id).where(t.snapshots.c.id == run["snapshot_id"])).scalar_one()
         manifest = value(c, snapshot)
         invalid = set(c.execute(select(t.evidence_events.c.evidence_id).where(t.evidence_events.c.kind == "INVALIDATED")).scalars())

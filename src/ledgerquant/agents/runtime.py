@@ -22,7 +22,8 @@ class Runner:
 
     def run(self, config, command_key, task):
         for role in ("research", "critic"):
-            if config["versions"][role] != digest(definition(role, self.provider.profile, contract_version=config.get("contract_version", 1))):
+            if config["versions"][role] != digest(definition(role, self.provider.profile,
+                    workflow=config.get("workflow", "discovery"), contract_version=config.get("contract_version", 1))):
                 raise RegistryError("runtime definition differs from registered agent version")
         run, created = self.registry.start_run(command_key, config["campaign_id"], config["snapshot_id"],
             config["versions"]["research"], config["versions"]["critic"], task)

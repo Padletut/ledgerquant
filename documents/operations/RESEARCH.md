@@ -11,6 +11,17 @@ the first real run and the small process comparison.
 
 ## Routine solo workflow
 
+For an exploratory CFD idea, register a campaign with `--workflow idea_exploration`
+and no `--bundle`. The default contract version for this workflow is 1. Supply
+a bounded task JSON with the question and any `source_refs` or
+`related_draft_ids` the agent may cite. Run it through the existing `run`
+command; its report and `replay` show the exact idea, Critic review, inputs,
+model calls and budget use. A source reference only identifies material named
+in the task; it does not certify its content or decision-time availability.
+The result remains `EXPLORATORY_UNMEASURED` with no assigned family. `admit`
+cannot send this record into the EURUSD diagnostic evaluator. A later measured
+hypothesis needs a reviewed evaluator and a separate frozen contract.
+
 Use the existing task, profile and campaign to run Research → Critic → service
 review. An eligible proposal can then be admitted to the supported development
 calculation. Inspect the stored proposal, critique, measurements and cost; keep

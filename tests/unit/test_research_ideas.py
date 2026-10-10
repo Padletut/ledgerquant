@@ -1,0 +1,144 @@
+import pytest
+from pydantic import ValidationError
+from sqlalchemy import create_engine
+from sqlalchemy.dialects.sqlite import insert as sqlite_insert
+from sqlalchemy.pool import StaticPool
+
+from ledgerquant.agents.definitions import definition
+from ledgerquant.agents.definitions import CampaignPolicy
+from ledgerquant.agents.runtime import Runner
+from ledgerquant.agents.tools import schemas
+from ledgerquant.models.generation import Generation, ModelProfile, ToolCall
+from ledgerquant.research.agent_cli import parser
+from ledgerquant.research.ideas import Idea, IdeaCritique, references_allowed
+from ledgerquant.research import tables as t
+from ledgerquant.research.admission import Admission, admit
+from ledgerquant.research.bootstrap import bootstrap
+from ledgerquant.research.registry import Registry, RegistryError
+from ledgerquant.research.types import canonical, digest
+
+
+def idea_payload():
+    return {
+        "title": "CFD event response",
+        "question": "Does an eligible macro release change the next session's EURUSD direction?",
+        "instruments": ["EURUSD"],
+        "proposed_decision": "Decide whether to take directional exposure after the release.",
+        "proposed_payoff": "Return over the following session, net of credible costs if available.",
+        "rationale": "A delayed price response might persist after the first reaction.",
+        "falsifier": "No improvement over a predeclared no-action or price-only baseline.",
+        "source_refs": ["macro-calendar"],
+        "related_draft_ids": [],
+        "measurement_gaps": ["No reviewed event-time evaluator exists yet."],
+    }
+
+
+def test_idea_is_not_forced_into_eurusd_evaluator_or_economic_status():
+    idea = Idea.model_validate({**idea_payload(), "instruments": ["XAUUSD", "US500"]})
+    assert idea.instruments == ("XAUUSD", "US500")
+    assert "diagnostic" not in idea.model_dump()
+    rough = {key: idea_payload()[key] for key in
+             ("title", "question", "instruments", "proposed_decision", "proposed_payoff", "rationale")}
+    assert Idea.model_validate(rough).falsifier is None
+    for extra in ({"status": "PROMOTED"}, {"net_expectancy": 0.2}, {"family_id": "new"}):
+        with pytest.raises(ValidationError):
+            Idea.model_validate({**idea_payload(), **extra})
+
+
+def test_critique_targets_exact_idea_without_assigning_evidence_or_authority():
+    critique = IdeaCritique.model_validate({
+        "draft_sha256": "a" * 64,
+        "summary": "Event timing and source availability need checking.",
+        "concerns": ["Release revisions may alter the event population."],
+        "source_refs": [],
+    })
+    assert critique.concerns
+    with pytest.raises(ValidationError):
+        IdeaCritique.model_validate({**critique.model_dump(), "admit": True})
+
+
+def test_exploration_has_separate_tools_and_definition():
+    profile = ModelProfile(provider="fixture", endpoint="http://127.0.0.1", model="scripted-test",
+        max_output_tokens=512, max_request_bytes=40000, timeout_seconds=10,
+        max_steps_per_agent=4, input_usd_per_million=0, output_usd_per_million=0,
+        max_run_usd=1, price_basis="test fixture", knowledge_exposure="test fixture")
+    research_tools = {tool["name"] for tool in schemas("research", workflow="idea_exploration")}
+    critic_tools = {tool["name"] for tool in schemas("critic", workflow="idea_exploration")}
+    assert research_tools == {"submit_research_idea"}
+    assert critic_tools == {"submit_idea_critique"}
+    assert definition("research", profile, workflow="idea_exploration") != definition("research", profile)
+
+
+def test_citations_must_be_in_the_frozen_task():
+    task = {"source_refs": ["macro-calendar"], "related_draft_ids": ["prior-idea"]}
+    assert references_allowed(task, ("macro-calendar",), ("prior-idea",))
+    assert not references_allowed(task, ("invented",))
+    assert not references_allowed(task, (), ("invented-parent",))
+    assert not references_allowed({"source_refs": "macro-calendar"}, ("macro-calendar",))
+
+
+def test_cli_can_register_ideas_without_a_legacy_bundle():
+    args = parser().parse_args(["register", "--workflow", "idea_exploration", "--policy", "policy.json",
+        "--campaign", "ideas", "--profile", "profile.json"])
+    assert args.bundle is None
+    assert args.workflow == "idea_exploration"
+
+
+def test_bounded_idea_run_records_critique_and_cannot_enter_evaluator(monkeypatch):
+    engine = create_engine("sqlite:///:memory:", poolclass=StaticPool)
+    with engine.begin() as connection:
+        connection.exec_driver_sql("ATTACH DATABASE ':memory:' AS research")
+    t.metadata.create_all(engine)
+    monkeypatch.setattr("ledgerquant.research.registry.insert", sqlite_insert)
+    registry = Registry(engine)
+    profile = ModelProfile(provider="fixture", endpoint="http://127.0.0.1", model="scripted-test",
+        max_output_tokens=512, max_request_bytes=40000, timeout_seconds=10,
+        max_steps_per_agent=4, input_usd_per_million=0, output_usd_per_million=0,
+        max_run_usd=1, price_basis="test fixture", knowledge_exposure="test fixture")
+    config = bootstrap(registry, None, profile,
+        CampaignPolicy(max_runs=1, max_invocations=3, max_reserved_tokens=100000, max_usd=1),
+        "sqlite-idea", workflow="idea_exploration")
+    idea = Idea.model_validate(idea_payload()).model_dump(mode="json")
+
+    class Scripted:
+        def __init__(self):
+            self.profile = profile
+            self.calls = 0
+
+        def prepare(self, instructions, conversation, tools):
+            return {"instructions": instructions, "input": conversation, "tools": tools}
+
+        def user_message(self, value):
+            return {"role": "user", "content": value}
+
+        def tool_result(self, call_id, result):
+            return {"call_id": call_id, "result": result}
+
+        def invoke(self, request):
+            self.calls += 1
+            if self.calls == 1:
+                name, arguments = "capability_probe", {"answer": "LEDGERQUANT"}
+            elif self.calls == 2:
+                name, arguments = "submit_research_idea", idea
+            else:
+                name, arguments = "submit_idea_critique", {"draft_sha256": digest(idea),
+                    "summary": "Needs event-time source coverage and a reviewed evaluator.",
+                    "concerns": ["Data availability is unknown."], "source_refs": []}
+            return Generation("COMPLETED", {"fixture": name}, [],
+                (ToolCall(str(self.calls), name, canonical(arguments)),), 100, 100)
+
+    provider = Scripted()
+    task = {"question": "Explore event response", "source_refs": ["macro-calendar"]}
+    report = Runner(registry, provider).run(config, "idea-run", task)
+    assert report["events"][-1]["detail"]["status"] == "EXPLORATORY_UNMEASURED"
+    assert [entry["kind"] for entry in report["events"]] == ["CAPABILITY_VERIFIED", "IDEA_REVIEW", "FINISHED"]
+    run_id = report["run"]["id"]
+    draft = registry.get(t.drafts, run_id)
+    assert registry.read(draft["artifact_id"])["instruments"] == ["EURUSD"]
+    assert registry.get(t.critiques, run_id)["draft_id"] == run_id
+    with pytest.raises(RegistryError, match="EXPLORATORY_IDEA_NOT_EVALUABLE"):
+        admit(registry, Admission(draft_id=run_id, draft_sha256=draft["artifact_id"], actor="operator",
+            action="ADMIT_DEVELOPMENT", reason="Unsupported evaluator", objection_resolutions={}))
+    assert Runner(registry, provider).run(config, "idea-run", task) == report
+    assert provider.calls == 3
+    engine.dispose()

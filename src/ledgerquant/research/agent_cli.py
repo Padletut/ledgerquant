@@ -29,11 +29,12 @@ def parser():
     export = commands.add_parser("export-legacy")
     export.add_argument("--root", required=True)
     register = commands.add_parser("register")
-    for name in ("bundle", "policy", "campaign"):
+    register.add_argument("--bundle", help="Required for diagnostic and process-review registrations.")
+    for name in ("policy", "campaign"):
         register.add_argument("--" + name, required=True)
-    register.add_argument("--workflow", choices=["discovery", "process_review"], default="discovery")
-    register.add_argument("--contract-version", type=int, choices=[1, 2, 3], default=3,
-                          help="New registrations use v3; v1/v2 remain explicit for historical execution.")
+    register.add_argument("--workflow", choices=["discovery", "process_review", "idea_exploration"], default="discovery")
+    register.add_argument("--contract-version", type=int, choices=[1, 2, 3],
+                          help="Defaults to v3 for existing workflows and v1 for idea exploration.")
     worker = commands.add_parser("provision-worker")
     worker.add_argument("--password-file", required=True)
     run = commands.add_parser("run")
@@ -76,7 +77,12 @@ def parser():
 
 
 def main():
-    args = parser().parse_args()
+    cli = parser()
+    args = cli.parse_args()
+    if args.command == "register" and args.workflow != "idea_exploration" and not args.bundle:
+        cli.error("--bundle is required for diagnostic and process-review registrations")
+    if args.command == "register" and args.workflow == "idea_exploration" and args.bundle:
+        cli.error("--bundle is not used for idea exploration")
     if args.command == "export-legacy":
         print(json.dumps(load_legacy_bundle(Path(args.root)), sort_keys=True))
         return
@@ -84,8 +90,10 @@ def main():
     registry = Registry(engine)
     try:
         if args.command == "register":
-            result = bootstrap(registry, read(args.bundle), ModelProfile.model_validate(read(args.profile)),
-                               CampaignPolicy.model_validate(read(args.policy)), args.campaign, args.workflow, args.contract_version)
+            version = args.contract_version or (1 if args.workflow == "idea_exploration" else 3)
+            result = bootstrap(registry, read(args.bundle) if args.bundle else None,
+                               ModelProfile.model_validate(read(args.profile)),
+                               CampaignPolicy.model_validate(read(args.policy)), args.campaign, args.workflow, version)
         elif args.command == "provision-worker":
             provision_worker(engine, Path(args.password_file))
             result = {"worker_role": "ledgerquant_research_worker", "status": "provisioned"}

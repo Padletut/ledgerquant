@@ -1,4 +1,4 @@
-"""Six bounded research operations; authorization is independent of model text."""
+"""Bounded research tools; authorization is independent of model text."""
 
 import json
 
@@ -7,13 +7,14 @@ from sqlalchemy import func, select
 
 from ledgerquant.research import tables as t
 from ledgerquant.research.catalog import classify
+from ledgerquant.research.ideas import Idea, IdeaCritique, references_allowed
 from ledgerquant.research.proposals import Critique, Proposal, review, requirement_scope_error
 from ledgerquant.research.scoped_proposals import contract_types, parse_proposal, parse_critique, REQUIREMENT_RULES
 from ledgerquant.research.grounding import recorded_context
 from ledgerquant.research.contract_revisions import RevisionSubmission, resolve_revision
 from ledgerquant.research.repair_exposure import OUTCOME_READS, TOOL_POLICIES
 from ledgerquant.research.registry import RegistryError, append, artifact, now, value
-from ledgerquant.research.types import Record, digest
+from ledgerquant.research.types import Record
 
 
 class Empty(Record):
@@ -33,10 +34,20 @@ OPERATIONS = {
     "submit_critique": (Critique, {"critic"}, "Submit one critique of the supplied exact draft."),
     "request_contract_review": (Empty, {"research", "critic"}, "Request deterministic checks; operator admission remains separate."),
 }
+IDEA_OPERATIONS = {
+    "submit_research_idea": (Idea, {"research"}, "Record one exploratory CFD research idea without claiming it can be measured."),
+    "submit_idea_critique": (IdeaCritique, {"critic"}, "Critique the exact recorded idea without approving or measuring it."),
+}
 REQUIRED_READS = {"read_source_coverage", "read_released_evidence", "read_development_snapshot"}
 
 
-def operations(version):
+def operations(version, workflow="discovery"):
+    if workflow == "idea_exploration":
+        if version != 1:
+            raise ValueError("idea exploration uses contract version 1")
+        return IDEA_OPERATIONS
+    if workflow != "discovery":
+        raise ValueError("unsupported research tool workflow")
     proposal, critique = contract_types(version)
     result = {name: ((proposal if name == "submit_hypothesis_draft" else critique if name == "submit_critique" else schema), roles, description)
               for name, (schema, roles, description) in OPERATIONS.items()}
@@ -46,9 +57,9 @@ def operations(version):
     return result
 
 
-def schemas(role, contract_version=1):
+def schemas(role, contract_version=1, workflow="discovery"):
     return [{"name": name, "description": description, "parameters": schema.model_json_schema()}
-            for name, (schema, roles, description) in operations(contract_version).items() if role in roles]
+            for name, (schema, roles, description) in operations(contract_version, workflow).items() if role in roles]
 
 
 class ResearchTools:
@@ -58,9 +69,11 @@ class ResearchTools:
         self.registry, self.run_id, self.role = registry, run_id, role
         run = registry.get(t.runs, run_id)
         binding = registry.read(registry.get(t.agent_versions, run[f"{role}_version"])["definition_id"])
+        self.workflow = binding.get("workflow", "discovery")
         self.contract_version = binding.get("research_contract_version", 1)
-        self.operations = operations(self.contract_version)
-        self.submission_policy = registry.read(run["task_id"]).get("submission_policy", "proposal_or_authorized_revision")
+        self.operations = operations(self.contract_version, self.workflow)
+        task = registry.read(run["task_id"])
+        self.submission_policy = task.get("submission_policy", "proposal_or_authorized_revision") if isinstance(task, dict) else "proposal_or_authorized_revision"
         # The outcome-free policy comes only from the frozen, service-validated v3
         # grounding context; a raw task field can never relax the required reads.
         self.prohibited = set()
@@ -68,8 +81,9 @@ class ResearchTools:
             with registry.engine.connect() as c:
                 if recorded_context(c, run_id).get("tool_policy") == TOOL_POLICIES["premeasurement_repair"]:
                     self.prohibited = set(OUTCOME_READS)
-        self.required_reads = REQUIRED_READS - self.prohibited
+        self.required_reads = (REQUIRED_READS - self.prohibited) if self.workflow == "discovery" else set()
         snapshot = registry.get(t.snapshots, run["snapshot_id"])
+        self.snapshot_id = run["snapshot_id"]
         self.manifest = registry.read(snapshot["manifest_id"])
         self.reads = set()
         self.submitted = False
@@ -113,11 +127,14 @@ class ResearchTools:
         return self._perform_in_transaction(connection, name, arguments)
 
     def _perform_in_transaction(self, c, name, arguments):
+        if self.workflow == "idea_exploration":
+            return self._perform_idea(c, name, arguments)
         if name == "read_source_coverage":
             attempts = c.execute(select(t.drafts.c.id).where(t.drafts.c.family_id == self.manifest["family_id"])).all()
             # This slice accepts only this one family. Count dispatched,
             # malformed, interrupted and rejected runs, not just drafts.
-            run_count = c.execute(select(func.count()).select_from(t.runs)).scalar_one()
+            run_count = c.execute(select(func.count()).select_from(t.runs)
+                                  .where(t.runs.c.snapshot_id == self.snapshot_id)).scalar_one()
             result = {"catalog": self.manifest["catalog"], "source": self.manifest["source"],
                     "family_id": self.manifest["family_id"], "legacy_attempts": self.manifest["historical_attempt_count"],
                     "recorded_runs": run_count, "recorded_drafts": len(attempts),
@@ -188,8 +205,47 @@ class ResearchTools:
                           recorded_context(c, self.run_id) if self.contract_version == 3 else None)
         return decision.model_dump(mode="json")
 
+    def _perform_idea(self, c, name, arguments):
+        run = c.execute(select(t.runs).where(t.runs.c.id == self.run_id)).mappings().one()
+        task = value(c, run["task_id"])
+        if not references_allowed(task, arguments.source_refs):
+            raise RegistryError("SOURCE_REFERENCE_NOT_IN_TASK")
+        if name == "submit_research_idea":
+            if not references_allowed(task, arguments.source_refs, arguments.related_draft_ids):
+                raise RegistryError("LINEAGE_REFERENCE_NOT_IN_TASK")
+            for draft_id in arguments.related_draft_ids:
+                related = c.execute(select(t.drafts.c.created_at).where(t.drafts.c.id == draft_id)).scalar_one_or_none()
+                if related is None or related > run["created_at"]:
+                    raise RegistryError("UNKNOWN_PRIOR_DRAFT")
+            key = artifact(c, arguments)
+            row = append(c, t.drafts, {"id": self.run_id, "run_id": self.run_id,
+                "family_id": "unassigned:" + self.run_id, "signature": key,
+                "artifact_id": key, "created_at": now()})
+            self.submitted = True
+            return {"draft_id": row["id"], "draft_sha256": key, "status": "EXPLORATORY_UNMEASURED"}
+        if name == "submit_idea_critique":
+            draft = c.execute(select(t.drafts).where(t.drafts.c.run_id == self.run_id)).mappings().one_or_none()
+            if draft is None:
+                raise RegistryError("DRAFT_NOT_SUBMITTED")
+            if arguments.draft_sha256 != draft["artifact_id"]:
+                raise RegistryError("DRAFT_HASH_MISMATCH")
+            append(c, t.critiques, {"id": draft["id"], "draft_id": draft["id"],
+                "artifact_id": artifact(c, arguments), "created_at": now()})
+            self.submitted = True
+            return {"critique_id": draft["id"], "status": "CRITIQUE_RECORDED"}
+        raise RegistryError("UNKNOWN_IDEA_OPERATION")
+
     def review(self):
         """The trusted scheduler requests review without impersonating a model call."""
+        if self.workflow == "idea_exploration":
+            with self.registry.engine.connect() as c:
+                draft = c.execute(select(t.drafts).where(t.drafts.c.run_id == self.run_id)).mappings().one()
+                critique = c.execute(select(t.critiques).where(t.critiques.c.draft_id == draft["id"])).mappings().one()
+            result = {"status": "EXPLORATORY_UNMEASURED", "draft_sha256": draft["artifact_id"],
+                "critique_sha256": critique["artifact_id"], "evaluator_admission": False,
+                "family_assignment": "UNASSESSED"}
+            self.registry.event(self.run_id, "IDEA_REVIEW", result)
+            return result
         result = self._perform("request_contract_review", Empty())
         self.registry.event(self.run_id, "CONTRACT_REVIEW", result)
         return result

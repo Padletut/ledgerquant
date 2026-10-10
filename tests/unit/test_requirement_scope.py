@@ -42,6 +42,7 @@ def test_only_current_cost_requirement_needs_field_correction():
 
 def test_current_cost_field_returns_retryable_feedback_before_persistence():
     tools = ResearchTools.__new__(ResearchTools)
+    tools.workflow = "discovery"
     tools.contract_version = 2
     tools.required_reads = set()
     tools.reads = set()

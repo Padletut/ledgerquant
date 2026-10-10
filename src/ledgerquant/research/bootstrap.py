@@ -14,23 +14,30 @@ from .types import digest
 
 
 def bootstrap(registry, bundle, profile: ModelProfile, policy: CampaignPolicy, campaign_id: str, workflow="discovery", contract_version=1):
-    """Idempotently import originals without rewriting their one-trial counts."""
+    """Register bounded agents; diagnostic workflows also import prior evidence."""
+    if workflow == "idea_exploration" and contract_version != 1:
+        raise ValueError("idea exploration uses contract version 1")
+    if workflow != "idea_exploration" and bundle is None:
+        raise ValueError("legacy evidence bundle required for the diagnostic workflow")
     with registry.engine.begin() as c:
-        for item, attempt, window in zip(bundle["evidence"], bundle["attempts"], bundle["windows"], strict=True):
-            content_id = artifact(c, item["original"], raw=True)
-            contract_id = artifact(c, attempt["contract"], raw=True)
-            if content_id != item["sha256"] or contract_id != attempt["contract_sha256"]:
-                raise RegistryError("import bytes changed")
-            append(c, t.evidence, {"id": item["id"], "artifact_id": content_id, "contract_id": contract_id,
-                                   "family_id": FAMILY_ID, "original_registered_at": datetime.fromisoformat(attempt["registered_at"]), "created_at": now()})
-            append(c, t.windows, {"id": item["id"], "evidence_id": item["id"], "start_at": datetime.fromisoformat(window["start"]),
-                                  "end_at": datetime.fromisoformat(window["end"]), "state": "CONSUMED", "created_at": now()})
-        manifest = {"catalog": CATALOG, "source": bundle["source"],
-                    "development_id": artifact(c, bundle["development"]),
-                    "evidence": {item["id"]: item["sha256"] for item in bundle["evidence"]},
-                    "historical_attempt_count": len(bundle["evidence"]), "family_id": FAMILY_ID,
-                    "windows": bundle["windows"], "ancestry": [{"id": item["id"], "parent_id": item["parent_id"],
-                        "relation": "RELATED_EXPOSED"} for item in bundle["attempts"]]}
+        if workflow == "idea_exploration":
+            manifest = {"workflow": workflow, "evidence": {}}
+        else:
+            for item, attempt, window in zip(bundle["evidence"], bundle["attempts"], bundle["windows"], strict=True):
+                content_id = artifact(c, item["original"], raw=True)
+                contract_id = artifact(c, attempt["contract"], raw=True)
+                if content_id != item["sha256"] or contract_id != attempt["contract_sha256"]:
+                    raise RegistryError("import bytes changed")
+                append(c, t.evidence, {"id": item["id"], "artifact_id": content_id, "contract_id": contract_id,
+                                       "family_id": FAMILY_ID, "original_registered_at": datetime.fromisoformat(attempt["registered_at"]), "created_at": now()})
+                append(c, t.windows, {"id": item["id"], "evidence_id": item["id"], "start_at": datetime.fromisoformat(window["start"]),
+                                      "end_at": datetime.fromisoformat(window["end"]), "state": "CONSUMED", "created_at": now()})
+            manifest = {"catalog": CATALOG, "source": bundle["source"],
+                        "development_id": artifact(c, bundle["development"]),
+                        "evidence": {item["id"]: item["sha256"] for item in bundle["evidence"]},
+                        "historical_attempt_count": len(bundle["evidence"]), "family_id": FAMILY_ID,
+                        "windows": bundle["windows"], "ancestry": [{"id": item["id"], "parent_id": item["parent_id"],
+                            "relation": "RELATED_EXPOSED"} for item in bundle["attempts"]]}
         snapshot_id = digest(manifest)
         append(c, t.snapshots, {"id": snapshot_id, "manifest_id": artifact(c, manifest), "created_at": now()})
         versions = {}
@@ -40,7 +47,7 @@ def bootstrap(registry, bundle, profile: ModelProfile, policy: CampaignPolicy, c
             append(c, t.agent_versions, {"id": versions[role], "role": role, "definition_id": artifact(c, spec), "created_at": now()})
         append(c, t.campaigns, {"id": campaign_id, "policy_id": artifact(c, policy), "created_at": now()})
     return {"campaign_id": campaign_id, "snapshot_id": snapshot_id, "versions": versions,
-            "contract_version": contract_version}
+            "contract_version": contract_version, **({"workflow": workflow} if workflow == "idea_exploration" else {})}
 
 
 def invalidate_evidence(registry, evidence_id: str, reason: str, actor: str):

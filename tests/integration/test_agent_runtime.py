@@ -73,7 +73,6 @@ def setup(registered, payload=None, contract_version=1):
 @pytest.mark.parametrize("scope,source,status", [
     ("future_economic", "broker_costs", "AWAITING_OPERATOR_REVIEW"),
     ("current_diagnostic", "raw_news", "BLOCKED_DATA_REQUIREMENT"),
-    ("current_diagnostic", "broker_costs", "REJECTED"),
 ])
 def test_scoped_loop_and_operator_gate(registered, scope, source, status):
     from tests.unit.test_requirement_scope import scoped_proposal
@@ -91,6 +90,17 @@ def test_scoped_loop_and_operator_gate(registered, scope, source, status):
     else:
         with pytest.raises(RegistryError, match="CONTRACT_NOT_ADMISSIBLE"):
             admit(registry, command)
+
+
+def test_invalid_cost_scope_needs_an_available_step_for_correction(registered):
+    from tests.unit.test_requirement_scope import scoped_proposal
+    registry, config, provider = setup(registered, scoped_proposal("current_diagnostic", "broker_costs"), contract_version=2)
+    report = Runner(registry, provider).run(config, "cost-field-" + config["campaign_id"], {})
+    assert report["events"][-1]["kind"] == "STOPPED"
+    assert report["events"][-1]["detail"]["reason"] == "RESEARCH_STEP_BUDGET_EXHAUSTED"
+    assert any(call["result"].get("error") == "REQUIREMENT_CONTRADICTION" for call in report["tools"])
+    with pytest.raises(RegistryError, match="unknown drafts"):
+        registry.get(t.drafts, report["run"]["id"])
 
 
 def test_narrative_contradiction_requires_operator_resolution(registered):

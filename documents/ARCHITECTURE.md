@@ -2,11 +2,13 @@
 
 **Date:** 10.10.2026
 
-**Version:** 2.20
+**Version:** 2.21
 
-**Status:** Target architecture with implemented live capture, offline EURUSD diagnostics and the bounded Research/Critic bootstrap described in Section 6.1. Broad discovery, independent new validation, promotion, trading agents and the operational frontend remain target state.
+**Status:** Target architecture with implemented live capture, offline EURUSD diagnostics, a bounded Research/Critic diagnostic workflow and a separate exploratory idea workflow. Broad autonomous discovery, independent new validation, promotion, trading agents and the operational frontend remain target state.
 
-**Revision scope:** 2.20 restores the CFD research and trading mandate and separates open research-idea exploration from admission to a supported evaluator. The current EURUSD catalog still bounds what the implemented runtime can submit and measure; broader idea capture is target state. See [Section 6](#6-two-self-improvement-loops-and-structured-evidence) and [implementation plan 1.13](research/AGENT_LOOP_IMPLEMENTATION_PLAN.md).
+**Revision scope:** 2.21 adds a bounded, catalog-independent CFD idea workflow to the existing agent runner and append-only registry. Research records one idea and Critic records one review under the run's budget; neither can admit the idea to the EURUSD evaluator. Source and related-draft references must be supplied by the task, and family assignment remains unassessed. See [Section 6](#6-two-self-improvement-loops-and-structured-evidence) and [implementation plan 1.14](research/AGENT_LOOP_IMPLEMENTATION_PLAN.md).
+
+2.20 restored the CFD research and trading mandate and separated open research-idea exploration from admission to a supported evaluator. The EURUSD catalog still bounds the implemented diagnostic measurement path.
 
 2.19 let Research correct a deterministically invalid `broker_costs` requirement scope in the same bounded run before a draft was recorded. The tool returns a field error and records the attempted call; a corrected submission can proceed without a new review process. Already recorded drafts and later measurements keep their lineage and exposure. See [Section 1.1](#11-small-stable-interfaces-and-configurable-workflows).
 
@@ -375,16 +377,18 @@ The optimizer cannot read the frozen holdout while generating candidates, promot
 
 ## 6. Two self-improvement loops and structured evidence
 
-The research system has two explicit loops. Both create hypotheses and evidence; neither directly changes a live deployment.
+The research system has two explicit loops. Both can lead from hypotheses to measured evidence; neither directly changes a live deployment.
 
-Research/Discovery may record, critique and refine a CFD market idea before a compatible evaluator or data source exists. Keep its question, rationale, lineage and known measurement gaps; do not assign a measured failure to an untested idea. A reviewed evaluator catalog limits which ideas can proceed to computation, frozen validation and economic claims. An unsupported instrument, decision rule or payoff identifies a capability gap for later implementation; it does not forbid investigation or force the agent to recast the idea as an existing EURUSD diagnostic. Freeze the full decision, data, payoff and success definitions when an idea is ready for independent validation, before its outcomes are inspected. This broader idea-intake path is planned; the implemented Research submission schema and evaluator currently cover only the bounded EURUSD diagnostic catalog.
+Research/Discovery may record, critique and refine a CFD market idea before a compatible evaluator or data source exists. Keep its question, rationale, suggested lineage and known measurement gaps; do not assign a measured failure to an untested idea. A reviewed evaluator catalog limits which ideas can proceed to computation, frozen validation and economic claims. An unsupported instrument, decision rule or payoff identifies a capability gap for later implementation; it does not forbid investigation or force the agent to recast the idea as an existing EURUSD diagnostic. Freeze the full decision, data, payoff and success definitions when an idea is ready for independent validation, before its outcomes are inspected.
+
+The implemented `idea_exploration` workflow records one typed idea and one hash-linked Critic review in the existing run, draft and critique ledger. It requires no historical EURUSD bundle, evaluator catalog or measurement contract. The task bounds permitted source references and prior-draft links; references are provenance pointers, not proof of source content, point-in-time eligibility or independent family identity. The service labels the result `EXPLORATORY_UNMEASURED` and leaves its family unassigned. Existing admission rejects it, so a later measurement requires a separately reviewed evaluator and frozen contract. The existing `discovery` workflow remains the bounded EURUSD diagnostic path. Broader autonomous search and a promotion path from exploratory ideas to evaluator contracts remain future work.
 
 | Loop | Research question | Contract boundary |
 | --- | --- | --- |
 | **A — improve an existing decision system** | Can a prompt, typed question set, model, feature, retrieval, memory or decision-rule change improve the current Executor? | The decision target and payoff contract stay fixed. Compare a candidate with the current baseline under the same evaluation and cost assumptions. |
 | **B — discover a new payoff contract** | Is there another decision and payoff for which observable information has stable economic value? | Register new decision, feature, payoff and cost contracts before validation. A changed payoff is a new hypothesis, even if it reuses an existing agent. |
 
-The common research path is `PROPOSE → FREEZE CONTRACT → DEVELOP → INDEPENDENT TEMPORAL VALIDATION → COST/STRESS VALIDATION → PROSPECTIVE SHADOW → APPROVAL`. A Critic or Discovery agent can submit candidates and inspect permitted evidence, but the evaluation service computes outcomes and the promotion authority controls status. Loop B may produce a new agent capability, portfolio policy or execution mode; such changes follow the normal code and risk review before deployment.
+The measured research path is `PROPOSE → FREEZE CONTRACT → DEVELOP → INDEPENDENT TEMPORAL VALIDATION → COST/STRESS VALIDATION → PROSPECTIVE SHADOW → APPROVAL`. An exploratory idea can remain before freeze while its data and evaluator gaps are addressed. A Critic or Discovery agent can submit candidates and inspect permitted evidence, but the evaluation service computes outcomes and the promotion authority controls status. Loop B may produce a new agent capability, portfolio policy or execution mode; such changes follow the normal code and risk review before deployment.
 
 ### 6.1 Ex-ante hypothesis contracts
 
