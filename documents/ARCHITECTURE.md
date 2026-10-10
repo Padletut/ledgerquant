@@ -756,6 +756,33 @@ affects another position on the same account, even on the same instrument.
   replace them but never shows them again. They never appear in logs, the
   journal or model input.
 
+**Account identifiers.** A broker login (such as the cTrader ID or e-mail) is a
+credential and follows the rules above. A broker account number is an
+identifier, not a secret, but it is personal and must not spread:
+
+- The account number is stored **once**, encrypted, in the account registry,
+  together with the owner, broker, environment and a label the user chooses.
+  Everything else (capture, journal, positions, manifests, logs) refers to the
+  account by its internal LedgerQuant account ID.
+- Where a lookup by number is needed, for example to match a cBot report to its
+  account, a keyed hash of the number is stored next to the encrypted value, so
+  matching never requires decryption.
+- Encryption and hashing happen on the server with keys from the secret store.
+  The connection from a cBot is already protected by TLS; a cBot does not hold
+  encryption keys. It sends the number once when it registers or reconnects and
+  otherwise uses the account ID it receives.
+- The frontend shows the user's label and a masked number (for example
+  `•••2334`), only to the account's owner. The full number and the login are
+  never sent to the browser after they have been entered.
+- Logs never contain a login or a full account number. Output from tools we do
+  not control, such as the cTrader CLI, is redacted before it is stored.
+
+Current state: the live capture tables, TickExport manifests and cBot logs still
+hold account numbers in plain text in the private database and the ignored
+`data/` directory. Moving them to account IDs needs a new capture contract and a
+migration of the existing append-only capture rows; it is done together with the
+account registry.
+
 ### 9.5 Signal delivery
 
 Every signal event and execution instruction is first written to the database,

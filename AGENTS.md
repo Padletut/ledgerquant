@@ -207,6 +207,11 @@ Measure coverage; do not infer it.
   research scoring. Never add shadow, demo and live results into one total.
 - Credentials are write-only from the frontend and never appear in logs, the
   journal or model input.
+- A broker login is a credential. A broker account number is stored once,
+  encrypted, in the account registry; elsewhere use the internal account ID.
+  The frontend shows only a label and a masked number to the owner. Redact
+  logins and account numbers from any stored log, including third-party tool
+  output.
 
 ## 9. Verification and completion
 
