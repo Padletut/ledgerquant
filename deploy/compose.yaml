@@ -106,11 +106,40 @@ services:
       timeout: 3s
       retries: 6
 
+  news:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.capture
+    command: ["python", "-m", "ledgerquant.news.collector"]
+    restart: unless-stopped
+    user: "${LEDGERQUANT_SECRET_UID:-1000}:${LEDGERQUANT_SECRET_GID:-1000}"
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    tmpfs:
+      - /tmp
+    secrets:
+      - postgres_password
+      - fred_api_key
+    environment:
+      <<: *database_environment
+      NEWS_POLL_SECONDS: "300"
+      NEWS_GDELT_CATCH_UP_HOURS: "6"
+      NEWS_FRED_POLL_SECONDS: "21600"
+      FRED_API_KEY_FILE: /run/secrets/fred_api_key
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
 secrets:
   postgres_password:
     file: ${LEDGERQUANT_POSTGRES_PASSWORD_FILE:-../credentials/postgres.pwd}
   collector_token:
     file: ${LEDGERQUANT_COLLECTOR_TOKEN_FILE:-../credentials/collector-token.txt}
+  fred_api_key:
+    file: ${LEDGERQUANT_FRED_API_KEY_FILE:-../credentials/fred-api.key}
 
 volumes:
   postgres_data:

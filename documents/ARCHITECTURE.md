@@ -434,15 +434,17 @@ step below.
 | --- | --- | --- | --- |
 | Broker ticks (IC Markets via cTrader) | Exportable through the cTrader CLI tick exporter; 2020 coverage sampled | Since 9 Oct 2026, ~100 symbols | Post-cutoff windows not yet exported |
 | cTrader sentiment | **None**: real-time only | Since 9 Oct 2026 | Sentiment cannot be replayed before capture began |
-| News | GDELT archive accessible (indexed batches and tone); first-seen times unverified | Not yet captured | A news capture with real `available_at` is needed |
-| Macro releases | ALFRED vintages, issuer releases | Not yet captured | Release timestamps per series |
+| News | GDELT GKG backfill from 1 Sep 2025 running, labelled backfilled | Since 10 Oct 2026: GDELT GKG (FX and gold scope) and Fed, ECB and BoE releases, with real `available_at` | No economic calendar yet ([NEWS.md](operations/NEWS.md)) |
+| Macro releases | ALFRED vintages from 1 Sep 2025 for 14 tracked series | Since 11 Oct 2026: FRED release calendar and ALFRED vintages | Release dates have no time of day; no policy-meeting calendar yet |
 
 Data needed for post-cutoff replay:
 
 1. **Export broker ticks** for EURUSD, GBPUSD and XAUUSD from the earliest relevant
    training cutoff to today, using the existing tick exporter.
-2. **Start a live news capture now**, recording when each item arrived. Back-fill
-   the post-cutoff window from GDELT, labelled as backfilled.
+2. **Live news capture** records when each item arrived (running since 10 October
+   2026). The post-cutoff window is back-filled from GDELT, labelled as
+   backfilled. Macro data and its release calendar come from FRED/ALFRED; a
+   calendar of policy meetings and release times is still missing.
 3. **Keep capture running continuously.** Every day adds clean, post-cutoff,
    point-in-time data, including sentiment that can never be back-filled.
 4. In replay, a source that did not exist at `T` is `UNAVAILABLE`, and the
@@ -888,13 +890,15 @@ checks without changing the meaning of existing records.
 | Shadow positions and position review (`HOLD`/`CLOSE`/`ADJUST`) | Target |
 | Claude and Jev adapters | Target |
 | User settings, Risk Engine, execution cBot, demo/live execution | Target |
-| News capture, scoring, research runs | Target |
+| News and macro capture: GDELT GKG, Fed, ECB and BoE feeds, FRED/ALFRED | Running ([NEWS.md](operations/NEWS.md)) |
+| Policy-meeting calendar and release times, scoring, research runs | Target |
 | Users and roles, built-in sign-in and request limits, global signals over WebSocket, credential store, console | Target |
 
 Build order, each step a working vertical slice:
 
-1. **Post-cutoff data:** export ticks for EURUSD, GBPUSD and XAUUSD; start news
-   capture.
+1. **Post-cutoff data:** export ticks for EURUSD, GBPUSD and XAUUSD with the
+   batch tool; news and FRED macro capture are running and GDELT is being
+   back-filled; add policy-meeting dates and release times.
 2. **Replay engine:** point-in-time context at `T` from archive and capture data.
 3. **GPT analyst** through replay with **shadow positions and position review**
    (`HOLD`/`CLOSE`/`ADJUST`), scoring and baselines including a static exit;
@@ -905,7 +909,7 @@ Build order, each step a working vertical slice:
 6. **Scout, the `WAIT` watchlist and pending orders with expiry.**
 7. **Research runs**, single and continuous, over the journal.
 8. **Scheduled shadow** on live data, then **demo** execution with the execution
-   cBot, its local limit enforcement and the failover tests in Section 7.6.
+   cBot, its local limit enforcement and the failover tests in Section 7.7.
 9. **Platform and console:** users and roles, built-in sign-in and request limits
    for the control API, per-user credentials, global signals over WebSocket,
    and the mobile-first, WCAG 2.2 AA console with the controls in Section 3, the
@@ -919,9 +923,11 @@ src/ledgerquant/
   decision/       shadow Executor contract, runner and store (implemented)
   integrations/   model provider adapters (OpenAI implemented)
   models/         model profiles, generation types, budget (implemented)
+  news/           news and macro capture: GDELT, central-bank feeds, FRED/ALFRED (implemented)
   records.py      canonical JSON and content hashes
 cbots/            cTrader cBots: LiveCapture, TickExport, MarketData probe
-deploy/           Docker Compose for capture and manual shadow runs
+deploy/           Docker Compose for capture, news and manual shadow runs
+tools/            operator tools, such as the batch tick export
 migrations/       Alembic schema history
 ```
 

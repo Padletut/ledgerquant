@@ -1,13 +1,14 @@
-"""Alembic environment for market capture and decision schemas."""
+"""Alembic environment for market capture, decision and news schemas."""
 
 from alembic import context
 from sqlalchemy import create_engine
 
 from ledgerquant.capture.settings import database_url_from_environment
 from ledgerquant.capture.storage import metadata
+from ledgerquant.news.storage import metadata as news_metadata
 
 
-target_metadata = [metadata]
+target_metadata = [metadata, news_metadata]
 
 
 def run_migrations_online() -> None:
