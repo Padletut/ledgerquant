@@ -20,6 +20,12 @@ do not match. Set `LEDGERQUANT_PRIVATE_EVIDENCE_ROOT` to the ignored
 The current capture feed prefix must be read from its existing private
 configuration, never inferred from a public alias. See [capture operations](CAPTURE.md).
 
-This redaction changes the working tree only. Earlier Git commits may still
-contain the account number. Removing it from public history requires a separate,
-coordinated history rewrite and remote update; this cleanup has not done that.
+On 10 October 2026, `main` was rewritten and GitHub `main` was updated from
+`c086682` to `cca7ba9` with `force-with-lease`. The rewritten tip has the same
+file tree as the preceding publication-redaction commit. All 46 reachable commits
+and 1,451 reachable objects in an isolated clean clone were scanned with no match
+for the removed account number. A private original-history bundle is retained
+under the ignored `data/private_publication_archive/history_preview_20261010/`.
+Existing clones need to move to the rewritten history. The remote update cannot
+remove copies held by local Git object stores, forks, other clones or external
+caches.

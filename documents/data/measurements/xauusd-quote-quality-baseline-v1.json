@@ -1,0 +1,73 @@
+{
+  "status": "DEVELOPMENT_ONLY_NO_VALIDATION_ALLOCATION",
+  "question": "On the six selected 2020 XAUUSD dates, is prior-30-minute spread IQR more rank-associated with next-15-minute spread p95 than the preceding 15-minute spread p95?",
+  "source": {
+    "case_artifact_local_path": "data/ctrader_tick_exports/xauusd_quote_quality_dev_v1/development_evaluation.json",
+    "case_artifact_sha256": "de0f05211a190454510c1bc219452fcccd1945c445a3e16d222d8f17b60bf69a",
+    "sampling_sha256": "afbe35cbd7fd3333f48835efe4750721b5e838266c084a0983cddc5b3fd51d8a",
+    "comparison_code_path": "src/ledgerquant/research/quote_quality.py",
+    "comparison_code_sha256": "1d1db67b9884492b50a299de436ffec98a7949dfa8351d78d3e7b29cbdf4cdf2"
+  },
+  "method": {
+    "exposure": "Comparison chosen after inspecting the 2020 descriptive IQR/outcome result; no 2021 quote outcomes were opened.",
+    "paired_case_rule": "For each consecutive 15-minute anchor pair within a date, compare current-anchor prior-30-minute spread IQR and previous-anchor forward-15-minute spread p95 against current-anchor forward-15-minute spread p95. The previous outcome window ends at the current anchor. Retain only pairs with both cases MEASURABLE; exclude the first anchor of each date.",
+    "metric": "Within-day Spearman(IQR, next-15-minute p95) minus Spearman(previous-15-minute p95, next-15-minute p95); mean of six daily differences is descriptive. Day is the support unit, not overlapping anchors.",
+    "availability_mode": "Retrospective event-time backfill; actual 2020 source availability is unverified. No historical replay or executable quote claim."
+  },
+  "development": {
+    "days": [
+      {
+        "date_utc": "2020-02-11",
+        "paired_cases": 31,
+        "iqr_spearman": 0.4205854620024639,
+        "recent_spread_spearman": 0.30047700373277353,
+        "delta_iqr_minus_recent_spread": 0.12010845826969035
+      },
+      {
+        "date_utc": "2020-04-14",
+        "paired_cases": 31,
+        "iqr_spearman": 0.33286178951980167,
+        "recent_spread_spearman": 0.5382593780657083,
+        "delta_iqr_minus_recent_spread": -0.20539758854590667
+      },
+      {
+        "date_utc": "2020-06-09",
+        "paired_cases": 31,
+        "iqr_spearman": 0.013791373375352104,
+        "recent_spread_spearman": 0.2435858444732756,
+        "delta_iqr_minus_recent_spread": -0.2297944710979235
+      },
+      {
+        "date_utc": "2020-08-11",
+        "paired_cases": 31,
+        "iqr_spearman": 0.5326444683003533,
+        "recent_spread_spearman": 0.4751613258562738,
+        "delta_iqr_minus_recent_spread": 0.05748314244407948
+      },
+      {
+        "date_utc": "2020-10-13",
+        "paired_cases": 31,
+        "iqr_spearman": 0.5588899770601437,
+        "recent_spread_spearman": 0.305193482688391,
+        "delta_iqr_minus_recent_spread": 0.2536964943717526
+      },
+      {
+        "date_utc": "2020-12-08",
+        "paired_cases": 31,
+        "iqr_spearman": -0.16376312532289702,
+        "recent_spread_spearman": 0.22324382071271004,
+        "delta_iqr_minus_recent_spread": -0.38700694603560704
+      }
+    ],
+    "paired_cases_total": 186,
+    "positive_difference_days": 3,
+    "mean_daily_difference": -0.06515181843231913
+  },
+  "next_action": "Do not open the six selected 2021 quote outcomes for this IQR candidate. Keep the date set unused for price validation unless a later candidate, its baseline and its measurement rules are frozen before access.",
+  "limitations": [
+    "This is a development comparison selected after the earlier 2020 result was visible, not an independent test or a proof that IQR has no value.",
+    "Comparing two marginal rank correlations does not measure incremental predictive information conditional on the baseline.",
+    "Only six selected dates support the mean; 15-minute anchors overlap within dates.",
+    "No trading threshold, abstention value, broker quote fidelity or net economic payoff was evaluated."
+  ]
+}

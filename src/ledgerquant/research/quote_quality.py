@@ -82,17 +82,52 @@ def _ranks(values: list[float]) -> list[float]:
     return result
 
 
-def _spearman(cases: list[dict]) -> float | None:
-    measurable = [case for case in cases if case["status"] == "MEASURABLE"]
-    if len(measurable) < 2:
+def _spearman_values(first: list[float], second: list[float]) -> float | None:
+    if len(first) != len(second):
+        raise ValueError("Rank vectors must have equal length")
+    if len(first) < 2:
         return None
-    x = _ranks([case["lookback_spread_iqr"] for case in measurable])
-    y = _ranks([case["forward_spread_p95"] for case in measurable])
+    x = _ranks(first)
+    y = _ranks(second)
     xmean, ymean = sum(x) / len(x), sum(y) / len(y)
     numerator = sum((a - xmean) * (b - ymean) for a, b in zip(x, y))
     xss = sum((a - xmean) ** 2 for a in x)
     yss = sum((b - ymean) ** 2 for b in y)
     return numerator / (xss * yss) ** 0.5 if xss and yss else None
+
+
+def _spearman(cases: list[dict]) -> float | None:
+    measurable = [case for case in cases if case["status"] == "MEASURABLE"]
+    return _spearman_values(
+        [case["lookback_spread_iqr"] for case in measurable],
+        [case["forward_spread_p95"] for case in measurable],
+    )
+
+
+def compare_recent_spread_baseline(cases: list[dict]) -> dict:
+    """Compare prior 30-minute IQR with the preceding 15-minute p95 on paired anchors."""
+    proposed: list[float] = []
+    baseline: list[float] = []
+    outcomes: list[float] = []
+    for previous, current in zip(cases, cases[1:]):
+        if _utc(current["anchor_utc"]) - _utc(previous["anchor_utc"]) != timedelta(minutes=15):
+            raise ValueError("Baseline requires consecutive 15-minute anchors")
+        if previous["status"] != "MEASURABLE" or current["status"] != "MEASURABLE":
+            continue
+        proposed.append(current["lookback_spread_iqr"])
+        baseline.append(previous["forward_spread_p95"])
+        outcomes.append(current["forward_spread_p95"])
+    proposed_rho = _spearman_values(proposed, outcomes)
+    baseline_rho = _spearman_values(baseline, outcomes)
+    return {
+        "paired_cases": len(outcomes),
+        "iqr_spearman": proposed_rho,
+        "recent_spread_spearman": baseline_rho,
+        "delta_iqr_minus_recent_spread": (
+            proposed_rho - baseline_rho
+            if proposed_rho is not None and baseline_rho is not None else None
+        ),
+    }
 
 
 def evaluate_manifest(manifest_path: Path, day: str, expected_account_number: int | None = None) -> dict:

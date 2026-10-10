@@ -4,7 +4,9 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from ledgerquant.research.quote_quality import _ranks, evaluate_manifest, measure_windows
+from ledgerquant.research.quote_quality import (
+    _ranks, compare_recent_spread_baseline, evaluate_manifest, measure_windows,
+)
 
 
 UTC = timezone.utc
@@ -37,6 +39,34 @@ def test_source_gap_retains_case_without_outcome():
 
 def test_numerical_noise_does_not_break_spread_rank_ties():
     assert _ranks([0.03, 0.03000000000000002, 0.04]) == [0.5, 0.5, 2.0]
+
+
+def test_baseline_uses_prior_outcome_window_and_excludes_first_anchor():
+    cases = [
+        {"anchor_utc": "2020-02-11T08:15:00Z", "status": "MEASURABLE", "lookback_spread_iqr": 9.0, "forward_spread_p95": 3.0},
+        {"anchor_utc": "2020-02-11T08:30:00Z", "status": "MEASURABLE", "lookback_spread_iqr": 1.0, "forward_spread_p95": 1.0},
+        {"anchor_utc": "2020-02-11T08:45:00Z", "status": "MEASURABLE", "lookback_spread_iqr": 2.0, "forward_spread_p95": 2.0},
+    ]
+
+    result = compare_recent_spread_baseline(cases)
+
+    assert result == {
+        "paired_cases": 2,
+        "iqr_spearman": 1.0,
+        "recent_spread_spearman": -1.0,
+        "delta_iqr_minus_recent_spread": 2.0,
+    }
+
+
+def test_baseline_skips_missing_source_and_rejects_nonconsecutive_anchors():
+    cases = [
+        {"anchor_utc": "2020-02-11T08:15:00Z", "status": "INSUFFICIENT_SOURCE"},
+        {"anchor_utc": "2020-02-11T08:30:00Z", "status": "MEASURABLE", "lookback_spread_iqr": 1.0, "forward_spread_p95": 2.0},
+    ]
+    assert compare_recent_spread_baseline(cases)["paired_cases"] == 0
+    cases[1]["anchor_utc"] = "2020-02-11T08:45:00Z"
+    with pytest.raises(ValueError, match="consecutive"):
+        compare_recent_spread_baseline(cases)
 
 
 def test_manifest_hash_is_required(tmp_path):
