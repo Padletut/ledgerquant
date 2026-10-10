@@ -1,0 +1,33 @@
+# Manual shadow Executor commands only; this service never starts with capture.
+services:
+  migrate:
+    secrets: [postgres_password, shadow_worker_password]
+
+  shadow:
+    profiles: [shadow]
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.capture
+    entrypoint: [python, -m, ledgerquant.decision.cli]
+    command: [--help]
+    restart: "no"
+    user: "${LEDGERQUANT_SECRET_UID:-1000}:${LEDGERQUANT_SECRET_GID:-1000}"
+    read_only: true
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    tmpfs: [/tmp]
+    environment:
+      DB_HOST: postgres
+      DB_NAME: ledgerquant
+      DB_USER: ledgerquant_shadow_worker
+      DB_PASSWORD_FILE: /run/secrets/shadow_worker_password
+      OPENAI_API_KEY_FILE: /run/secrets/openai_api_key
+    secrets: [shadow_worker_password, openai_api_key]
+    volumes:
+      - ../configs/research/openai_gpt54_mini.profile.json:/run/config/model-profile.json:ro
+
+secrets:
+  shadow_worker_password:
+    file: ../credentials/shadow-worker.pwd
+  openai_api_key:
+    file: ../credentials/openai-api.key

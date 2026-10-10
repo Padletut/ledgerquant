@@ -2,11 +2,13 @@
 
 **Date:** 10.10.2026
 
-**Version:** 2.24.1
+**Version:** 2.25
 
-**Status:** Target architecture with implemented live capture, offline EURUSD diagnostics, a development-only XAUUSD quote-quality diagnostic, a bounded Research/Critic diagnostic workflow and an exploratory idea workflow with linked revisions and parked attempts. Broad autonomous discovery, independent new validation, promotion, trading agents and the operational frontend remain target state.
+**Status:** Target architecture with implemented live capture, offline EURUSD diagnostics, a development-only XAUUSD quote-quality diagnostic, bounded Research/Critic workflows and a manual, non-trading shadow Executor bootstrap. Automated opportunity scheduling, prospective Executor evidence, independent new validation, promotion, live trading agents and the operational frontend remain target state.
 
-**Revision scope:** 2.24.1 clarifies that Research primarily improves the agents' contextual market judgement through measured changes to context, instructions, tools, retrieval, memory and, where supported and justified, model training. It does not primarily search for static trading rules. No agent-learning method is assumed effective without comparison on the same decision task.
+**Revision scope:** 2.25 adds `shadow_executor/1`: an operator registers a future decision opportunity, a bounded runner reads committed broker tick observations, and append-only events retain the exact context/request and result or failure. It has no order route, automatic scheduler, news/RAG context or payoff evaluator. The runner has not been invoked against a provider; the first prospective decision and economic evidence remain pending. See the [shadow operations guide](operations/SHADOW_EXECUTOR.md).
+
+2.24.1 clarified that Research primarily improves the agents' contextual market judgement through measured changes to context, instructions, tools, retrieval, memory and, where supported and justified, model training. It does not primarily search for static trading rules. No agent-learning method is assumed effective without comparison on the same decision task.
 
 2.24 made the LLM Executor's contextual setup discovery the next product milestone. Fixed price rules remain optional controls and data diagnostics. The next slice is prospective shadow decisions from source-backed market context, before broker order authority. This changed implementation priority, not an implemented runtime or the authority of existing research results.
 
@@ -207,6 +209,19 @@ sentiment and further CFD instruments as their source and availability
 contracts become usable. Historical backfill can support labelled retrospective
 experiments but cannot stand in for this prospective test of a contemporary
 model's decisions.
+
+The implemented bootstrap has a narrower boundary: the operator preregisters
+one future feed/symbol/time opportunity. `shadow_executor/1` fixes the model
+profile, instruction hash, one-hour outcome horizon, five-minute proposal
+expiry, ten-second quote freshness and USD 1 request ceiling. A manual runner
+reads committed tick rows, samples recent and 5/15/30-minute quote landmarks,
+and invokes the model only for a fresh context. `STARTED` and `FINAL` events
+are append-only; an interrupted start is left uncertain without automatic
+retry. A dedicated database role can read capture rows and append its own
+decision records but cannot write capture rows. Feed and account identity are
+not included in the provider request.
+There is no scheduler claiming complete time coverage, payoff evaluator,
+prospective run or trading authority yet.
 
 ## 3. Domain model and sources of truth
 

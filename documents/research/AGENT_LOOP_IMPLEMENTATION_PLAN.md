@@ -2,7 +2,9 @@
 
 **Date:** 10 October 2026
 
-**Revision:** 1.17.1 — aligns with architecture 2.24.1: Research primarily improves the Executor's contextual judgement, rather than discovering static trading rules. Historical data, released agent decisions, Research RAG, episodic memory and eventual model training are candidate inputs or interventions; each must show its own benefit against a matched agent baseline. This revision changes the plan, not implemented behavior.
+**Revision:** 1.18 — records the manual `shadow_executor/1` bootstrap in architecture 2.25 and its limits. The next step is an explicitly authorized prospective provider run on a fresh feed, followed by an evaluator for the frozen population; implementation alone is not evidence of agent decision quality.
+
+1.17.1 aligned Research with architecture 2.24.1: improve the Executor's contextual judgement rather than discover static rules. Historical data, RAG, memory and later model training are candidate interventions requiring matched comparisons.
 
 1.17 made a prospective LLM Executor in shadow mode the next milestone, aligned with architecture 2.24. The existing price-only diagnostic and XAUUSD synthetic-order study are development controls, not the intended trading intelligence.
 
@@ -39,11 +41,11 @@ The repository currently has an isolated live-capture service, PostgreSQL/Alembi
 The first diagnostic agent run uses EURUSD source coverage, the released structured evidence and a declared development view. Research/Discovery submits **one** proposal or authorized linked revision per run, as fixed by its task; Critic returns **one** typed review. A repair is another attempt, not a new discovery. There is no unbounded debate or automatic search expansion in this slice. Every run records its configured model, tool and resource budgets before invocation. The diagnostic submission tool rejects payoffs outside its schema; `idea_exploration` can instead retain the question, rationale, task-supplied references, suggested lineage and missing measurement capabilities for Critic review, or park the question with a reason. The result is `EXPLORATORY_UNMEASURED` or `EXPLORATORY_PARKED`, with no family assignment, contract freeze or evaluator admission. A new validation window and any economic success gate belong to a later frozen hypothesis. The price-only slice and exploratory idea workflow test orchestration and research discipline; they cannot establish the value of future news/semantic agents or unrestricted discovery ability.
 
 The implemented research slice has no order placement, portfolio allocation,
-strategy promotion or live Executor. Its registry and invocation accounting
-are useful foundations, but do not demonstrate that an LLM can identify market
-setups. The next slice must measure that behavior directly in prospective
-shadow decisions. Static rules remain simple controls and data-quality probes,
-not prerequisites for the agent to consider a market setup.
+strategy promotion or live Executor. A separate manual shadow Executor
+bootstrap is implemented, but has not called a provider or measured a market
+decision. The next step must observe that behavior on prospective quotes.
+Static rules remain simple controls and data-quality probes, not prerequisites
+for the agent to consider a market setup.
 
 **Historical entry decision.** The first supported measurement path was one typed EURUSD **price-only fixed-horizon directional diagnostic** family using the existing source and evaluator conventions, with no order or net-payoff claim. A materially new decision timing, target or horizon is Loop B; a rule variation under an unchanged target/payoff is Loop A and needs a registered baseline. That finite catalog admits only calculations implemented by its reviewed evaluator. This restriction does not apply to exploratory ideas or define the Executor's setup search. The 2020/2021 attempts remain released prior evidence, not new evaluation windows; unsupported ideas retain their capability or data gaps without pretending to have been evaluated.
 
@@ -353,11 +355,13 @@ existing feedback selection policy; new unreviewed advice remains a proposal.
 There is no pilot-qualification prerequisite for using an eligible lesson. Do not
 claim that feedback helped until an actual comparison supports that claim.
 
-**Next work:** build the narrow prospective shadow-decision path below. The
-existing exploratory workflow can continue to collect new hypotheses, but
-should not consume the main implementation effort by repeatedly converting
-LLM setup discovery into hand-written price rules. The retired pilot needs no
-more review forms or dispatch implementation.
+**Next work:** verify the manual shadow-decision path on a fresh prospective
+quote and record the first authorized model result or `NO_SIGNAL`. Then add an
+independent quote-outcome evaluator for the preregistered opportunities and a
+real scheduler that counts its missed slots. The existing exploratory workflow
+can continue to collect new hypotheses, but should not consume the main
+implementation effort by converting LLM setup discovery into hand-written
+price rules. The retired pilot needs no more review forms or dispatch work.
 
 ### First contextual Executor slice
 
