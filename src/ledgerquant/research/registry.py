@@ -145,9 +145,19 @@ class Registry:
             process_invalid = any(event["kind"] == "PROCESS_CONTEXT_INVALIDATED" for event in events)
             correction = c.execute(select(t.commitments.c.artifact_id).where(t.commitments.c.draft_id == run_id,
                 t.commitments.c.kind == "CONTRACT_REVIEW_CORRECTION")).scalar_one_or_none()
+            draft = c.execute(select(t.drafts).where(t.drafts.c.run_id == run_id)).mappings().one_or_none()
+            critique = (c.execute(select(t.critiques).where(t.critiques.c.draft_id == draft["id"])).mappings().one_or_none()
+                        if draft is not None else None)
+            commitments = (c.execute(select(t.commitments).where(t.commitments.c.draft_id == draft["id"])
+                .order_by(t.commitments.c.created_at, t.commitments.c.id)).mappings().all() if draft is not None else [])
             return {"run": run, "events": [{"kind": e["kind"], "detail": value(c, e["detail_id"])} for e in events],
                     "invocations": invocation_records, "tools": [{**dict(row), "arguments": value(c, row["arguments_id"]),
                         "result": value(c, row["result_id"])} for row in tool_records], "mode": "recorded_output_replay",
+                    "research_records": {"draft": ({"sha256": draft["artifact_id"], "body": value(c, draft["artifact_id"])} if draft else None),
+                                         "critique": ({"sha256": critique["artifact_id"], "body": value(c, critique["artifact_id"])} if critique else None),
+                                         "commitments": [{"kind": row["kind"], "actor": row["actor"],
+                                                          "sha256": row["artifact_id"], "body": value(c, row["artifact_id"])}
+                                                         for row in commitments]},
                     "current_integrity": {"status": "INVALID" if process_invalid else "REVIEW_REQUIRED" if correction or invalid & set(manifest["evidence"]) else "UNCHANGED",
                                           "invalidated_dependencies": sorted(invalid & set(manifest["evidence"])),
                                           **({"contract_review_correction": value(c, correction)} if correction else {})}}

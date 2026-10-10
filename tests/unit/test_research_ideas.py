@@ -1,3 +1,6 @@
+from datetime import datetime
+from pathlib import Path
+
 import pytest
 from pydantic import ValidationError
 from sqlalchemy import create_engine
@@ -14,8 +17,11 @@ from ledgerquant.research.ideas import Idea, IdeaCritique, references_allowed
 from ledgerquant.research import tables as t
 from ledgerquant.research.admission import Admission, admit
 from ledgerquant.research.bootstrap import bootstrap
-from ledgerquant.research.registry import Registry, RegistryError
+from ledgerquant.research.imports import load_legacy_bundle
+from ledgerquant.research.proposals import Critique, Proposal
+from ledgerquant.research.registry import Registry, RegistryError, append, artifact, now
 from ledgerquant.research.types import canonical, digest
+from tests.unit.test_agent_catalog import proposal_payload
 
 
 def idea_payload():
@@ -23,6 +29,7 @@ def idea_payload():
         "title": "CFD event response",
         "question": "Does an eligible macro release change the next session's EURUSD direction?",
         "instruments": ["EURUSD"],
+        "candidate_information": "Macro release timing and predecision prices.",
         "proposed_decision": "Decide whether to take directional exposure after the release.",
         "proposed_payoff": "Return over the following session, net of credible costs if available.",
         "rationale": "A delayed price response might persist after the first reaction.",
@@ -40,6 +47,7 @@ def test_idea_is_not_forced_into_eurusd_evaluator_or_economic_status():
     rough = {key: idea_payload()[key] for key in
              ("title", "question", "instruments", "proposed_decision", "proposed_payoff", "rationale")}
     assert Idea.model_validate(rough).falsifier is None
+    assert Idea.model_validate({**idea_payload(), "instruments": ["US 500"]}).instruments == ("US 500",)
     for extra in ({"status": "PROMOTED"}, {"net_expectancy": 0.2}, {"family_id": "new"}):
         with pytest.raises(ValidationError):
             Idea.model_validate({**idea_payload(), **extra})
@@ -96,7 +104,7 @@ def test_bounded_idea_run_records_critique_and_cannot_enter_evaluator(monkeypatc
         max_steps_per_agent=4, input_usd_per_million=0, output_usd_per_million=0,
         max_run_usd=1, price_basis="test fixture", knowledge_exposure="test fixture")
     config = bootstrap(registry, None, profile,
-        CampaignPolicy(max_runs=1, max_invocations=3, max_reserved_tokens=100000, max_usd=1),
+        CampaignPolicy(max_runs=2, max_invocations=6, max_reserved_tokens=200000, max_usd=1),
         "sqlite-idea", workflow="idea_exploration")
     idea = Idea.model_validate(idea_payload()).model_dump(mode="json")
 
@@ -136,9 +144,68 @@ def test_bounded_idea_run_records_critique_and_cannot_enter_evaluator(monkeypatc
     draft = registry.get(t.drafts, run_id)
     assert registry.read(draft["artifact_id"])["instruments"] == ["EURUSD"]
     assert registry.get(t.critiques, run_id)["draft_id"] == run_id
+    assert report["research_records"]["draft"]["body"]["question"] == idea_payload()["question"]
+    assert report["research_records"]["critique"]["body"]["concerns"]
     with pytest.raises(RegistryError, match="EXPLORATORY_IDEA_NOT_EVALUABLE"):
         admit(registry, Admission(draft_id=run_id, draft_sha256=draft["artifact_id"], actor="operator",
             action="ADMIT_DEVELOPMENT", reason="Unsupported evaluator", objection_resolutions={}))
     assert Runner(registry, provider).run(config, "idea-run", task) == report
     assert provider.calls == 3
+
+    revised = {**idea_payload(), "title": "CFD event response after Critic review",
+        "rationale": "Test the delayed response only after source timing and revision rules are known.",
+        "measurement_gaps": ["A reviewed event-time evaluator and source audit are still needed."]}
+    idea = Idea.model_validate(revised).model_dump(mode="json")
+    provider = Scripted()
+    revision = Runner(registry, provider).run(config, "idea-revision", {
+        "question": "Revise the first idea after Critic feedback", "source_refs": ["macro-calendar"],
+        "parent_idea_draft_id": run_id})
+    assert revision["events"][-1]["detail"]["status"] == "EXPLORATORY_UNMEASURED"
+    lineage = next(event["detail"] for event in revision["events"] if event["kind"] == "IDEA_REVISION")
+    assert lineage["parent_draft_id"] == run_id
+    assert lineage["parent_critique_sha256"] == registry.get(t.critiques, run_id)["artifact_id"]
+    assert registry.read(registry.get(t.drafts, run_id)["artifact_id"])["title"] == idea_payload()["title"]
+    revision_input = revision["invocations"][1]["request"]["input"][0]["content"]
+    assert canonical(registry.read(registry.get(t.critiques, run_id)["artifact_id"])) in revision_input
+
+    def sqlite_bootstrap_append(connection, table, values):
+        normalized = {key: val.replace(tzinfo=None) if isinstance(val, datetime) and val.tzinfo else val
+                      for key, val in values.items()}
+        return append(connection, table, normalized)
+
+    monkeypatch.setattr("ledgerquant.research.bootstrap.append", sqlite_bootstrap_append)
+    diagnostic = bootstrap(registry, load_legacy_bundle(Path(__file__).parents[2]), profile,
+        CampaignPolicy(max_runs=1, max_invocations=1, max_reserved_tokens=10000, max_usd=1),
+        "sqlite-diagnostic")
+    source_id = revision["run"]["id"]
+    measurement_task = {"source_idea_draft_id": source_id,
+        "measurement_mapping_reason": "Narrow the event idea to a supported price-only diagnostic; this is a derived question."}
+    measured_run, _ = registry.start_run("derived-measurement", diagnostic["campaign_id"], diagnostic["snapshot_id"],
+        diagnostic["versions"]["research"], diagnostic["versions"]["critic"], measurement_task)
+    linked = Runner(registry, provider)._linked_idea(measured_run, "discovery", measurement_task)
+    assert linked["draft_id"] == source_id
+    assert linked["measurement_mapping_reason"] == measurement_task["measurement_mapping_reason"]
+    with pytest.raises(RegistryError, match="MEASUREMENT_MAPPING_REASON_REQUIRED"):
+        Runner(registry, provider)._linked_idea(measured_run, "discovery", {"source_idea_draft_id": source_id})
+    proposal = Proposal.model_validate(proposal_payload())
+    with engine.begin() as connection:
+        proposal_id = artifact(connection, proposal)
+        append(connection, t.drafts, {"id": measured_run["id"], "run_id": measured_run["id"],
+            "family_id": "eurusd_four_hour_direction", "signature": digest(proposal.diagnostic),
+            "artifact_id": proposal_id, "created_at": now()})
+        critique = Critique(draft_sha256=proposal_id, disposition="REVIEW", objections=(), summary="Review the derived diagnostic.")
+        append(connection, t.critiques, {"id": measured_run["id"], "draft_id": measured_run["id"],
+            "artifact_id": artifact(connection, critique), "created_at": now()})
+    monkeypatch.setattr("ledgerquant.research.admission._serialize_family", lambda *_: None)
+    lock = admit(registry, Admission(draft_id=measured_run["id"], draft_sha256=proposal_id,
+        actor="operator", action="ADMIT_DEVELOPMENT", reason="Supported diagnostic only", objection_resolutions={}))
+    assert lock["execution_allowed"] is False
+    frozen = registry.read(registry.get(t.commitments, measured_run["id"] + ":DESIGN_FREEZE")["artifact_id"])
+    assert frozen["origin_idea"]["idea_draft_id"] == source_id
+    assert frozen["origin_idea"]["idea_draft_sha256"] == registry.get(t.drafts, source_id)["artifact_id"]
+    assert frozen["origin_idea"]["relation"] == "DERIVED_MEASUREMENT_QUESTION"
+    measured_report = registry.report(measured_run["id"])
+    stored = {item["kind"]: item["body"] for item in measured_report["research_records"]["commitments"]}
+    assert stored["DESIGN_FREEZE"]["origin_idea"] == frozen["origin_idea"]
+    assert stored["CANDIDATE_LOCK"]["status"] == lock["status"]
     engine.dispose()

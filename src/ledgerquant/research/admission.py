@@ -10,6 +10,7 @@ from .catalog import CATALOG, develop
 from .proposals import review
 from .scoped_proposals import parse_proposal, parse_critique
 from .grounded_proposals import ProposalV3
+from .ideas import recorded_idea
 from .grounding import recorded_context
 from .registry import RegistryError, append, artifact, now, value
 from .repair_exposure import POLICY_VERSION, RepairDenied, participant_runs, recheck, registry_findings
@@ -61,6 +62,21 @@ def admit(registry, command: Admission):
             required = {str(i) for i, objection in enumerate(critique.objections) if objection.severity != "advisory"}
             if not required <= set(command.objection_resolutions) or any(not text.strip() for text in command.objection_resolutions.values()):
                 raise RegistryError("UNRESOLVED_CRITIC_OBJECTION")
+        origin = None
+        task = value(c, run["task_id"])
+        if command.action == "ADMIT_DEVELOPMENT" and isinstance(task, dict) and "source_idea_draft_id" in task:
+            source_id = task["source_idea_draft_id"]
+            if not isinstance(source_id, str) or not source_id:
+                raise RegistryError("INVALID_IDEA_REFERENCE")
+            source = recorded_idea(c, source_id)
+            reason = task.get("measurement_mapping_reason")
+            if not isinstance(reason, str) or not reason.strip():
+                raise RegistryError("MEASUREMENT_MAPPING_REASON_REQUIRED")
+            if max(source["created_at"], source["reviewed_at"]) >= run["created_at"]:
+                raise RegistryError("IDEA_NOT_PRIOR_TO_RUN")
+            origin = {"relation": "DERIVED_MEASUREMENT_QUESTION", "idea_draft_id": source["draft_id"],
+                "idea_draft_sha256": source["draft_sha256"], "idea_critique_sha256": source["critique_sha256"],
+                "mapping_reason": reason}
         repair = None
         if isinstance(proposal, ProposalV3) and proposal.revision is not None and command.action == "ADMIT_DEVELOPMENT":
             repair = _repair_recheck(c, draft, run, manifest, proposal, command.actor)
@@ -80,6 +96,8 @@ def admit(registry, command: Admission):
                       "family_id": draft["family_id"], "campaign_id": run["campaign_id"],
                       "registered_at": draft["created_at"].isoformat(), "confirmatory_tests": 0,
                       "validation_status": "NO_INDEPENDENT_WINDOW"}
+            if origin is not None and not frozen:
+                freeze["origin_idea"] = origin
             if isinstance(proposal, ProposalV3) and proposal.revision is not None and not frozen:
                 freeze = {**freeze, "revision": proposal.revision.model_dump(mode="json"),
                           "idea_relation": "SAME_RESEARCH_IDEA", "attempt_kind": "CORRECTED_REVISION",

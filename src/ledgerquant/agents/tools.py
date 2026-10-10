@@ -7,7 +7,7 @@ from sqlalchemy import func, select
 
 from ledgerquant.research import tables as t
 from ledgerquant.research.catalog import classify
-from ledgerquant.research.ideas import Idea, IdeaCritique, references_allowed
+from ledgerquant.research.ideas import Idea, IdeaCritique, recorded_idea, references_allowed
 from ledgerquant.research.proposals import Critique, Proposal, review, requirement_scope_error
 from ledgerquant.research.scoped_proposals import contract_types, parse_proposal, parse_critique, REQUIREMENT_RULES
 from ledgerquant.research.grounding import recorded_context
@@ -217,10 +217,23 @@ class ResearchTools:
                 related = c.execute(select(t.drafts.c.created_at).where(t.drafts.c.id == draft_id)).scalar_one_or_none()
                 if related is None or related > run["created_at"]:
                     raise RegistryError("UNKNOWN_PRIOR_DRAFT")
+            parent = None
+            if "parent_idea_draft_id" in task:
+                parent_id = task["parent_idea_draft_id"]
+                if not isinstance(parent_id, str) or not parent_id:
+                    raise RegistryError("INVALID_IDEA_REFERENCE")
+                parent = recorded_idea(c, parent_id)
+            if parent is not None and max(parent["created_at"], parent["reviewed_at"]) >= run["created_at"]:
+                raise RegistryError("IDEA_NOT_PRIOR_TO_RUN")
             key = artifact(c, arguments)
             row = append(c, t.drafts, {"id": self.run_id, "run_id": self.run_id,
                 "family_id": "unassigned:" + self.run_id, "signature": key,
                 "artifact_id": key, "created_at": now()})
+            if parent is not None:
+                detail = {"parent_draft_id": parent["draft_id"], "parent_draft_sha256": parent["draft_sha256"],
+                    "parent_critique_sha256": parent["critique_sha256"], "child_draft_sha256": key}
+                append(c, t.run_events, {"id": self.run_id + ":IDEA_REVISION", "run_id": self.run_id,
+                    "kind": "IDEA_REVISION", "detail_id": artifact(c, detail), "created_at": now()})
             self.submitted = True
             return {"draft_id": row["id"], "draft_sha256": key, "status": "EXPLORATORY_UNMEASURED"}
         if name == "submit_idea_critique":

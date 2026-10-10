@@ -5,6 +5,7 @@ import json
 from ledgerquant.research import tables as t
 from ledgerquant.research.registry import BudgetExceeded, RegistryError
 from ledgerquant.research.repair_exposure import RepairDenied
+from ledgerquant.research.ideas import recorded_idea
 from ledgerquant.research.types import canonical, digest
 from .definitions import definition
 from .tools import ResearchTools
@@ -34,13 +35,15 @@ class Runner:
             if config.get("contract_version", 1) == 3:
                 from ledgerquant.research.grounding import frozen_context
                 frozen_context(self.registry, run["id"])
+            linked_idea = self._linked_idea(run, config.get("workflow", "discovery"), task)
             self._probe(run)
-            self._role(run, "research", {"task": task})
+            self._role(run, "research", {"task": task, **({"linked_idea": linked_idea} if linked_idea else {})})
             draft = self.registry.get(t.drafts, run["id"])
             # Fresh conversation: the draft and authorized tool results, never
             # Research's private conversation or unsupported claims as authority.
             self._role(run, "critic", {"task": task, "draft_sha256": draft["artifact_id"],
-                                        "draft": self.registry.read(draft["artifact_id"])})
+                                        "draft": self.registry.read(draft["artifact_id"]),
+                                        **({"linked_idea": linked_idea} if linked_idea else {})})
             decision = ResearchTools(self.registry, run["id"], "critic").review()
             self.registry.event(run["id"], "FINISHED", decision)
         except (RegistryError, ValueError) as exc:
@@ -49,6 +52,28 @@ class Runner:
             self.registry.event(run["id"], "STOPPED", {"reason": str(exc), "kind": kind,
                 "economic_failure": False, "retry_policy": "new_command_new_attempt"})
         return self.registry.report(run["id"])
+
+    def _linked_idea(self, run, workflow, task):
+        if not isinstance(task, dict):
+            return None
+        key = "parent_idea_draft_id" if workflow == "idea_exploration" else "source_idea_draft_id"
+        draft_id = task.get(key)
+        if draft_id is None:
+            return None
+        if not isinstance(draft_id, str) or not draft_id:
+            raise RegistryError("INVALID_IDEA_REFERENCE")
+        with self.registry.engine.connect() as connection:
+            linked = recorded_idea(connection, draft_id)
+        if max(linked["created_at"], linked["reviewed_at"]) >= run["created_at"]:
+            raise RegistryError("IDEA_NOT_PRIOR_TO_RUN")
+        linked.pop("created_at")
+        linked.pop("reviewed_at")
+        if workflow != "idea_exploration":
+            reason = task.get("measurement_mapping_reason")
+            if not isinstance(reason, str) or not reason.strip():
+                raise RegistryError("MEASUREMENT_MAPPING_REASON_REQUIRED")
+            linked["measurement_mapping_reason"] = reason
+        return linked
 
     def _invoke(self, run, role, instructions, conversation, tools):
         request = self.provider.prepare(instructions, conversation, tools)

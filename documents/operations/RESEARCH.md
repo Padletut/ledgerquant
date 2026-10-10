@@ -22,6 +22,22 @@ The result remains `EXPLORATORY_UNMEASURED` with no assigned family. `admit`
 cannot send this record into the EURUSD diagnostic evaluator. A later measured
 hypothesis needs a reviewed evaluator and a separate frozen contract.
 
+To revise an idea after Critic feedback, start another idea run whose task has
+`parent_idea_draft_id` set to the prior run's draft ID. Research and Critic both
+receive the exact earlier idea and Critic review. The new run appends an
+`IDEA_REVISION` link; the first draft and review remain unchanged. Include any
+source references the revision may cite in the new task.
+
+To measure a related question that the existing catalog actually supports,
+start a diagnostic run with `source_idea_draft_id` and a nonempty
+`measurement_mapping_reason` in its task. Research must still submit a supported
+diagnostic, Critic must review it, and operator `admit` applies the existing
+eligibility checks. The design freeze records the exact source idea and Critic
+hashes as `DERIVED_MEASUREMENT_QUESTION`; narrowing an idea does not establish
+that the original payoff has been tested. Unsupported ideas stay in the
+exploratory loop. `replay` now includes `research_records` with the exact draft,
+critique and any design/development/lock commitments and their status.
+
 Use the existing task, profile and campaign to run Research → Critic → service
 review. An eligible proposal can then be admitted to the supported development
 calculation. Inspect the stored proposal, critique, measurements and cost; keep
