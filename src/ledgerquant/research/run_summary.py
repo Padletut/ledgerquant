@@ -32,12 +32,14 @@ def render_run_summary(report: dict) -> str:
              f"Critic version: {run['critic_version']}"]
     if detail.get("reason"):
         lines.append(f"Stop reason: {_value(detail['reason'])}")
-    revision = next((event["detail"] for event in events if event["kind"] == "IDEA_REVISION"), None)
+    revision = next((event["detail"] for event in events
+                     if event["kind"] in {"IDEA_REVISION", "IDEA_PARKED"}
+                     and "parent_draft_id" in event["detail"]), None)
     if revision:
         lines.append(f"Parent idea draft: {revision['parent_draft_id']}")
 
     draft = records["draft"]
-    lines.extend(["", "Idea or proposal"])
+    lines.extend(["", "Research record"])
     if draft is None:
         lines.append("No recorded draft.")
     else:
@@ -47,7 +49,8 @@ def render_run_summary(report: dict) -> str:
                       "proposed_decision", "proposed_payoff", "rationale", "falsifier",
                       "source_refs", "related_draft_ids", "measurement_gaps", "diagnostic",
                       "mechanism", "support", "contrary_evidence", "predicted_failure",
-                      "admissibility_probability", "evidence_ids", "data_requirements"):
+                      "admissibility_probability", "evidence_ids", "data_requirements",
+                      "kind", "reason", "revisit_when"):
             if field in body:
                 lines.append(f"{field}: {_value(body[field])}")
         if not any(field in body for field in ("title", "question")):
@@ -59,7 +62,8 @@ def render_run_summary(report: dict) -> str:
         lines.append("No recorded critique.")
     else:
         lines.append(f"Critique hash: {critique['sha256']}")
-        for field in ("summary", "disposition", "concerns", "objections"):
+        for field in ("summary", "disposition", "concerns", "objections",
+                      "decision_scope", "payoff_scope", "exposure_status"):
             if field in critique["body"]:
                 lines.append(f"{field}: {_value(critique['body'][field])}")
 

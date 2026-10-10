@@ -7,7 +7,7 @@ from sqlalchemy import func, select
 
 from ledgerquant.research import tables as t
 from ledgerquant.research.catalog import classify
-from ledgerquant.research.ideas import Idea, IdeaCritique, recorded_idea, references_allowed
+from ledgerquant.research.ideas import Idea, IdeaCritique, IdeaCritiqueV2, IdeaPark, recorded_idea, references_allowed
 from ledgerquant.research.proposals import Critique, Proposal, review, requirement_scope_error
 from ledgerquant.research.scoped_proposals import contract_types, parse_proposal, parse_critique, REQUIREMENT_RULES
 from ledgerquant.research.grounding import recorded_context
@@ -38,14 +38,19 @@ IDEA_OPERATIONS = {
     "submit_research_idea": (Idea, {"research"}, "Record one exploratory CFD research idea without claiming it can be measured."),
     "submit_idea_critique": (IdeaCritique, {"critic"}, "Critique the exact recorded idea without approving or measuring it."),
 }
+IDEA_OPERATIONS_V2 = {
+    "submit_research_idea": IDEA_OPERATIONS["submit_research_idea"],
+    "park_research_idea": (IdeaPark, {"research"}, "Record why an exploratory question should be set aside and when to revisit it."),
+    "submit_idea_critique": (IdeaCritiqueV2, {"critic"}, "Review the exact idea or parking decision, including decision, payoff and exposure scope."),
+}
 REQUIRED_READS = {"read_source_coverage", "read_released_evidence", "read_development_snapshot"}
 
 
 def operations(version, workflow="discovery"):
     if workflow == "idea_exploration":
-        if version != 1:
-            raise ValueError("idea exploration uses contract version 1")
-        return IDEA_OPERATIONS
+        if version not in {1, 2}:
+            raise ValueError("idea exploration uses contract version 1 or 2")
+        return IDEA_OPERATIONS if version == 1 else IDEA_OPERATIONS_V2
     if workflow != "discovery":
         raise ValueError("unsupported research tool workflow")
     proposal, critique = contract_types(version)
@@ -210,7 +215,7 @@ class ResearchTools:
         task = value(c, run["task_id"])
         if not references_allowed(task, arguments.source_refs):
             raise RegistryError("SOURCE_REFERENCE_NOT_IN_TASK")
-        if name == "submit_research_idea":
+        if name in {"submit_research_idea", "park_research_idea"}:
             if not references_allowed(task, arguments.source_refs, arguments.related_draft_ids):
                 raise RegistryError("LINEAGE_REFERENCE_NOT_IN_TASK")
             for draft_id in arguments.related_draft_ids:
@@ -229,13 +234,20 @@ class ResearchTools:
             row = append(c, t.drafts, {"id": self.run_id, "run_id": self.run_id,
                 "family_id": "unassigned:" + self.run_id, "signature": key,
                 "artifact_id": key, "created_at": now()})
-            if parent is not None:
+            if parent is not None and name == "submit_research_idea":
                 detail = {"parent_draft_id": parent["draft_id"], "parent_draft_sha256": parent["draft_sha256"],
                     "parent_critique_sha256": parent["critique_sha256"], "child_draft_sha256": key}
                 append(c, t.run_events, {"id": self.run_id + ":IDEA_REVISION", "run_id": self.run_id,
                     "kind": "IDEA_REVISION", "detail_id": artifact(c, detail), "created_at": now()})
+            if name == "park_research_idea":
+                detail = {"draft_sha256": key, **({"parent_draft_id": parent["draft_id"],
+                    "parent_draft_sha256": parent["draft_sha256"],
+                    "parent_critique_sha256": parent["critique_sha256"]} if parent else {})}
+                append(c, t.run_events, {"id": self.run_id + ":IDEA_PARKED", "run_id": self.run_id,
+                    "kind": "IDEA_PARKED", "detail_id": artifact(c, detail), "created_at": now()})
             self.submitted = True
-            return {"draft_id": row["id"], "draft_sha256": key, "status": "EXPLORATORY_UNMEASURED"}
+            return {"draft_id": row["id"], "draft_sha256": key,
+                "status": "EXPLORATORY_PARKED" if name == "park_research_idea" else "EXPLORATORY_UNMEASURED"}
         if name == "submit_idea_critique":
             draft = c.execute(select(t.drafts).where(t.drafts.c.run_id == self.run_id)).mappings().one_or_none()
             if draft is None:
@@ -254,7 +266,9 @@ class ResearchTools:
             with self.registry.engine.connect() as c:
                 draft = c.execute(select(t.drafts).where(t.drafts.c.run_id == self.run_id)).mappings().one()
                 critique = c.execute(select(t.critiques).where(t.critiques.c.draft_id == draft["id"])).mappings().one()
-            result = {"status": "EXPLORATORY_UNMEASURED", "draft_sha256": draft["artifact_id"],
+                parked = value(c, draft["artifact_id"]).get("kind") == "PARKED"
+            result = {"status": "EXPLORATORY_PARKED" if parked else "EXPLORATORY_UNMEASURED",
+                "draft_sha256": draft["artifact_id"],
                 "critique_sha256": critique["artifact_id"], "evaluator_admission": False,
                 "family_assignment": "UNASSESSED"}
             self.registry.event(self.run_id, "IDEA_REVIEW", result)

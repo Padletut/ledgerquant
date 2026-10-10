@@ -1,6 +1,6 @@
 """Exploratory ideas are proposals, never evaluator contracts or measurements."""
 
-from typing import Annotated
+from typing import Annotated, Literal
 
 from pydantic import Field
 from sqlalchemy import select
@@ -29,11 +29,31 @@ class Idea(Record):
     measurement_gaps: tuple[str, ...] = Field(default=(), max_length=10)
 
 
+class IdeaPark(Record):
+    """An honest end to one exploratory attempt, without a fabricated payoff."""
+
+    kind: Literal["PARKED"] = "PARKED"
+    title: str = Field(min_length=1, max_length=200)
+    question: str = Field(min_length=1, max_length=2000)
+    reason: str = Field(min_length=1, max_length=3000)
+    revisit_when: str | None = Field(default=None, min_length=1, max_length=1000)
+    source_refs: tuple[ShortText, ...] = Field(default=(), max_length=16)
+    related_draft_ids: tuple[ShortText, ...] = Field(default=(), max_length=16)
+
+
 class IdeaCritique(Record):
     draft_sha256: str = Field(pattern=r"^[a-f0-9]{64}$")
     summary: str = Field(min_length=1, max_length=3000)
     concerns: tuple[str, ...] = Field(default=(), max_length=10)
     source_refs: tuple[ShortText, ...] = Field(default=(), max_length=16)
+
+
+class IdeaCritiqueV2(IdeaCritique):
+    """Model-authored scope checks; labels are not authoritative findings."""
+
+    decision_scope: Literal["MARKET_ACTION", "RESEARCH_PROCESS", "UNCLEAR", "NOT_APPLICABLE"]
+    payoff_scope: Literal["ECONOMIC_OUTCOME", "OBSERVABLE_PROXY", "RESEARCH_PROCESS", "UNCLEAR", "NOT_APPLICABLE"]
+    exposure_status: Literal["DEVELOPMENT_EXPOSED", "UNVERIFIED", "NO_VALIDATION_CLAIM"]
 
 
 def references_allowed(task: object, source_refs: tuple[str, ...], related_draft_ids: tuple[str, ...] = ()) -> bool:

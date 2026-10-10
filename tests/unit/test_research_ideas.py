@@ -10,10 +10,10 @@ from sqlalchemy.pool import StaticPool
 from ledgerquant.agents.definitions import definition
 from ledgerquant.agents.definitions import CampaignPolicy
 from ledgerquant.agents.runtime import Runner
-from ledgerquant.agents.tools import schemas
+from ledgerquant.agents.tools import ResearchTools, schemas
 from ledgerquant.models.generation import Generation, ModelProfile, ToolCall
 from ledgerquant.research.agent_cli import parser
-from ledgerquant.research.ideas import Idea, IdeaCritique, references_allowed
+from ledgerquant.research.ideas import Idea, IdeaCritique, IdeaCritiqueV2, IdeaPark, references_allowed
 from ledgerquant.research import tables as t
 from ledgerquant.research.admission import Admission, admit
 from ledgerquant.research.bootstrap import bootstrap
@@ -65,6 +65,10 @@ def test_critique_targets_exact_idea_without_assigning_evidence_or_authority():
     assert critique.concerns
     with pytest.raises(ValidationError):
         IdeaCritique.model_validate({**critique.model_dump(), "admit": True})
+    with pytest.raises(ValidationError):
+        IdeaPark(title="No case", question="Should this be parked?", reason="")
+    with pytest.raises(ValidationError):
+        IdeaCritiqueV2.model_validate(critique.model_dump())
 
 
 def test_exploration_has_separate_tools_and_definition():
@@ -77,6 +81,11 @@ def test_exploration_has_separate_tools_and_definition():
     assert research_tools == {"submit_research_idea"}
     assert critic_tools == {"submit_idea_critique"}
     assert definition("research", profile, workflow="idea_exploration") != definition("research", profile)
+    v2_research = {tool["name"] for tool in schemas("research", 2, "idea_exploration")}
+    assert v2_research == {"submit_research_idea", "park_research_idea"}
+    assert {tool["name"] for tool in schemas("critic", 2, "idea_exploration")} == {"submit_idea_critique"}
+    assert digest(definition("research", profile, "idea_exploration", 1)) != digest(
+        definition("research", profile, "idea_exploration", 2))
 
 
 def test_citations_must_be_in_the_frozen_task():
@@ -97,6 +106,107 @@ def test_cli_can_register_ideas_without_a_legacy_bundle():
     assert args.workflow == "idea_exploration"
     assert parser().parse_args(["replay", "--run-id", "existing"]).format == "json"
     assert parser().parse_args(["replay", "--run-id", "existing", "--format", "text"]).format == "text"
+
+
+def test_idea_v2_parks_a_weak_question_and_records_critic_review(monkeypatch):
+    engine = create_engine("sqlite:///:memory:", poolclass=StaticPool)
+    with engine.begin() as connection:
+        connection.exec_driver_sql("ATTACH DATABASE ':memory:' AS research")
+    t.metadata.create_all(engine)
+    monkeypatch.setattr("ledgerquant.research.registry.insert", sqlite_insert)
+    registry = Registry(engine)
+    profile = ModelProfile(provider="fixture", endpoint="http://127.0.0.1", model="scripted-test",
+        max_output_tokens=512, max_request_bytes=40000, timeout_seconds=10,
+        max_steps_per_agent=4, input_usd_per_million=0, output_usd_per_million=0,
+        max_run_usd=1, price_basis="test fixture", knowledge_exposure="test fixture")
+    config = bootstrap(registry, None, profile,
+        CampaignPolicy(max_runs=3, max_invocations=8, max_reserved_tokens=200000, max_usd=1),
+        "sqlite-park", workflow="idea_exploration", contract_version=2)
+    parked = IdeaPark(title="XAUUSD IQR after weak development evidence",
+        question="Does IQR add actionable value over recent spread?",
+        reason="The six inspected 2020 days do not establish incremental information or an abstention payoff.",
+        revisit_when="A market abstention decision and economic baseline can be specified.",
+        source_refs=("development-baseline",)).model_dump(mode="json")
+    critique = IdeaCritiqueV2(draft_sha256=digest(parked),
+        summary="Parking is reasonable until the market action and payoff are defined.",
+        concerns=("The existing 2020 outcomes cannot become an untouched holdout by resplitting dates.",),
+        source_refs=("development-baseline",), decision_scope="NOT_APPLICABLE",
+        payoff_scope="NOT_APPLICABLE", exposure_status="DEVELOPMENT_EXPOSED").model_dump(mode="json")
+
+    class Scripted:
+        def __init__(self, submission_name, submission, review):
+            self.profile = profile
+            self.calls = 0
+            self.submission_name, self.submission, self.review = submission_name, submission, review
+
+        def prepare(self, instructions, conversation, tools):
+            return {"instructions": instructions, "input": conversation, "tools": tools}
+
+        def user_message(self, value):
+            return {"role": "user", "content": value}
+
+        def tool_result(self, call_id, result):
+            return {"call_id": call_id, "result": result}
+
+        def invoke(self, request):
+            self.calls += 1
+            name, arguments = (("capability_probe", {"answer": "LEDGERQUANT"}) if self.calls == 1 else
+                               (self.submission_name, self.submission) if self.calls == 2 else
+                               ("submit_idea_critique", self.review))
+            return Generation("COMPLETED", {"fixture": name}, [],
+                (ToolCall(str(self.calls), name, canonical(arguments)),), 100, 100)
+
+    task = {"question": "Continue or park the XAUUSD idea", "source_refs": ["development-baseline"]}
+    provider = Scripted("park_research_idea", parked, critique)
+    report = Runner(registry, provider).run(config, "park-idea", task)
+    assert provider.calls == 3
+    assert [event["kind"] for event in report["events"]] == [
+        "CAPABILITY_VERIFIED", "IDEA_PARKED", "IDEA_REVIEW", "FINISHED"]
+    assert report["events"][-1]["detail"]["status"] == "EXPLORATORY_PARKED"
+    assert report["research_records"]["draft"]["body"] == parked
+    assert report["research_records"]["critique"]["body"] == critique
+    assert "EXPLORATORY_PARKED" in render_run_summary(report)
+    assert parked["reason"] in render_run_summary(report)
+    with pytest.raises(RegistryError, match="EXPLORATORY_IDEA_NOT_EVALUABLE"):
+        admit(registry, Admission(draft_id=report["run"]["id"],
+            draft_sha256=report["research_records"]["draft"]["sha256"], actor="operator",
+            action="ADMIT_DEVELOPMENT", reason="A parked idea cannot be measured", objection_resolutions={}))
+    assert Runner(registry, provider).run(config, "park-idea", task) == report
+    assert provider.calls == 3
+
+    parent_id = report["run"]["id"]
+    flawed = Idea.model_validate({**idea_payload(), "title": "Research continuation disguised as a decision",
+        "proposed_decision": "Continue research if the next test looks good.",
+        "proposed_payoff": "Next-15-minute spread p95, a quote-quality proxy.",
+        "source_refs": ["development-baseline"], "related_draft_ids": [parent_id]}).model_dump(mode="json")
+    flagged = IdeaCritiqueV2(draft_sha256=digest(flawed),
+        summary="The decision is about research continuation; quote quality is only a proxy.",
+        concerns=("Previously inspected 2020 dates cannot form an untouched holdout.",),
+        source_refs=("development-baseline",), decision_scope="RESEARCH_PROCESS",
+        payoff_scope="OBSERVABLE_PROXY", exposure_status="DEVELOPMENT_EXPOSED").model_dump(mode="json")
+    revised = Runner(registry, Scripted("submit_research_idea", flawed, flagged)).run(config, "flawed-revision",
+        {**task, "parent_idea_draft_id": parent_id})
+    assert revised["events"][-1]["detail"]["status"] == "EXPLORATORY_UNMEASURED"
+    assert next(event for event in revised["events"] if event["kind"] == "IDEA_REVISION")["detail"]["parent_draft_id"] == parent_id
+    assert revised["research_records"]["critique"]["body"]["decision_scope"] == "RESEARCH_PROCESS"
+    assert revised["research_records"]["critique"]["body"]["payoff_scope"] == "OBSERVABLE_PROXY"
+    assert "DEVELOPMENT_EXPOSED" in render_run_summary(revised)
+
+    invalid_run, _ = registry.start_run("park-invalid-ref", config["campaign_id"], config["snapshot_id"],
+        config["versions"]["research"], config["versions"]["critic"], task)
+    with pytest.raises(RegistryError, match="PARKED_IDEA_NOT_MEASURABLE"):
+        Runner(registry, provider)._linked_idea(invalid_run, "discovery", {
+            "source_idea_draft_id": parent_id, "measurement_mapping_reason": "No direct mapping from a parked idea"})
+    invocation = registry.reserve_invocation(invalid_run["id"], config["versions"]["research"], 0, {})
+    invalid_park = {**parked, "source_refs": ["not-authorized"]}
+    assert ResearchTools(registry, invalid_run["id"], "research").execute(
+        invocation["id"], "park_research_idea", invalid_park)["error"] == "SOURCE_REFERENCE_NOT_IN_TASK"
+    critic_invocation = registry.reserve_invocation(invalid_run["id"], config["versions"]["critic"], 1, {})
+    assert ResearchTools(registry, invalid_run["id"], "critic").execute(
+        critic_invocation["id"], "park_research_idea", parked)["error"] == "ROLE_DENIED"
+    with pytest.raises(RegistryError, match="unknown drafts"):
+        registry.get(t.drafts, invalid_run["id"])
+    engine.dispose()
 
 
 def test_bounded_idea_run_records_critique_and_cannot_enter_evaluator(monkeypatch):

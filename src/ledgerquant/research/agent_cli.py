@@ -34,7 +34,7 @@ def parser():
         register.add_argument("--" + name, required=True)
     register.add_argument("--workflow", choices=["discovery", "process_review", "idea_exploration"], default="discovery")
     register.add_argument("--contract-version", type=int, choices=[1, 2, 3],
-                          help="Defaults to v3 for existing workflows and v1 for idea exploration.")
+                          help="Defaults to v3 for diagnostic/process workflows and v2 for idea exploration.")
     worker = commands.add_parser("provision-worker")
     worker.add_argument("--password-file", required=True)
     run = commands.add_parser("run")
@@ -91,7 +91,7 @@ def main():
     registry = Registry(engine)
     try:
         if args.command == "register":
-            version = args.contract_version or (1 if args.workflow == "idea_exploration" else 3)
+            version = args.contract_version or (2 if args.workflow == "idea_exploration" else 3)
             result = bootstrap(registry, read(args.bundle) if args.bundle else None,
                                ModelProfile.model_validate(read(args.profile)),
                                CampaignPolicy.model_validate(read(args.policy)), args.campaign, args.workflow, version)

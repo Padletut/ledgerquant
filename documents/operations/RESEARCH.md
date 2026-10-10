@@ -12,7 +12,8 @@ the first real run and the small process comparison.
 ## Routine solo workflow
 
 For an exploratory CFD idea, register a campaign with `--workflow idea_exploration`
-and no `--bundle`. The default contract version for this workflow is 1. Supply
+and no `--bundle`. The default contract version is 2; pass
+`--contract-version 1` only when reproducing a version 1 registration. Supply
 a bounded task JSON with the question and any `source_refs` or
 `related_draft_ids` the agent may cite. Run it through the existing `run`
 command; its report and `replay` show the exact idea, Critic review, inputs,
@@ -23,9 +24,21 @@ idea, Critic feedback, status, lineage and resource reservations. The default
 `replay --run-id RUN_ID` returns the complete JSON record, including exact
 inputs and tool results. The text view is for inspection; it does not assess
 the idea or change its evidence status.
-The result remains `EXPLORATORY_UNMEASURED` with no assigned family. `admit`
-cannot send this record into the EURUSD diagnostic evaluator. A later measured
-hypothesis needs a reviewed evaluator and a separate frozen contract.
+Research can submit one market idea or park the question with a reason and an
+optional revisit condition. Critic reviews the exact record and reports its
+assessment of decision scope, payoff scope and historical exposure. Those labels
+are model-authored and must be checked before consequential use. The result is
+`EXPLORATORY_UNMEASURED` or `EXPLORATORY_PARKED`, with no assigned family.
+An idea may be proposed with unknown costs, latency, threshold or evaluator
+support; list these as measurement gaps and make no economic success claim.
+For abstention, name which strategy or order population would otherwise trade
+and compare taking with skipping those eligible orders. Park a question when it
+is lower priority or cannot yet be framed as a plausible market decision and
+comparison. Do not describe missing measurements as falsification. Critic
+should challenge a park justified only by missing cost or feed evidence while
+remaining free to agree that a weak idea is not worth pursuing now.
+`admit` cannot send either record into the EURUSD diagnostic evaluator. A later
+measured hypothesis needs a reviewed evaluator and a separate frozen contract.
 
 To revise an idea after Critic feedback, start another idea run whose task has
 `parent_idea_draft_id` set to the prior run's draft ID. Research and Critic both
@@ -35,6 +48,9 @@ source references the revision may cite in the new task. Research may list the
 parent in the draft's optional `related_draft_ids` without copying it into the
 task's separate `related_draft_ids` list. The task parent and `IDEA_REVISION`
 event remain the authoritative link even if that optional draft list is empty.
+Parking a linked question records `IDEA_PARKED` with the parent hashes instead.
+A later exploratory run may revisit a parked record; a diagnostic measurement
+must derive from a subsequent active idea, not directly from the parked record.
 
 To measure a related question that the existing catalog actually supports,
 start a diagnostic run with `source_idea_draft_id` and a nonempty

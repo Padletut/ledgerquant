@@ -15,8 +15,8 @@ from .types import digest
 
 def bootstrap(registry, bundle, profile: ModelProfile, policy: CampaignPolicy, campaign_id: str, workflow="discovery", contract_version=1):
     """Register bounded agents; diagnostic workflows also import prior evidence."""
-    if workflow == "idea_exploration" and contract_version != 1:
-        raise ValueError("idea exploration uses contract version 1")
+    if workflow == "idea_exploration" and contract_version not in {1, 2}:
+        raise ValueError("idea exploration uses contract version 1 or 2")
     if workflow != "idea_exploration" and bundle is None:
         raise ValueError("legacy evidence bundle required for the diagnostic workflow")
     with registry.engine.begin() as c:

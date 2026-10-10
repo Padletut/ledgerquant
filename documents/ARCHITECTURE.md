@@ -2,11 +2,15 @@
 
 **Date:** 10.10.2026
 
-**Version:** 2.22.2
+**Version:** 2.23.1
 
-**Status:** Target architecture with implemented live capture, offline EURUSD diagnostics, a development-only XAUUSD quote-quality diagnostic, a bounded Research/Critic diagnostic workflow and an exploratory idea workflow with linked revisions. Broad autonomous discovery, independent new validation, promotion, trading agents and the operational frontend remain target state.
+**Status:** Target architecture with implemented live capture, offline EURUSD diagnostics, a development-only XAUUSD quote-quality diagnostic, a bounded Research/Critic diagnostic workflow and an exploratory idea workflow with linked revisions and parked attempts. Broad autonomous discovery, independent new validation, promotion, trading agents and the operational frontend remain target state.
 
-**Revision scope:** 2.22.2 records a bounded XAUUSD quote-stream audit and a separate, offline development evaluator for one descriptive 30/15-minute measurement. It does not add a live abstention rule, economic payoff gate, independent validation result or broker execution authority. The 2021 quote outcomes remain unopened. See [data availability](data/DATA_AVAILABILITY.md) and the [sampling and measurement record](data/measurements/xauusd-quote-quality-sampling-v1.json).
+**Revision scope:** 2.23.1 refines the Research and Critic instructions within `idea_exploration/2` after the [XAUUSD parked run](research/evaluations/xauusd_quote_quality_followup_v2_20261010/REPORT.md). Unmeasured costs, latency or missing evaluator support limit claims and measurement, not the ability to propose a testable hypothesis. For abstention, a proposal must identify the strategy or order population whose trades might be skipped and the economic comparison. Parking remains available for low-priority or currently unformulable ideas; it is not a measured failure. This is a new hashed agent-instruction version under the same tool and data schema, with no new contract version, table, evaluator or trading authority.
+
+2.23 added `idea_exploration/2` to the existing runner. Research can submit a revised market idea or park a question with a reason and revisit condition; Critic reviews either record and labels decision, payoff and exposure scope. These labels are model-authored review claims, not certified facts or evaluator decisions. Parked attempts retain lineage, cannot be admitted or used as a measurement source, and can be revisited by a later exploratory run. Version 1 definitions and recorded runs remain unchanged.
+
+2.22.2 recorded a bounded XAUUSD quote-stream audit and a separate, offline development evaluator for one descriptive 30/15-minute measurement. It did not add a live abstention rule, economic payoff gate, independent validation result or broker execution authority. The 2021 quote outcomes remain unopened. See [data availability](data/DATA_AVAILABILITY.md) and the [sampling and measurement record](data/measurements/xauusd-quote-quality-sampling-v1.json).
 
 2.22.1 corrected exploratory lineage submission: a `parent_idea_draft_id` already present in the task may also appear in the draft's optional `related_draft_ids`, without a duplicate task permission list. Parent existence, review and time checks still apply. Critic guidance treats broker symbols as identifiers and distinguishes an explicit wait for information from unverified feed and quote latency. No schema, evaluator or trading authority changed in that revision.
 
@@ -77,6 +81,27 @@ current input to the price-only diagnostic. A recorded draft or measured result
 cannot be rewritten; any later correction keeps its original attempt and
 exposure. This distinction requires no extra reviewer or study for an unsaved
 field correction.
+
+Exploratory Research may also conclude that the currently permitted evidence
+does not support another market hypothesis. `idea_exploration/2` records that
+choice as a parked attempt with a reason instead of forcing a fabricated
+decision or payoff. Critic reviews the exact attempt and explicitly reports
+whether a revised proposal still describes a market action, whether its payoff
+is economic or only a proxy, and whether cited historical outcomes are already
+development-exposed. These are review annotations, not automatic semantic
+certification. A parked attempt remains visible and can be a parent of later
+exploration, but is never itself an evaluator input or a promotion candidate.
+
+Missing measurements constrain conclusions and admission, not exploratory
+hypothesis generation. Research may propose an unmeasured action, provisional
+payoff and explicit gaps without claiming it works. An abstention hypothesis
+needs a strategy or order population that would otherwise trade: skipping no
+orders has no economic payoff. Critic challenges both unsupported payoff claims
+and parking that treats missing cost or latency evidence as proof that no
+hypothesis can be stated. A low-priority idea, a measurement blocked by data and
+a hypothesis falsified under a frozen test are distinct conclusions. These
+instruction clarifications create new agent-version hashes; earlier recorded
+instructions and outcomes remain immutable.
 
 Freezing a study preserves what was decided before its results were seen. It
 does not freeze the repository or prevent future studies from choosing different
@@ -389,9 +414,9 @@ The research system has two explicit loops. Both can lead from hypotheses to mea
 
 Research/Discovery may record, critique and refine a CFD market idea before a compatible evaluator or data source exists. Keep its question, rationale, suggested lineage and known measurement gaps; do not assign a measured failure to an untested idea. A reviewed evaluator catalog limits which ideas can proceed to computation, frozen validation and economic claims. An unsupported instrument, decision rule or payoff identifies a capability gap for later implementation; it does not forbid investigation or force the agent to recast the idea as an existing EURUSD diagnostic. Freeze the full decision, data, payoff and success definitions when an idea is ready for independent validation, before its outcomes are inspected.
 
-The implemented `idea_exploration` workflow records one typed idea and one hash-linked Critic review in the existing run, draft and critique ledger. It requires no historical EURUSD bundle, evaluator catalog or measurement contract. The task bounds permitted source references and prior-draft links; references are provenance pointers, not proof of source content, point-in-time eligibility or independent family identity. The service labels the result `EXPLORATORY_UNMEASURED` and leaves its family unassigned. Existing admission rejects it, so a later measurement requires a separately reviewed evaluator and frozen contract. The existing `discovery` workflow remains the bounded EURUSD diagnostic path. Broader autonomous search and evaluators beyond this diagnostic remain future work.
+The implemented `idea_exploration` workflow records one typed attempt and one hash-linked Critic review in the existing run, draft and critique ledger. It requires no historical EURUSD bundle, evaluator catalog or measurement contract. The task bounds permitted source references and prior-draft links; references are provenance pointers, not proof of source content, point-in-time eligibility or independent family identity. Version 1 retains its original idea-only semantics for historical runs. Version 2 may record an idea as `EXPLORATORY_UNMEASURED` or a reasoned stop as `EXPLORATORY_PARKED`; both leave family assignment open. Existing admission rejects either, so a later measurement requires an active idea, a separately reviewed evaluator and frozen contract. The existing `discovery` workflow remains the bounded EURUSD diagnostic path. Broader autonomous search and evaluators beyond this diagnostic remain future work.
 
-Research may improve a reviewed exploratory idea by starting another bounded run with the prior idea draft ID in its task. The service supplies that exact idea and Critic review to both roles, verifies the prior record and appends a parent/child link when the new draft is stored. Research may also cite that task parent ID in the draft's optional `related_draft_ids`; the task does not need a second copy in its allowed-reference list. The original draft and critique stay intact. This is iteration on an idea, without an evaluator contract or an inferred economic result.
+Research may improve a reviewed exploratory idea by starting another bounded run with the prior idea draft ID in its task. The service supplies that exact attempt and Critic review to both roles, verifies the prior record and appends a parent/child link when the new draft is stored. A parked attempt may likewise be revisited by a later exploratory run, but cannot directly source a measurement. Research may cite the task parent ID in the draft's optional `related_draft_ids`; the task does not need a second copy in its allowed-reference list. The original draft and critique stay intact. This is iteration on an idea, without an evaluator contract or an inferred economic result.
 
 For a measurable derivative, an operator supplies the source idea draft ID and a reason for mapping it to a supported diagnostic run. Research proposes a normal catalog-compatible diagnostic, Critic reviews it, and existing admission independently checks the mapping reference, eligibility and evaluator behavior. Admission records the source idea and Critic hashes in the design freeze before development runs. The link states `DERIVED_MEASUREMENT_QUESTION`; it does not assert that a narrowed diagnostic is the same payoff or independently validated. An idea outside implemented evaluator capabilities stays exploratory until the needed evaluator is built and reviewed. Recorded reports show the draft, critique, frozen design, development result and candidate-lock status; later outcomes do not rewrite earlier ideas.
 

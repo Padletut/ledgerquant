@@ -69,6 +69,8 @@ def admit(registry, command: Admission):
             if not isinstance(source_id, str) or not source_id:
                 raise RegistryError("INVALID_IDEA_REFERENCE")
             source = recorded_idea(c, source_id)
+            if source["idea"].get("kind") == "PARKED":
+                raise RegistryError("PARKED_IDEA_NOT_MEASURABLE")
             reason = task.get("measurement_mapping_reason")
             if not isinstance(reason, str) or not reason.strip():
                 raise RegistryError("MEASUREMENT_MAPPING_REASON_REQUIRED")

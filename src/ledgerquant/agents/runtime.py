@@ -64,6 +64,8 @@ class Runner:
             raise RegistryError("INVALID_IDEA_REFERENCE")
         with self.registry.engine.connect() as connection:
             linked = recorded_idea(connection, draft_id)
+        if workflow != "idea_exploration" and linked["idea"].get("kind") == "PARKED":
+            raise RegistryError("PARKED_IDEA_NOT_MEASURABLE")
         if max(linked["created_at"], linked["reviewed_at"]) >= run["created_at"]:
             raise RegistryError("IDEA_NOT_PRIOR_TO_RUN")
         linked.pop("created_at")
