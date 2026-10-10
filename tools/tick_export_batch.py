@@ -7,13 +7,16 @@ resumed. Every attempt is appended to ``batch.jsonl`` in the output directory.
 
 The cTrader ID and account number are read from CTRADER_ID and
 CTRADER_ACCOUNT_NUMBER (environment or the ignored .env file) and are never
-printed. The password stays in credentials/ctrader-cli.pwd.
+printed. Stored CLI logs are redacted. The password stays in
+credentials/ctrader-cli.pwd. The exporter's manifest still records the account
+number until the account registry exists.
 """
 
 import argparse
 import hashlib
 import json
 import os
+import re
 import subprocess
 import sys
 import time
@@ -59,6 +62,15 @@ def cli_time(value: datetime) -> str:
     return value.strftime("%d/%m/%Y %H:%M")
 
 
+def cli_end(chunk: Chunk, margin_days: int, now: datetime) -> datetime:
+    """End of the CLI backtest: past the chunk for an end witness, but never in the future.
+
+    A CLI backtest whose end lies in the future waits for data that does not exist.
+    """
+    latest = (now - timedelta(hours=1)).replace(second=0, microsecond=0)
+    return min(chunk.end + timedelta(days=margin_days), latest)
+
+
 def utc_text(value: datetime) -> str:
     return value.strftime("%Y-%m-%dT%H:%M:%SZ")
 
@@ -79,6 +91,12 @@ def verify(out: Path, run_id: str) -> dict | None:
             and manifest.get("row_count") == lines - 1):
         return manifest
     return None
+
+
+def redact(text: str, ctid: str, account: str) -> str:
+    """Remove the cTrader login, any e-mail address and the account number from CLI output."""
+    text = text.replace(ctid, "<ctid>").replace(account, "<account>")
+    return re.sub(r"[\w.+-]+@[\w-]+\.[\w.-]+", "<email>", text)
 
 
 def outcome(log: str) -> tuple[str, str]:
@@ -116,7 +134,7 @@ def run_one(symbol: str, chunk: Chunk, run_id: str, out: Path, args, ctid: str, 
         f"--ctid={ctid}", "--pwd-file=/run/secrets/ctrader-cli.pwd",
         f"--account={account}", f"--symbol={symbol}", "--period=h1",
         f"--start={cli_time(chunk.start - timedelta(days=args.margin_days))}",
-        f"--end={cli_time(chunk.end + timedelta(days=args.margin_days))}",
+        f"--end={cli_time(cli_end(chunk, args.margin_days, datetime.now(timezone.utc)))}",
         "--data-mode=ticks",
         f"--StartUtc={utc_text(chunk.start)}", f"--EndExclusiveUtc={utc_text(chunk.end)}",
         "--OutputDirectory=/export", f"--RunId={run_id}",
@@ -143,7 +161,7 @@ def run_one(symbol: str, chunk: Chunk, run_id: str, out: Path, args, ctid: str, 
             status = "TIMEOUT"
     finally:
         log = subprocess.run(["docker", "logs", name], capture_output=True, text=True)
-        (out / f"{run_id}.cli.log").write_text(log.stdout + log.stderr)
+        (out / f"{run_id}.cli.log").write_text(redact(log.stdout + log.stderr, ctid, account))
         subprocess.run(["docker", "rm", "-f", name], capture_output=True)
     return status, detail
 
@@ -166,6 +184,10 @@ def main() -> None:
     ctid, account = credentials()
     start = datetime.combine(args.start, datetime.min.time(), timezone.utc)
     end = datetime.combine(args.end, datetime.min.time(), timezone.utc)
+    # Each run needs a tick at or after its end as a witness. An end that is not
+    # followed by an already traded tick would only wait for its timeout.
+    if end > datetime.now(timezone.utc) - timedelta(hours=1):
+        sys.exit("--end must lie in the past, before ticks that have already traded")
     queue = chunks(start, end, args.chunk_days)
     ledger = out / "batch.jsonl"
     while queue:
@@ -185,7 +207,7 @@ def main() -> None:
                   "end_exclusive_utc": utc_text(chunk.end), "status": status,
                   "recorded_at_utc": utc_text(datetime.now(timezone.utc))}
         if status != "COMPLETE":
-            record["detail"] = detail.replace(account, "<account>")
+            record["detail"] = redact(detail, ctid, account)
         with ledger.open("a") as handle:
             handle.write(json.dumps(record) + "\n")
         print(f"{run_id} {status}", flush=True)

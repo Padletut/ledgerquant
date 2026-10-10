@@ -53,3 +53,20 @@ def test_verify_requires_matching_rows_size_and_hash(tmp_path):
 
 def test_cli_time_format():
     assert batch.cli_time(datetime(2019, 12, 31, tzinfo=UTC)) == "31/12/2019 00:00"
+
+
+def test_redact_removes_login_email_and_account_number():
+    log = ("Establishing connection using someone@example.com...\nLogin to 1234567...\n"
+           "TICK_EXPORT_START run_id=a broker=IC account=1234567 live=True")
+    clean = batch.redact(log, "someone@example.com", "1234567")
+    assert "1234567" not in clean and "@" not in clean
+    assert "TICK_EXPORT_START" in clean
+    assert batch.redact("contact other.person@mail.example.org", "x@y.z", "1") == "contact <email>"
+
+
+def test_cli_end_never_lies_in_the_future():
+    chunk = batch.Chunk(datetime(2026, 10, 5, tzinfo=UTC), datetime(2026, 10, 9, tzinfo=UTC))
+    now = datetime(2026, 10, 10, 22, 30, 15, tzinfo=UTC)
+    assert batch.cli_end(chunk, 4, now) == datetime(2026, 10, 10, 21, 30, tzinfo=UTC)
+    old = batch.Chunk(datetime(2025, 9, 1, tzinfo=UTC), datetime(2025, 9, 8, tzinfo=UTC))
+    assert batch.cli_end(old, 4, now) == datetime(2025, 9, 12, tzinfo=UTC)

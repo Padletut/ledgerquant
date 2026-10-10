@@ -20,9 +20,16 @@ prints them. Run one symbol at a time:
 
 ```bash
 .venv/bin/python tools/tick_export_batch.py --symbol XAUUSD \
-  --start 2025-09-01 --end 2026-10-10 --chunk-days 2 \
+  --start 2025-09-01 --end 2026-10-09 --chunk-days 2 \
   --out data/ctrader_tick_exports/post_cutoff_v1/XAUUSD
 ```
+
+Each run needs an actual tick at or after its end as a witness. An end on a
+weekend therefore completes only after the market has reopened, and an end at or
+after the present cannot complete at all; the tool refuses an end within the
+last hour. The cTrader CLI prints the login and account number; the tool
+redacts both before storing a run's CLI log. Manifests still record the account
+number in the ignored `data/` directory.
 
 ## One bounded run
 
