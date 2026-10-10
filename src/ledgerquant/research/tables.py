@@ -61,5 +61,18 @@ commitments = Table("commitments", metadata, ident(), ref("draft_id", "drafts"),
                     Column("actor", String(120), nullable=False), Column("kind", String(30), nullable=False),
                     ref("artifact_id", "artifacts"), timestamp(),
                     UniqueConstraint("draft_id", "kind", name="uq_research_commitment_kind"))
+# Operator-owned process assessments and derived feedback (architecture 2.14).
+# A version supersedes at most one earlier version; nothing is rewritten.
+assessments = Table("process_assessments", metadata, ident(), ref("run_id", "runs"),
+                    Column("role", String(20), nullable=False), ref("artifact_id", "artifacts"), ref("packet_id", "artifacts"),
+                    Column("supersedes_id", String(128), ForeignKey("research.process_assessments.id"), nullable=True),
+                    Column("actor", String(120), nullable=False), timestamp(),
+                    UniqueConstraint("supersedes_id", name="uq_research_assessment_supersedes"))
+feedback = Table("feedback", metadata, ident(), Column("feedback_type", String(30), nullable=False),
+                 Column("lineage_key", String(200), nullable=False), ref("artifact_id", "artifacts"),
+                 Column("supersedes_id", String(128), ForeignKey("research.feedback.id"), nullable=True),
+                 Column("actor", String(120), nullable=False), timestamp("available_at"), timestamp(),
+                 UniqueConstraint("supersedes_id", name="uq_research_feedback_supersedes"))
+FEEDBACK_TABLES = (assessments, feedback)
 
 WORKER_WRITES = (artifacts, runs, run_events, invocations, outcomes, tool_calls, drafts, critiques)

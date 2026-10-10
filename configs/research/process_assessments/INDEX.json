@@ -1,0 +1,97 @@
+{
+  "status": "RECORDED_PROPOSED_SUPERSEDED_BY_HUMAN_REVIEW",
+  "prepared_at": "2026-10-10",
+  "apply_in_order_with": "python -m ledgerquant.research.agent_cli assess-process --decision <file>",
+  "note": "Packet hashes bind each file to the exact sealed pre-action packet; a changed packet (for example a later correction) must be reassessed. Critic files reference the expected research assessment id, so apply research before critic for each run.",
+  "items": [
+    {
+      "order": 1,
+      "file": "e7f85e02-research.json",
+      "run_id": "e7f85e02-fe52-473b-a786-6e659ae2f246",
+      "role": "research",
+      "packet_sha256": "b7ed262f2f031cdd496a933d68b12369d2d5b09a9ef467909f8bc059741f4296",
+      "expected_assessment_id": "bbbfaa970ed0e53235dfd5057c55a00ca8f8f6244f93232171c874a822882cb7",
+      "review_state": "PROPOSED",
+      "supported_agent_findings": [
+        "REQUIREMENT_SCOPE_CONFUSION"
+      ],
+      "recorded_assessment_id": "bbbfaa970ed0e53235dfd5057c55a00ca8f8f6244f93232171c874a822882cb7",
+      "review_document": "../../../documents/research/reviews/process_assessments_20261010/e7f85e02-research.md"
+    },
+    {
+      "order": 2,
+      "file": "e7f85e02-critic.json",
+      "run_id": "e7f85e02-fe52-473b-a786-6e659ae2f246",
+      "role": "critic",
+      "packet_sha256": "ed36ab51484e8d70b9da0bcb2db74973168fe11e451804ecd797190b4db2d035",
+      "expected_assessment_id": "f4ca6549427ef519955aedd4b0d8a49b9cc8404c9b7bae24521c98b0d35a8fea",
+      "review_state": "PROPOSED",
+      "supported_agent_findings": [
+        "REQUIREMENT_SCOPE_CONFUSION"
+      ],
+      "recorded_assessment_id": "f4ca6549427ef519955aedd4b0d8a49b9cc8404c9b7bae24521c98b0d35a8fea",
+      "review_document": "../../../documents/research/reviews/process_assessments_20261010/e7f85e02-critic.md"
+    },
+    {
+      "order": 3,
+      "file": "23632117-research.json",
+      "run_id": "23632117-fb7e-40c6-bffc-b9bbc39df16e",
+      "role": "research",
+      "packet_sha256": "82c0458ad1555a457f8708d252f2aaa66adeafb3b6b2781943281ab317e75116",
+      "expected_assessment_id": "055be6fb09f0f63720299ef837df0ad8eab3b6580f6d97dc9d0304183feb0c3b",
+      "review_state": "PROPOSED",
+      "supported_agent_findings": [
+        "EVIDENCE_MISATTRIBUTION",
+        "NON_PREDICTIVE_FALSIFIER"
+      ],
+      "recorded_assessment_id": "055be6fb09f0f63720299ef837df0ad8eab3b6580f6d97dc9d0304183feb0c3b",
+      "review_document": "../../../documents/research/reviews/process_assessments_20261010/23632117-research.md"
+    },
+    {
+      "order": 4,
+      "file": "23632117-critic.json",
+      "run_id": "23632117-fb7e-40c6-bffc-b9bbc39df16e",
+      "role": "critic",
+      "packet_sha256": "b674a26b3f1919bedac0321dacd4043e94805436589800aee6b23a495e67d786",
+      "expected_assessment_id": "e12677aeaf547c81b0b80019907dcf4a2bed93414b21fda046da9cffd4392580",
+      "review_state": "PROPOSED",
+      "supported_agent_findings": [
+        "EVIDENCE_MISATTRIBUTION",
+        "NON_PREDICTIVE_FALSIFIER"
+      ],
+      "recorded_assessment_id": "e12677aeaf547c81b0b80019907dcf4a2bed93414b21fda046da9cffd4392580",
+      "review_document": "../../../documents/research/reviews/process_assessments_20261010/23632117-critic.md"
+    },
+    {
+      "order": 5,
+      "file": "d6149cdb-research.json",
+      "run_id": "d6149cdb-bc86-47bb-8857-d0225010c35e",
+      "role": "research",
+      "packet_sha256": "733a9c570add616bf16b00175e5c0a7a9a6f41ac2d3dc421628bd3cc8da96071",
+      "expected_assessment_id": "6c25a7ded14792b90c8b0cf85bdd2db80568a4042a7349bc6b91339da952a2c2",
+      "review_state": "PROPOSED",
+      "supported_agent_findings": [],
+      "recorded_assessment_id": "6c25a7ded14792b90c8b0cf85bdd2db80568a4042a7349bc6b91339da952a2c2",
+      "review_document": "../../../documents/research/reviews/process_assessments_20261010/d6149cdb-research.md"
+    },
+    {
+      "order": 6,
+      "file": "d6149cdb-critic.json",
+      "run_id": "d6149cdb-bc86-47bb-8857-d0225010c35e",
+      "role": "critic",
+      "packet_sha256": "7f5d6af5f8ed589d56bfc6b533b2b10e76cd7a81459eeb25dd4a88fcd0d2b6b5",
+      "expected_assessment_id": "30df4977ee2fd59e8118c1918ac184e787abface84bd81b5e79498a975107039",
+      "review_state": "PROPOSED",
+      "supported_agent_findings": [],
+      "recorded_assessment_id": "30df4977ee2fd59e8118c1918ac184e787abface84bd81b5e79498a975107039",
+      "review_document": "../../../documents/research/reviews/process_assessments_20261010/d6149cdb-critic.md"
+    }
+  ],
+  "recorded_at": "2026-10-09T23:04Z (10 October 2026 local time)",
+  "recorded_by": "operator command run by the user; assessment ids equal expected_assessment_id",
+  "next_step": "Six explicit human decisions have been registered as reviewed supersessions; see reviewed_index and reviewed_results. One user-authored method lesson is released. The held-out feedback study still needs its frozen contract, withheld families and separately allocated budget before execution.",
+  "review_guide": "../../../documents/research/reviews/process_assessments_20261010/README.md",
+  "reviewed_index": "reviewed_20261010/INDEX.json",
+  "reviewed_results": "../../../documents/research/reviews/process_assessments_20261010/reviewed/README.md",
+  "original_items_note": "Items below retain the original PROPOSED record identities and state at registration. Their current supersessions are mapped in reviewed_index."
+}

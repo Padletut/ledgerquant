@@ -17,6 +17,7 @@ from ledgerquant.research.admission import Admission, admit
 from ledgerquant.research.bootstrap import bootstrap
 from ledgerquant.research.contract_revisions import RevisionSubmission, resolve_revision
 from ledgerquant.research.grounding import frozen_context
+import ledgerquant.research.admission as admission_module
 from ledgerquant.research.imports import load_legacy_bundle
 from ledgerquant.research.registry import RegistryError
 from ledgerquant.research.repair_exposure import RepairDenied
@@ -26,6 +27,7 @@ from ledgerquant.research.types import canonical, digest
 from tests.integration.test_agent_runtime import Scripted, setup
 from tests.integration.test_grounded_runtime import GroundedTransport, register_v3
 from tests.integration.test_research_registry import registered, start
+from tests.integration.test_agent_runtime import setup as legacy_setup
 from tests.unit.test_agent_catalog import proposal_payload
 from tests.unit.test_grounded_proposals import critique_payload, grounded_payload
 
@@ -255,4 +257,63 @@ def test_raw_task_policy_cannot_relax_required_reads_outside_a_validated_v3_cont
     assert tools.execute(call["id"], "submit_hypothesis_draft", proposal_payload())["error"] == "REQUIRED_EVIDENCE_NOT_READ"
     page = tools.execute(call["id"], "read_development_snapshot", {"offset": 0, "limit": 1})
     assert page["total_cases"] == 390 and "error" not in page
+
+
+def test_labelled_reads_by_abandoned_or_unlisted_runs_deny_strict_repair(registered):
+    registry, _, profile = registered
+    bundle = narrowed_bundle([8])
+    parent, corrected = blocked_parent(registry, profile, bundle, [16], [item["id"] for item in bundle["evidence"]],
+                                       development_page={"offset": 0, "limit": 3})
+    # An abandoned legacy run reads labelled 16 UTC cases and never submits anything.
+    abandoned_config = bootstrap(registry, bundle, profile, CampaignPolicy(max_runs=1, max_invocations=3, max_reserved_tokens=100000, max_usd=1),
+                                 "abandoned-" + uuid4().hex)
+    run, _ = start(registry, abandoned_config)
+    call = registry.reserve_invocation(run["id"], abandoned_config["versions"]["research"], 0, {})
+    reader = ResearchTools(registry, run["id"], "research")
+    page = reader.execute(call["id"], "read_development_snapshot", {"offset": 3, "limit": 3})
+    assert any(case["target"] and case["anchor_utc"].endswith("16:00:00Z") for case in page["cases"])
+    config = register_narrowed_v3(registry, profile, bundle)
+    report = Runner(registry, StrictTransport(profile)).run(config, "strict-" + uuid4().hex, repair_task(parent, corrected, "premeasurement_repair"))
+    assert report["events"][-1]["detail"]["kind"] == "REPAIR_EXPOSURE_DENIED"
+    _, eligibility = eligibility_of(report, parent)
+    exposing = [item for item in eligibility["findings"] if item["relevance"] == "OVERLAPPING"]
+    assert exposing and all(item["kind"] == "LABELLED_CASE_READ" and item["subject"] == run["id"] and item["lineage"] == "OTHER_RUN" for item in exposing)
+    # A different-signature variant that read the same labelled population is exposure too.
+    variant = Runner(registry, GroundedTransport(profile, hours=[12, 16])).run(config, "variant-" + uuid4().hex, {})
+    assert variant["events"][-1]["detail"]["status"] == "AWAITING_OPERATOR_REVIEW"
+    report = Runner(registry, StrictTransport(profile)).run(config, "strict2-" + uuid4().hex, repair_task(parent, corrected, "premeasurement_repair"))
+    _, eligibility = eligibility_of(report, parent)
+    subjects = {item["subject"] for item in eligibility["findings"] if item["relevance"] == "OVERLAPPING"}
+    assert {run["id"], variant["run"]["id"]} <= subjects
+
+
+def test_resumed_development_keeps_the_frozen_design_that_predates_later_exposure(registered, monkeypatch):
+    registry, _, profile = registered
+    bundle = narrowed_bundle([8])
+    parent, corrected = blocked_parent(registry, profile, bundle, [16], [item["id"] for item in bundle["evidence"]],
+                                       development_page={"offset": 0, "limit": 3})
+    config = register_narrowed_v3(registry, profile, bundle)
+    report = Runner(registry, StrictTransport(profile)).run(config, "strict-" + uuid4().hex, repair_task(parent, corrected, "premeasurement_repair"))
+    repair = registry.get(t.drafts, report["run"]["id"])
+    command = admission(repair)
+    real_develop = admission_module.develop
+
+    def interrupted(*args, **kwargs):
+        raise RuntimeError("simulated crash after the atomic admission transaction")
+    monkeypatch.setattr(admission_module, "develop", interrupted)
+    with pytest.raises(RuntimeError):
+        admit(registry, command)
+    freeze = registry.get(t.commitments, repair["id"] + ":DESIGN_FREEZE")
+    recheck = registry.get(t.commitments, repair["id"] + ":REPAIR_ELIGIBILITY_RECHECK")
+    assert registry.read(recheck["artifact_id"])["decision"] == "ELIGIBLE_PREMEASUREMENT_REPAIR"
+    monkeypatch.setattr(admission_module, "develop", real_develop)
+    sibling = Runner(registry, GroundedTransport(profile, hours=[12, 16])).run(config, "sibling-" + uuid4().hex, {})
+    other = registry.get(t.drafts, sibling["run"]["id"])
+    admit(registry, admission(other, reason="Overlapping variant developed after the repair froze."))
+    later = registry.get(t.commitments, other["id"] + ":DEVELOPMENT_RESULT")
+    assert freeze["created_at"] < later["created_at"]
+    lock = admit(registry, command)
+    assert lock["design_sha256"] == digest(registry.read(freeze["artifact_id"]))
+    assert registry.get(t.commitments, repair["id"] + ":REPAIR_ELIGIBILITY_RECHECK") == recheck
+    assert registry.get(t.commitments, repair["id"] + ":DESIGN_FREEZE") == freeze
 

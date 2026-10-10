@@ -2,11 +2,13 @@
 
 **Date:** 10 October 2026
 
-**Revision:** 1.6 — repair exposure gate implemented as `repair_exposure/1`; aligned with architecture 2.13. The code change is limited to work item 2 below and the repair-eligibility part of item 1: no schema migration, no provider call and no new market measurement. Revision 1.5 introduced the typed research feedback, process assessment and exposure-qualified repair contracts. Historical executions retain their original identities, corrections and invalidations.
+**Revision:** 1.8 — defines the planned, empirically gated delegation of process assessment and method-feedback release by validated class; aligned with architecture 2.15. This is a documentation change: the current human gate remains active, and no automatic assessment/release authority is implemented or granted. Revision 1.7.1 added readable process-review exports and a human review guide. Revision 1.7 implemented process-assessment and typed-feedback contracts (`process_assessment/1`, `research_feedback/1`, `reviewed_method_feedback/1`, migration `0004_process_feedback`). Work items 1 and 3 below are done in code; item 4 has not run. Revision 1.6 implemented the repair exposure gate; 1.7 widened its scan to every recorded outcome read and serialized family admissions after an adversarial review. Revision 1.5 introduced these contracts as text. Historical executions retain their original identities, corrections and invalidations.
 
 **Status:** The bounded Research/Critic runtime, append-only registry, scoped tools, linked cost-scope revisions, operator admission and fixed-catalog development path are implemented. A real Mini revision of the original 12 UTC idea was admitted and developed; it underperformed the fitted baseline. All earlier attempts and corrections remain visible. Broad researcher-quality evaluation, new independent economic validation, MCP, RAG indexes and promotion remain pending. See the [linked-revision execution](evaluations/grounded_revision_20261009/REPORT.md) and [operations guide](../operations/RESEARCH.md).
 
-The general process-assessment, typed-lesson and feedback contracts below are **planned**. Existing process-test answers and contract-review events do not yet implement them. The repair exposure gate is **implemented**; see "Contract repair and corrected resubmission" for the exact behavior and its limits.
+The current process-assessment, typed-feedback and repair exposure contracts below are **implemented**; see "Minimum records" and "Contract repair and corrected resubmission" for the exact behavior and limits. The delegation contract in [From human review to scoped automation](#from-human-review-to-scoped-automation) is **planned**. The held-out process suite and matched feedback comparison are **not** implemented or run; feedback benefit remains unmeasured. The six original `PROPOSED` assessments now have human-reviewed `REVIEWED` supersessions with declared outcome exposure. One user-authored requirement-scope method lesson is released and eligible for selection; no run has received it. See the [review results](reviews/process_assessments_20261010/reviewed/README.md).
+
+Human review starts with the [readable assessment guide](reviews/process_assessments_20261010/README.md), not the hash index. `process-review` resolves each proposed finding's references into exact source text and shows the original action, rules, limitations and current integrity without writing a decision. Reviewers can accept, correct or leave findings unresolved; a reviewed record need not accept every allegation. Method feedback requires its cited assessments to be reviewed and current, not blanket approval of all six records. The held-out comparison still needs its separate frozen study contract.
 
 This plan implements the first product slice in [ARCHITECTURE.md](../ARCHITECTURE.md), Section 14. Its outcome is an actual model-driven proposal, a separately recorded critique, a contract decision and evaluator-owned evidence. The agents generate and challenge research ideas; the registry and evaluator determine what was proposed and measured. The [Research Kernel plan](RESEARCH_KERNEL_PLAN.md) owns the source measurements and the two completed EURUSD diagnostics. The [data-availability record](../data/DATA_AVAILABILITY.md) owns unresolved source and broker-quote questions.
 
@@ -82,9 +84,9 @@ Use three typed feedback variants with different admissible sources:
 
 The empirical update from temporal failure is that the frozen rule did not pass transport under that validation contract. Testing a regime explanation requires a separately registered hypothesis and suitable identifying evidence. A later supported explanation cites that new evidence and its limits; neither reviewer approval of prose nor correlation alone establishes causation. Method feedback may teach “do not assert an untested cause” without learning that a particular market cause is true.
 
-#### Minimum planned records
+#### Minimum records
 
-Extend existing immutable artifacts/events with these versioned contracts when implementing this step; no new service or vector store is required:
+These versioned contracts are implemented in revision 1.7 as two append-only registry tables plus immutable artifacts; no new service or vector store was required:
 
 | Record | Required fields and authority |
 | --- | --- |
@@ -96,7 +98,163 @@ Each process finding separately records `SUPPORTED`, `NOT_SUPPORTED` or `UNRESOL
 
 Assess process quality before revealing new market outcomes. For already completed runs, an assessor may retrospectively review a sealed packet containing only the original eligible context and rules; label it as retrospective, record any known assessor outcome exposure, and retain uncertainty. It cannot become a backdated ex-ante assessment. The method rubric must evaluate how available prior research was used without taking later payoff as its label. This revision's audit is not itself an outcome-blind process benchmark.
 
+**Implemented mapping (1.7):** [process_assessment.py](../../src/ledgerquant/research/process_assessment.py) owns the sealed packet (`sealed_process_packet/1`), the assessment command and the structural rules: packet-hash binding, references resolved inside the packet, supported agent findings needing an action reference, no agent label from an invalidated context, no agent error from a disputed checker output, no self-certification, critic deltas linked to the research-role assessment, and append-only supersession with a derived `assessment_state`. [feedback.py](../../src/ledgerquant/research/feedback.py) owns the three feedback types with their source requirements, the derived release state (suspension on superseded or unreviewed sources, invalidated evidence, invalidated contexts or later label corrections), the versioned policy and the lineage-grouped selection with its manifest; [grounding.py](../../src/ledgerquant/research/grounding.py) records the arm and manifest in the frozen context, and `read_source_coverage` exposes it as `method_feedback`. Operator commands: `process-packet`, `assess-process`, `record-feedback`, `select-feedback`. Reviewer identity is an operator string; reviewer disagreement and rubric calibration remain design inputs.
+
 A reviewed method lesson may follow a blocked or unmeasured proposal immediately after its assessment is released. Its eligibility time is no earlier than its creation and all required source/review releases. An empirical finding waits for evaluator release; an outcome episode waits for its required outcomes. All remain derived: corrections append versions and source invalidation suspends dependent support until re-reviewed. Ten lessons from one case remain one process lineage; ten summaries of one evaluation remain one empirical lineage. These grouping keys prevent narrative multiplication, not prove statistical independence.
+
+#### From human review to scoped automation
+
+**Target and current boundary.** Human review establishes the initial trusted
+rubric, reference cases and release decisions. The intended steady-state loop
+automatically assesses recurring, validated process classes and releases bounded
+method feedback within delegated authority. Humans maintain that authority,
+adjudicate exceptions and audit its operation. The existing human gate remains
+active until its replacement passes the empirical and deployment gates below.
+No class currently has delegated authority; the six exposed historical reviews
+are development/reference material, not qualification evidence.
+
+**Unit of delegation.** An assessment class is a versioned, bounded question, not
+an agent name or an entire defect taxonomy. Its contract fixes the defect code,
+subject role, proposal/rubric versions, source and visibility regime, required
+packet fields, allowed component/severity assignments, output labels and explicit
+exclusions. It also fixes the assessor implementation/model/prompt/tool versions,
+abstention and disagreement rules, and permitted downstream action. A finding
+about one requirement cannot certify the whole proposal. Multiple findings can
+be released together only if every required finding and their combination are
+within evaluated scope. A new hypothesis ID alone need not trigger review;
+unvalidated semantics or applicability do.
+
+Candidate first classes include consistency between typed current/future data
+requirements and declared diagnostic scope, or attribution between explicit
+source-population and claimed-population fields. Deterministic reference
+resolution can establish that a citation is authorized and exists; semantic
+support needs its own validated class. Free-text causality, novel payoff meaning
+and ambiguous family/exposure ancestry remain outside these initial candidates.
+These are candidate scopes to evaluate, not a declaration that they already work.
+
+**Two permissions.** `AUTO_ASSESS` permits an authenticated assessment service to
+record a qualified finding for the approved class. `AUTO_RELEASE_METHOD` separately
+permits a release service to publish a method lesson from qualified sources using
+an approved claim/applicability template or a separately evaluated derivation
+policy. Both permissions are planned. An automatically assessed source does not
+automatically authorize its narrative lesson. Free-form generalizations, changed
+counterexamples or broader applicability require human review until covered by
+a newly qualified release policy. `NOT_SUPPORTED` is scoped absence of support
+for an allegation; `UNRESOLVED` is an abstention, never a defect label or a reason
+to publish a negative lesson. Research and Critic cannot grant themselves either
+permission, change reference labels or decide their own assessment class.
+
+##### Qualification and rollout
+
+| Stage | Permitted operation | Required exit evidence |
+| --- | --- | --- |
+| 0. Human bootstrap — current | Operators record explicit human findings and lesson-release decisions. Candidate assessors may propose outputs without release authority. | Define the bounded class, independent reference/adjudication process and qualification study before running its held-out tests. |
+| 1. Offline qualification | Freeze the assessor and routing policy; evaluate them against withheld, independently adjudicated process families. All production decisions retain the human gate. | Meet every preregistered class-specific error, attribution, routing, coverage and support gate with the required uncertainty bounds. Failed or inconclusive qualification retains the human gate. |
+| 2. Shadow assessment and release | On consecutive eligible cases, record candidate findings and would-release lessons in quarantine. Human reviewers make the actual decisions without seeing candidate answers before their initial judgement. | Meet the frozen shadow-volume, duration, disagreement, source-integrity and end-to-end false-release gates. Record human disagreements and adjudicate them; quarantine has no path into agent context. |
+| 3. Scoped automatic assessment | After human authorization of the measured class/version, enable `AUTO_ASSESS` for a bounded canary population. Eligible findings may be recorded automatically; lesson release stays human unless separately qualified. | Audits and canaries satisfy the frozen error and escalation limits. To proceed to automatic release, qualify the derivation/routing policy on exact claims, sources, applicability and counterexamples, including downstream feedback behavior. |
+| 4. Scoped automatic release | After a separate activation decision, enable `AUTO_RELEASE_METHOD` for the qualified class/policy and bounded volume. Eligible cases complete without individual human approval. | Continuous integrity checks, scheduled unbiased audits and version/drift monitoring remain within their registered limits. Scope expansion requires a new qualification and activation record. |
+| Suspended | Stop the affected automatic permission and route pending cases to human review. Preserve previously recorded outputs and dependent context lineage. | Correct the cause, evaluate on eligible fresh cases, and obtain explicit reactivation; elapsed time or queue pressure cannot restore authority. |
+
+**Frozen empirical gates.** The qualification study specifies numerical error
+ceilings, minimum coverage, minimum independent family/cluster support,
+uncertainty method and confidence level, shadow duration/volume, audit sampling,
+latency/cost budget, stopping rule and tolerated incident rates **before** outcomes
+are read. These values have not yet been selected; any missing value blocks
+delegation. Choosing a favorable threshold after seeing the test is a new
+development attempt with consumed test exposure.
+
+Qualification requires the registered upper error bounds to stay below each
+ceiling and lower coverage bounds to meet the minimum; insufficient support is
+inconclusive. Any observed unauthorized release, use of an invalid source, or
+bypass of a mandatory high-impact escalation fails qualification regardless of
+average scores. Neither zero observed errors nor passing fixtures alone proves
+that deployment risk is zero.
+
+- Measure false defect findings, missed supported defects, wrong component or
+  severity, invalid citations and incorrect scope separately. Report each class
+  and severity, with full confusion counts and their denominators; an overall
+  agreement score cannot compensate for a failed material-defect gate.
+- Measure the complete proposed route: correct automatic decisions, incorrect
+  automatic decisions, correct escalations and missed escalations. Report error
+  among automatically handled cases and coverage among **all** applicable cases.
+  Count abstentions, unknowns, refusals, invalid contexts and technical failures
+  explicitly. An assessor that defers everything cannot qualify through apparent
+  precision; a confident model assertion or model majority is no substitute for
+  measured error. Validate calibration if confidence controls routing.
+- For release, measure unsupported claims, source/authority violations, omitted
+  qualifications, broadened applicability and misleading repetition of one case.
+  Independently reviewed assessments alone do not validate the lesson writer.
+  Compare the frozen automated pipeline with the human-reviewed baseline at
+  matched scope/budgets, including downstream introduced defects and the allowed
+  non-inferiority margin for process quality. Feedback effectiveness remains a
+  separate measured claim; qualification does not imply market value.
+- Freeze references independently of the candidate assessor and subjects. Use
+  two independent initial human reviews for qualification references and preserve
+  disagreements/adjudications;
+  unresolved cases test abstention/routing rather than an invented correct label.
+  Separate related case families and time periods from training, prompt tuning
+  and lesson generation. Repetitions and Research/Critic views of one case remain
+  correlated. Include valid near misses, checker/harness faults, ambiguous cases,
+  new semantics and adversarial source text. Audit accepted **and** rejected or
+  escalated cases; synthetic fixtures alone cannot qualify live release.
+
+##### Mandatory human escalation
+
+| Trigger | Required handling |
+| --- | --- |
+| Ambiguity or insufficient evidence | Missing/conflicting rules, unresolvable references, unknown exposure, unclear predictive/administrative boundaries, uncertain component or inherited-versus-generated attribution, or `UNRESOLVED` findings go to human review. Persist the uncertainty and exact source packet; do not convert it into failure or release a lesson that depends on settling it. |
+| Novelty outside qualified scope | New contract/payoff semantics, unsupported source or visibility regimes, unvalidated rubric/language/input forms, or semantic family/duplicate/exposure questions beyond deterministic approved rules require adjudication and possibly a new class. Naming a familiar defect code cannot extend the class. |
+| Disagreement | Material disagreement between authorized assessors, between a checker and semantic assessment, with a human audit, or with a current authoritative reference suspends the disputed decision and requires human adjudication. Do not use majority vote, confidence or repeated sampling to bypass this route; materiality and routing rules are frozen before qualification. |
+| High impact | Changes to research success gates, family/exposure ancestry or holdout access; retrospective admission/promotion; capital, broker authorization or risk policy; broad causal/general research claims; and lessons used for promotion or model-weight training remain outside these process permissions. Human review and the owning service's existing gates remain required. |
+| Integrity or operational incident | Stale/superseded sources, invalid test contexts, suspected injection, missing invocation/version provenance, unrecognized model changes, drift, breached error/audit budgets or unavailable assessment services stop the affected route. Escalate with diagnostics; a checker defect is system evidence, never an automatic agent-error label. |
+
+Each escalation records the triggering rule, class/policy version, packet and
+source hashes, candidate outputs/disagreements, missing evidence, responsible
+review queue and permitted next action. It blocks the affected assessment or
+lesson, while unrelated qualified classes may continue. Review may confirm,
+correct, leave unresolved, or propose a new class; a one-case adjudication does
+not expand delegated scope. Unresolved queues cannot force automatic release.
+
+##### Authorization, audit and contract transition
+
+The registry owns an immutable delegation record binding class/scope,
+`AUTO_ASSESS` and/or `AUTO_RELEASE_METHOD`, assessor and derivation versions,
+qualification/shadow evidence IDs, frozen thresholds, human activation authority,
+activation/expiry times, volume limits, audit policy and suspension/reactivation
+history. The policy is enforced by services with separate identities and no
+self-grant capability. Fresh context or a different role name alone does not
+establish independent judgement; record shared model/provider ancestry and test
+correlated errors. Process permissions grant no evidence-write, admission,
+promotion or trading authority.
+
+Future versioned assessment, feedback and selection contracts must explicitly
+record human versus delegated-machine authority, delegation ID, exact checker or
+model invocation and input/output hashes, routing result, release-policy version
+and audit eligibility. Never encode automatic approval by putting a bot name into
+the current `reviewer` string. Existing `process_assessment/1`,
+`research_feedback/1` and `reviewed_method_feedback/1` semantics remain pinned;
+older records are not retrospectively machine-certified. Implement and test this
+transition, including unauthorized self-release, stale/revoked authority, mixed
+qualified/unqualified findings and race/retry handling, before activation.
+
+At write/release and again before retrieval, verify current authority, source
+integrity and scope. Eligibility begins no earlier than all required sources,
+assessment, delegation activation and actual release; quarantine must not leak
+through summaries or caches. A random, stratified audit sample includes automatic
+accepts, negative findings and escalations, alongside targeted incident review.
+Record sampling probabilities and clustering; selected incidents alone cannot
+estimate the ordinary error rate. The audit schedule itself has a frozen budget
+and inspection rule.
+
+Version changes to the assessor, model behavior, prompts, rules, retrieval or
+derivation policy suspend affected permissions pending the registered
+requalification path; an unknown hosted-model change triggers the same route.
+Expiry, audit failures or authority revocation suspend unconsumed dependent
+feedback, with the affected scope/time range recorded and reviewed. Corrections
+propagate through source lineage; already supplied contexts and invocations stay
+immutable and are flagged for impact review. Historical replay preserves what
+was actually supplied. Automatic release resumes only through explicit,
+evidence-backed reactivation.
 
 #### Contract repair and corrected resubmission
 
@@ -112,7 +270,7 @@ Check this at authorization and again transactionally at admission against inter
 
 `EXPOSED` or `UNKNOWN` denies **premeasurement repair eligibility**, not the right to preserve an idea or correct a record. Administrative/checker corrections append reassessments without rewriting outputs or measurements. Further outcome-informed research needs a separately authorized exposed attempt, or a child hypothesis when semantics change; no reset of independence or claim of a fresh repair test follows. `BLOCKED_CONTRACT_DEFECT` is a process status, not a measured market failure.
 
-**Implemented in revision 1.6:** [repair exposure](../../src/ledgerquant/research/repair_exposure.py) owns policy `repair_exposure/1`. A task with `revision_authorizations` must declare `repair_policy` (`premeasurement_repair` or `exposed_corrected_attempt`); each [authorization](../../src/ledgerquant/research/contract_revisions.py) carries a `defect_reference`, `reviewer` and `reviewer_outcome_exposure`, and old-format tasks fail explicitly. The [grounding context](../../src/ledgerquant/research/grounding.py) (`research_grounding/2`) verifies the defect reference against the recorded correction or review, scans released evidence, overlapping measured results and labelled pages read by participant runs, combines them with the reviewer declaration and records the assessment under each revision parent; a denied strict repair is recorded, then stops the run before any provider call while still consuming a campaign run. The [tool policy](../../src/ledgerquant/agents/tools.py) withholds `read_development_snapshot` from both roles in strict runs, records attempted reads as `OUTCOME_READ_PROHIBITED` and requires only the outcome-free reads before submission; it is derived from the frozen v3 grounding context, never from the raw task field, so a legacy run keeps its full read requirement. [Admission](../../src/ledgerquant/research/admission.py) recomputes the findings transactionally, appends `REPAIR_ELIGIBILITY_RECHECK`, refuses a strict admission on intervening exposure with a durable denial and records the recheck in the design freeze. A denied eligibility also fails `submit_contract_revision` and review. Unit and disposable-PostgreSQL tests cover unchanged-idea repair, post-label denial, unknown exposure, a changed source disguised as repair, intervening exposure, original-attempt accounting and append-only recheck records.
+**Implemented in revision 1.6:** [repair exposure](../../src/ledgerquant/research/repair_exposure.py) owns policy `repair_exposure/1`. A task with `revision_authorizations` must declare `repair_policy` (`premeasurement_repair` or `exposed_corrected_attempt`); each [authorization](../../src/ledgerquant/research/contract_revisions.py) carries a `defect_reference`, `reviewer` and `reviewer_outcome_exposure`, and old-format tasks fail explicitly. The [grounding context](../../src/ledgerquant/research/grounding.py) (`research_grounding/2`) verifies the defect reference against the recorded correction or review, scans released evidence, overlapping measured results and every labelled page of the development population served to any run before the cutoff (revision 1.7 widened this from lineage runs after an adversarial review found abandoned and unlisted runs were skipped), combines them with the reviewer declaration and records the assessment under each revision parent; a denied strict repair is recorded, then stops the run before any provider call while still consuming a campaign run. The [tool policy](../../src/ledgerquant/agents/tools.py) withholds `read_development_snapshot` from both roles in strict runs, records attempted reads as `OUTCOME_READ_PROHIBITED` and requires only the outcome-free reads before submission; it is derived from the frozen v3 grounding context, never from the raw task field, so a legacy run keeps its full read requirement. [Admission](../../src/ledgerquant/research/admission.py) recomputes the findings transactionally, appends `REPAIR_ELIGIBILITY_RECHECK`, refuses a strict admission on intervening exposure with a durable denial and records the recheck in the design freeze; since 1.7 admissions and result commits of one family are serialized by a family lock, and a resumed development job keeps the frozen design that predates any later result. A denied eligibility also fails `submit_contract_revision` and review. Unit and disposable-PostgreSQL tests cover unchanged-idea repair, post-label denial, unknown exposure, a changed source disguised as repair, intervening exposure, original-attempt accounting and append-only recheck records.
 
 **Limits:** the historical linked correction was executed under `research_grounding/1` and is not reassessed. The original Astra proposal explicitly mentions a measurable 12 UTC labelled case and an incorrect candidate prediction for 2020-01-02 at 12 UTC, and the repair run itself was required to read the labelled view, so that correction does not demonstrate the stricter no-exposure condition. Keep its v3 classification/admission and all results unchanged under their recorded policy and do not mark it eligible retrospectively. Because both released aggregates cover 08, 12 and 16 UTC and every recorded run read labelled pages, every catalog hour subset in `eurusd_four_hour_direction` is `EXPOSED`; the eligible strict path has only been exercised with fixture evidence declared on non-overlapping hours. The ledger covers recorded project exposure; reviewer exposure is a declaration and model pretraining knowledge is recorded as an unassessed separate fact. After the negative subset development result, a renamed or scope-repaired attempt cannot regain unexposed status.
 
@@ -216,7 +374,7 @@ Check temporal boundaries using each case's full feature and outcome intervals. 
 | 4. First two-agent workflow | One proposal, one fresh-context critique, operator/contract review, bounded development where admitted, then candidate lock, block or rejection. | Both versions and every call traceable; unsupported and data-blocked proposals distinct; locked candidate is executable by the reviewed evaluator catalog; role separation is not labelled independent judgement. |
 | 5. Research-process evaluation | A bounded versioned suite; paired single-agent/Critic/simple-control runs at matched budgets and separate no-feedback/structured-feedback comparison; accepted and rejected draft audits. | Known-defect and held-out task checks; repetitions, total cost, scorer provenance, uncertainty and censored outcomes reported; no best-run selection or reuse of exposed process tests as fresh evidence. |
 | 6. Independent evaluation when eligible | Apply the frozen inference contract to a newly reserved eligible historical window or prospectively collected window; preserve data failures and release measurements. | Candidate lock/error allocation before access; method assumptions and null/dependence checks reviewed; label maturity, primary effect, multiplicity, cluster support and one-look stopping enforced; historical model-exposure limits retained. |
-| 7. Typed feedback, in two stages | 7a: reviewed process assessments and method feedback after increment 5, including blocked/unmeasured attempts. 7b: empirical findings/outcome episodes when evaluator results are released. | Exact typed source links, source invalidation, outcome visibility, cutoff and root-lineage grouping; no conjecture promoted by wording; held-out feedback benefit measured separately. Neither stage requires RAG or fine-tuning. |
+| 7. Typed feedback, in two stages | 7a: reviewed process assessments and method feedback after increment 5, including blocked/unmeasured attempts. 7b: empirical findings/outcome episodes when evaluator results are released. Human review bootstraps 7a; later validated classes follow the planned delegation gates in Section 3. | Exact typed source links, source invalidation, outcome visibility, cutoff and root-lineage grouping; no conjecture promoted by wording; held-out feedback benefit measured separately. Automatic assessment and release need separate empirical qualification and activation. Neither stage requires RAG or fine-tuning. |
 | 8. Operator view and conditional MCP | Add a small typed control API and Next.js views for real runs/contracts/evidence. Add an MCP adapter only for a host that requires it. | Browser has no direct database, broker or provider access; source, UTC time, evidence mode, failure reason and missing state are shown; direct and MCP calls share authorization if MCP exists. |
 
 **Engineering acceptance:** increments 0–5 make the first real agent workflow usable even if every honest proposal is rejected or blocked. They must exercise those branches and import/replay the existing 2020/2021 artifacts without calling them new independent results. The code is not judged by whether an agent happens to find a winner; otherwise the implementation would be rewarded for weakening contract review.
@@ -268,16 +426,19 @@ This documentation audit inspected the architecture, plan, [registry tables](../
 | [Correction and recovery records](evaluations/grounded_revision_20261009/REPORT.md#technical-recovery-and-reference-boundary-correction) | Truncated output is a technical completion failure. Rejection of valid scoped fact hashes is a checker defect, corrected without new inference. Neither supplies a negative market label or automatic agent-reasoning label. All attempts still count. |
 | [Linked correction and development](evaluations/grounded_revision_20261009/corrected_revision.json) | The historical repair preserved its parent and patch, but inherited labelled development exposure; it is not a demonstration of the planned strict repair gate. The subsequent 48.84% versus 54.26% result is negative development evidence for that diagnostic, not proof of poor process or of a causal regime explanation. |
 
-**Already covered:** immutable attempts and corrections; scoped requirements; structured evidence and root-source deduplication; ex-ante versus outcome assessment; tentative causal explanations; held-out process suites; deferred fine-tuning. **Missing enforcement:** distinct feedback source types, general reviewed process-assessment records, integrity propagation from process/reference defects and explicit behavior-change metrics. The no-relevant-outcome gate for repair is implemented (revision 1.6). The existing narrow `submit_process_assessment` answer and `CONTRACT_REVIEW_ASSESSMENT` admission record are not substitutes for those general records. V3 citation/scope checks also do not prove free-text causal or temporal applicability.
+**Already covered:** immutable attempts and corrections; scoped requirements; structured evidence and root-source deduplication; ex-ante versus outcome assessment; tentative causal explanations; held-out process suites; deferred fine-tuning. **Missing enforcement/evidence:** explicit behavior-change metrics on held-out tasks and qualification, authorization and monitoring of automatic assessment/release classes. Revision 1.8 specifies the latter path; it remains unimplemented. Distinct feedback source types, reviewed process-assessment records, integrity propagation from process/reference defects (revision 1.7) and the no-relevant-outcome gate for repair (revision 1.6) are implemented. The existing narrow `submit_process_assessment` answer and `CONTRACT_REVIEW_ASSESSMENT` admission record are not substitutes for those general records. V3 citation/scope checks also do not prove free-text causal or temporal applicability.
 
 The next implementation, when authorized, is bounded to this contract gap:
 
-1. Version the Section 3 assessment and feedback contracts. Reuse immutable artifacts/events and the operator review boundary; add only storage responsibilities actually needed. Keep historical v1–v3 interpretation pinned. The repair-eligibility contract is versioned as `repair_exposure/1` (done in 1.6).
+1. Done in 1.7: the assessment and feedback contracts are versioned (`process_assessment/1`, `research_feedback/1`) on two append-only tables; historical v1–v3 interpretation stays pinned. The repair-eligibility contract was versioned in 1.6.
 2. Done in 1.6: repair exposure and the outcome-free tool policy are enforced, including the admission recheck, with contract tests for unchanged-idea repair, post-label denial, unknown exposure, a changed source disguised as repair, intervening exposure, original-attempt accounting and append-only recheck/correction records. No market rerun occurred.
-3. Add reviewed method findings from eligible recorded process cases, retaining source defects and uncertainty. Verify invalidation propagation, attribution, type-specific eligibility, conjecture exclusion and outcome-free assessment packets. Include paired fixtures with identical process context and different hidden payoff signs: the process assessment must be identical. A valid losing proposal and an invalid lucky proposal retain their respective process labels. This is explicit structured feedback, not a new memory platform.
-4. Preregister a bounded held-out process suite and matched feedback comparison with frozen references, error denominators, exposure rules, budget and stopping rule. Use the observed cases for development/regression; new test families must remain withheld. Report inconclusive or negative feedback benefit without expanding sampling.
+3. Done in code in 1.7: invalidation propagation, attribution, type-specific eligibility, conjecture exclusion and outcome-free packets are enforced and tested, including the same action assessed before and after its development result with identical packet and assessment hashes. Six assessments of the historical drafts (Astra v1, Mini v2, the v3 correction; Research and Critic each) are prepared in `configs/research/process_assessments/` as `PROPOSED` inputs with the supported findings `REQUIREMENT_SCOPE_CONFUSION` (Astra, both roles), `EVIDENCE_MISATTRIBUTION` and `NON_PREDICTIVE_FALSIFIER` (Mini, both roles) and no supported agent defect for the v3 correction. They were recorded at 2026-10-09 23:04 UTC with ids equal to the prepared `expected_assessment_id` values. On 10 October, the user reviewed them and six `REVIEWED` supersessions were registered, with Critic deltas linked to reviewed Research records. Six supported, thirteen unsupported and two unresolved findings were retained. Both unresolved lineage findings remain attributed to the contract service. One user-authored requirement-scope lesson is released from the reviewed Astra pair; source hashes and selection eligibility were verified. Reviewers remain outcome-exposed. V3 inherited content and its valid citations/checker defect provide no evidence of newly learned independent capability. The original records remain unchanged; no new agent run occurred.
+4. Next planning gate: preregister the bounded held-out process suite and matched feedback comparison, plus a separately identified qualification track for the first proposed assessment class. Freeze independent reference/adjudication rules, family splits, numeric error/coverage and support gates, shadow/audit requirements, exposure rules, budgets and stopping rules from Section 3. Keep feedback benefit and assessor/release reliability as distinct estimands and permissions; shared cases retain shared exposure and cannot become two independent tests. Use the observed cases for development/regression; new test families must remain withheld. Report inconclusive or negative results without expanding sampling.
+5. Planned implementation after that contract is frozen: add versioned class/delegation, authenticated authority and shadow-output records, routing, scoped permissions and source/revocation propagation. Keep automatic permissions inactive and the human gate active. Test unauthorized self-release, ambiguous/out-of-scope inputs, disagreement, stale authority, retry/race behavior and rollback using a disposable registry.
+6. Planned empirical qualification after separate execution authorization: run the bounded offline and shadow studies, preserving failures, abstentions and human disagreements. An independent evaluator computes the frozen metrics and eligibility; humans review the evidence and may activate only the qualified class/version. Assessment authority alone leaves method release human-gated.
+7. Planned steady-state entry: qualify the derivation/release policy and downstream behavior, explicitly activate bounded automatic release, then audit and expand only through new qualified scope. Preserve mandatory human escalations and automatic suspension/requalification; neither passing process checks nor released lessons change economic success or promotion gates.
 
-Revision 1.6 implemented item 2 and the repair-eligibility part of item 1 without provider calls; items 3–4 and the remaining assessment/feedback contracts stay unauthorized. General novelty/causal relevance outside the finite catalog, assessor disagreement, suitable held-out family coverage/sample size and useful feedback effect sizes remain design inputs for that bounded study. Generalization to open-ended/news research and economic value remains unmeasured. RAG, episodes and fine-tuning remain deferred until a specific retrieval or behavior need and a valid comparison justify them.
+Revisions 1.6 and 1.7 implemented items 1–3 without provider calls. Revision 1.8 adds the planned qualification/delegation path in items 4–7 without implementing or activating it. The `HISTORY_ONLY` versus `HISTORY_PLUS_REVIEWED_METHODS` comparison has one reviewed method lesson available, but the studies still need frozen contracts, withheld task families with independent references and separately allocated budgets; execution stays unauthorized. Class scope, numerical error/coverage tolerances, support/sample size, shadow duration, audit limits and downstream non-inferiority margins remain inputs to freeze before evaluation. The human gate remains active through qualification and until explicit activation of the corresponding replacement permission. Generalization to open-ended/news research and economic value remains unmeasured. RAG, episodes and fine-tuning remain deferred until a specific retrieval or behavior need and a valid comparison justify them.
 
 ## 6. Extend the same loop to Loop A
 

@@ -1,0 +1,86 @@
+{
+  "run_id": "23632117-fb7e-40c6-bffc-b9bbc39df16e",
+  "role": "critic",
+  "draft_sha256": "079119c60e0db938ba981e28ec54e4b622f9bf3ffd6b18da198b146b1995754a",
+  "critique_sha256": "cd4c99129a4d51b253be59bb89972dc7fc5d8d8f1910fd3bb0010a39466e0a4f",
+  "packet_sha256": "b674a26b3f1919bedac0321dacd4043e94805436589800aee6b23a495e67d786",
+  "rubric_version": "process_rubric/1",
+  "assessment_mode": "RETROSPECTIVE_SEALED_PACKET",
+  "assessor": "claude_operator_under_explicit_user_authorization_20261010",
+  "assessor_outcome_exposure": "EXPOSED",
+  "review_state": "PROPOSED",
+  "reviewer": null,
+  "findings": [
+    {
+      "code": "EVIDENCE_MISATTRIBUTION",
+      "status": "SUPPORTED",
+      "responsible_component": "critic",
+      "severity": "material",
+      "references": [
+        "critique.summary",
+        "critique.objections[0]",
+        "draft.support[0]"
+      ],
+      "applicability": "Critic check of evidence attribution in support fields.",
+      "explanation": "The critique calls the proposal internally consistent and discusses the 2021 failure, but never notes that support[0] attributes the 2020 aggregate result to the proposed subset."
+    },
+    {
+      "code": "NON_PREDICTIVE_FALSIFIER",
+      "status": "SUPPORTED",
+      "responsible_component": "critic",
+      "severity": "material",
+      "references": [
+        "critique.summary",
+        "draft.falsifier"
+      ],
+      "applicability": "Critic check that the falsifier is predictive.",
+      "explanation": "The critique does not address the falsifier's administrative clause."
+    },
+    {
+      "code": "REQUIREMENT_SCOPE_CONFUSION",
+      "status": "NOT_SUPPORTED",
+      "responsible_component": "critic",
+      "severity": "advisory",
+      "references": [
+        "critique.requirement_consistency",
+        "critique.requirement_explanation"
+      ],
+      "applicability": "Critic comparison of narrative and structured scope.",
+      "explanation": "The critique correctly reports CONSISTENT and explains that broker_costs is deferred as future_economic."
+    },
+    {
+      "code": "DUPLICATE_LINEAGE_ERROR",
+      "status": "UNRESOLVED",
+      "responsible_component": "contract_service",
+      "severity": "material",
+      "references": [
+        "critique.summary"
+      ],
+      "applicability": "Linking a repeated market idea to its earlier attempt.",
+      "explanation": "Neither role could express a linked correction under v2; the limitation is the service's, as recorded for the research action."
+    }
+  ],
+  "limitations": [
+    "Retrospective sealed-packet assessment authored by an AI operator under explicit user authorization; review_state PROPOSED until a human reviewer supersedes it with REVIEWED.",
+    "The assessor had read later development results, corrections and the 2.12/2.13 audit before assessing; this is not an ex-ante assessment."
+  ],
+  "critic_delta": [
+    {
+      "code": "EVIDENCE_MISATTRIBUTION",
+      "research_assessment_id": "055be6fb09f0f63720299ef837df0ad8eab3b6580f6d97dc9d0304183feb0c3b",
+      "effect": "MISSED"
+    },
+    {
+      "code": "NON_PREDICTIVE_FALSIFIER",
+      "research_assessment_id": "055be6fb09f0f63720299ef837df0ad8eab3b6580f6d97dc9d0304183feb0c3b",
+      "effect": "MISSED"
+    },
+    {
+      "code": "REQUIREMENT_SCOPE_CONFUSION",
+      "research_assessment_id": "055be6fb09f0f63720299ef837df0ad8eab3b6580f6d97dc9d0304183feb0c3b",
+      "effect": "CONFIRMED"
+    }
+  ],
+  "supersedes": null,
+  "reason": "Mini v2 critique: scope correctly confirmed, but the misattribution and mixed falsifier were not flagged."
+}

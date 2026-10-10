@@ -7,6 +7,7 @@ from sqlalchemy import select
 from . import tables as t
 from .catalog import CATALOG, Diagnostic
 from .contract_revisions import RevisionAuthorization, corrected_fields
+from .feedback import ARMS, FeedbackPolicy, select_feedback
 from .registry import RegistryError, append, artifact, now, value
 from .repair_exposure import (REPAIR_POLICIES, TOOL_POLICIES, RepairDenied, assessment, participant_runs,
                               registry_findings, verify_defect_reference)
@@ -113,11 +114,18 @@ def build_context(connection, manifest, cutoff, exclude_run_id, task=None):
     hours = CATALOG["permitted_hours_utc"]
     unused = [list(subset) for size in range(1, len(hours) + 1) for subset in combinations(hours, size)
               if digest(Diagnostic(hours_utc=subset)) not in groups]
+    # Derived feedback enters model input only through a versioned policy with an exact manifest.
+    feedback = {"arm": "HISTORY_ONLY", "description": ARMS["HISTORY_ONLY"], "items": [], "manifest": None}
+    if task.get("feedback_policy") is not None:
+        items, selection = select_feedback(c, FeedbackPolicy.model_validate(task["feedback_policy"]), cutoff)
+        feedback = {"arm": "HISTORY_PLUS_REVIEWED_METHODS", "description": ARMS["HISTORY_PLUS_REVIEWED_METHODS"],
+                    "items": items, "manifest": selection}
     return {"version": "research_grounding/2", "family_id": manifest["family_id"],
             "cutoff_at": cutoff.isoformat(), "prior_groups": [{"signature": key, **item} for key, item in sorted(groups.items())],
             "facts": facts, "unused_catalog_hours": unused,
             "revision_parents": revision_parents,
             "repair_policy": policy, "tool_policy": TOOL_POLICIES.get(policy, "research_tools/1"),
+            "feedback": feedback,
             "exposure": "RELATED_EXPOSED; all historical validation windows consumed",
             "independence": "Repeated drafts and facts from one evidence artifact are not independent measurements."}
 

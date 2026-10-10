@@ -1,6 +1,6 @@
 # Bounded research-agent operations
 
-**Implemented:** 09 October 2026; v3 implementation described in [architecture 2.12](../ARCHITECTURE.md). Its intermediate working revision was 2.11.1, consolidated into 2.12 in commit `79cbbae`. Architecture 2.13 (10 October 2026) adds the repair exposure gate described below; the feedback-type and process-assessment contracts remain planned.
+**Implemented:** 09 October 2026; v3 implementation described in [architecture 2.12](../ARCHITECTURE.md). Its intermediate working revision was 2.11.1, consolidated into 2.12 in commit `79cbbae`. Architecture 2.13 (10 October 2026) adds the repair exposure gate described below, and 2.14 adds process assessments and typed feedback; measuring feedback effect remains pending.
 
 The one-shot workflow is Research proposal → fresh-context Critic → deterministic
 contract review. An operator can then reject or admit an eligible draft to a
@@ -365,3 +365,145 @@ under `research_grounding/1` and is not reassessed. Its admission, lock and
 development result are unchanged, and it is not an outcome-unexposed repair.
 Fixture-only tests exercise the eligible path with evidence declared on
 non-overlapping hours; no real run has done so.
+
+## Process assessments and typed feedback (architecture 2.14)
+
+Migration `0004_process_feedback` adds the append-only tables
+`research.process_assessments` and `research.feedback`. It was applied to the
+production registry on 10 October 2026 and the worker role was re-provisioned so
+it can read, but not write, both tables. A fresh database created from 0003
+already contains them; 0004 is conditional and only replaces the triggers.
+
+`process-packet --run-id RUN --role research|critic` prints the sealed
+pre-action packet and its hash. The packet holds the task, the role's agent
+definition hashes, the frozen grounding context, the tool results that role
+received before its action, the exact draft or critique, the recorded contract
+review, deterministic service checks recomputed from the draft, and recorded
+test-basis knowledge (context invalidation, review corrections). It excludes
+operator decisions, design freezes, development results, candidate locks and
+later evidence, so the same action yields the same packet before and after its
+outcome exists. An assessor reviews that packet and nothing else.
+
+`assess-process --decision FILE` appends a `ProcessAssessment`
+(`research/process_assessment.py`): run, role, draft/critique hashes, the exact
+`packet_sha256`, rubric version, assessor, the assessor's own outcome exposure,
+`review_state` (`PROPOSED` or `REVIEWED` with a reviewer), findings, limitations
+and optional critic deltas. Each finding names a defect code, `SUPPORTED`,
+`NOT_SUPPORTED` or `UNRESOLVED`, the responsible component and packet references
+(dotted paths such as `draft.support[0]` or packet artifact hashes). The service
+refuses a stale packet hash, references outside the packet, a supported agent
+finding without an action reference, any agent label on an invalidated context,
+an agent error built on a disputed checker output, a self-assessing agent
+version and a second supersession of the same record. Assessments are never
+rewritten; a new version names `supersedes`.
+
+`record-feedback --decision FILE` appends typed feedback
+(`research/feedback.py`). `METHOD_LESSON` requires reviewed, current process
+assessments; `EMPIRICAL_FINDING` requires released evidence and stores its exact
+scope; `CAUSAL_CONJECTURE` must be marked `untested` with a `proposed_test`. A
+reviewer makes the record released; a superseded or unreviewed source, an
+invalidated evidence record, an invalidated process context or a later label
+correction suspends it. `select-feedback --policy FILE [--cutoff ISO]` shows what
+a policy would supply: released items available at the cutoff, allowed types,
+conjectures only when `include_conjectures` is set, one item per root lineage,
+within `context_limit`, with the selected IDs, hashes and assembled-input hash.
+
+A v3 task supplies feedback only by declaring `feedback_policy`:
+
+```json
+{"feedback_policy": {"version": "reviewed_method_feedback/1",
+                     "allowed_types": ["METHOD_LESSON"], "context_limit": 3}}
+```
+
+The frozen context then records arm `HISTORY_PLUS_REVIEWED_METHODS` with the
+manifest, and `read_source_coverage` exposes the items as `method_feedback`.
+Without the field the arm is `HISTORY_ONLY` and nothing changes. These arm
+labels isolate added lessons; they do not answer the no-history question.
+
+Six assessments of the historical drafts are prepared in
+`configs/research/process_assessments/` (see `INDEX.json`): Astra v1
+(`e7f85e02`), Mini v2 (`23632117`) and the v3 correction (`d6149cdb`), Research
+and Critic each. The original records are `PROPOSED`, authored by an AI operator who had already
+read later outcomes, and bound to the packet hashes at that time. They were
+recorded at 2026-10-09 23:04 UTC with `assess-process`, research file before critic
+file per run, and each returned id equals the `expected_assessment_id` in
+`INDEX.json`. Start with the [human review guide](../research/reviews/process_assessments_20261010/README.md),
+which links each proposed finding to its exact source text. The JSON index is
+bookkeeping, not the review interface. After explicit human review, supersede a
+record with `REVIEWED`, retaining or correcting its findings (`supersedes` names
+the recorded id). A method lesson needs its own sources to be reviewed and
+current; reviewing all six is not a prerequisite for every individual lesson. From the
+host the CLI needs `PYTHONPATH=src`, `DB_PASSWORD_FILE`, `DB_HOST` and
+`DB_NAME=ledgerquant`; the compose operator service sets these itself.
+
+### Reading and reviewing the six assessments
+
+**Review recorded, 10 October 2026:** the user's six decisions were registered
+as `REVIEWED` supersessions with declared `EXPOSED` outcome exposure. The
+[reviewed results](../research/reviews/process_assessments_20261010/reviewed/README.md)
+link readable replacements, source exports and registration receipts. Original
+commands and records remain unchanged. Critic deltas now point to reviewed
+Research records. One user-authored requirement-scope `METHOD_LESSON` is released;
+the checker correction remains engineering evidence. Selection was verified
+without invoking an agent. The two unresolved lineage findings and the limitation
+on inherited v3 content remain explicit.
+
+Architecture 2.14.1 adds a read-only presentation command:
+
+```bash
+PYTHONPATH=src .venv/bin/python -m ledgerquant.research.agent_cli process-review \
+  --assessment-id 85067e5bcc8051778ebfc0e6e40d71afd5273e4b73955bcef405358621e7a60c
+```
+
+Use the existing database environment above; do not put a password in command
+arguments. `--format json` exports the recorded assessment and its stored packet
+as `process_review/1`. The default Markdown view expands each cited path or
+artifact hash into its exact source value, shows the allegation, component,
+severity, applicability and limitations, and explains the possible decisions.
+It includes the original action and supplied rules, and checks current source
+integrity and whether the stored packet matches the packet used for a new
+assessment. The database transaction is `READ ONLY`; no model call, assessment
+write or approval occurs.
+
+The [six review pages](../research/reviews/process_assessments_20261010/README.md)
+and their JSON sources are rebuildable exports. The source index now links to
+this guide and each reading view. Regenerate before recording a review; the
+files are not a live registry projection.
+
+`SUPPORTED` means the alleged process defect is supported. `NOT_SUPPORTED`
+means it is not supported. `UNRESOLVED` preserves uncertainty. `REVIEWED` records
+that a reviewer has assessed the findings; it does not approve the hypothesis or
+require agreement with every allegation. The human may give findings in ordinary
+language using the page and F-number; an operator can translate explicit decisions
+into the typed command. No assistant should supply a human verdict on the user's behalf.
+
+Keep original command files unchanged. A replacement records the new assessor,
+their actual outcome exposure and human reviewer, with `supersedes` pointing to
+the original assessment. Submit reviewed Research before Critic and update the
+Critic's `critic_delta.research_assessment_id` to the reviewed Research version
+being assessed. Preserve unresolved findings and original authorship through
+supersession. Reviewer identity remains an operator string, not authenticated
+human identity. The existing `assess-process` write path is unchanged.
+
+### Human bootstrap and planned delegation
+
+Human review is the current trust boundary for process findings and method-lesson
+release. The intended steady state automatically handles validated classes,
+while humans qualify the authority, handle exceptions and audit it. Architecture
+2.15 and [plan 1.8](../research/AGENT_LOOP_IMPLEMENTATION_PLAN.md#from-human-review-to-scoped-automation)
+define that path; no delegation, automatic reviewer or release permission exists
+in the current implementation.
+
+Continue to record explicit human decisions through the existing commands.
+Putting a service or bot name into the operator `reviewer` string does not grant
+automatic authority. Automatic assessment and automatic lesson release require
+separate evaluated permissions, versioned contracts, withheld-family and shadow
+evidence, and explicit activation. The human gate stays active until those gates
+pass. This documentation update grants no execution budget or release authority.
+
+The future route sends ambiguity, unvalidated semantics, material disagreement,
+uncertain lineage/exposure, high-impact decisions and integrity/drift incidents to
+human review. It records an abstention or pending decision with the exact sources;
+it cannot replace missing review with approval. A suspended class falls back to
+the same human workflow. The plan owns the detailed thresholds, audit and
+reactivation requirements; none has yet been empirically qualified.

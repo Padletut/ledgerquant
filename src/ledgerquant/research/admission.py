@@ -3,7 +3,7 @@
 from typing import Literal
 
 from pydantic import Field
-from sqlalchemy import select
+from sqlalchemy import select, text
 
 from . import tables as t
 from .catalog import CATALOG, develop
@@ -31,6 +31,7 @@ def admit(registry, command: Admission):
         draft = c.execute(select(t.drafts).where(t.drafts.c.id == command.draft_id).with_for_update()).mappings().one()
         if draft["artifact_id"] != command.draft_sha256:
             raise RegistryError("DRAFT_HASH_MISMATCH")
+        _serialize_family(c, draft["family_id"])
         run = c.execute(select(t.runs).where(t.runs.c.id == draft["run_id"])).mappings().one()
         snapshot = c.execute(select(t.snapshots.c.manifest_id).where(t.snapshots.c.id == run["snapshot_id"])).scalar_one()
         manifest = value(c, snapshot)
@@ -86,6 +87,7 @@ def admit(registry, command: Admission):
     # same command resumes the deterministic job, never a new provider call.
     result = develop(proposal.diagnostic, registry.read(manifest["development_id"])["cases"])
     with registry.engine.begin() as c:
+        _serialize_family(c, draft["family_id"])
         _commit(c, draft["id"], "catalog:" + CATALOG["version"], "DEVELOPMENT_RESULT", result)
         status = "NO_INDEPENDENT_WINDOW" if result["data_sufficient"] else "INSUFFICIENT_SUPPORT"
         lock = {"design_sha256": digest(freeze), "diagnostic": proposal.diagnostic.model_dump(mode="json"),
@@ -95,8 +97,18 @@ def admit(registry, command: Admission):
     return lock
 
 
+def _serialize_family(connection, family_id):
+    """Admissions and measured-result commits of one family never interleave, across campaigns."""
+    connection.execute(text("SELECT pg_advisory_xact_lock(hashtext(:key))"), {"key": "research_family:" + family_id})
+
+
 def _repair_recheck(connection, draft, run, manifest, proposal, actor):
-    """Transactional recheck against intervening exposure; an existing record is never rewritten."""
+    """Transactional recheck against intervening exposure; an existing record is never rewritten.
+
+    The recheck, operator decision and design freeze commit together, so a resumed
+    development job finds either all of them or none. A result that did not exist when
+    the design froze cannot have informed that frozen contract.
+    """
     c = connection
     existing = c.execute(select(t.commitments.c.artifact_id).where(t.commitments.c.id == draft["id"] + ":REPAIR_ELIGIBILITY_RECHECK")).scalar_one_or_none()
     if existing:

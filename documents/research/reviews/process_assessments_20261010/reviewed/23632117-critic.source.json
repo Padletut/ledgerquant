@@ -1,0 +1,784 @@
+{
+  "version": "process_review/1",
+  "assessment_id": "f95b2e4e1e7101ea90431de465144de07554b2f9cfd563ec9dc4439add0f5a29",
+  "assessment": {
+    "assessment_mode": "RETROSPECTIVE_SEALED_PACKET",
+    "assessor": "codex_operator_transcribing_human_review_20261010",
+    "assessor_outcome_exposure": "EXPOSED",
+    "critic_delta": [
+      {
+        "code": "EVIDENCE_MISATTRIBUTION",
+        "effect": "MISSED",
+        "research_assessment_id": "cf503658736f0414b511df15034677c0fd0e046389af5fb224ae511c28c97ebe"
+      },
+      {
+        "code": "NON_PREDICTIVE_FALSIFIER",
+        "effect": "MISSED",
+        "research_assessment_id": "cf503658736f0414b511df15034677c0fd0e046389af5fb224ae511c28c97ebe"
+      },
+      {
+        "code": "REQUIREMENT_SCOPE_CONFUSION",
+        "effect": "CONFIRMED",
+        "research_assessment_id": "cf503658736f0414b511df15034677c0fd0e046389af5fb224ae511c28c97ebe"
+      }
+    ],
+    "critique_sha256": "cd4c99129a4d51b253be59bb89972dc7fc5d8d8f1910fd3bb0010a39466e0a4f",
+    "draft_sha256": "079119c60e0db938ba981e28ec54e4b622f9bf3ffd6b18da198b146b1995754a",
+    "findings": [
+      {
+        "applicability": "Critic check of evidence attribution in support fields.",
+        "code": "EVIDENCE_MISATTRIBUTION",
+        "explanation": "The critique calls the proposal internally consistent and discusses the 2021 failure, but never notes that support[0] attributes the 2020 aggregate result to the proposed subset.",
+        "references": [
+          "critique.summary",
+          "critique.objections[0]",
+          "draft.support[0]"
+        ],
+        "responsible_component": "critic",
+        "severity": "material",
+        "status": "SUPPORTED"
+      },
+      {
+        "applicability": "Critic check that the falsifier is predictive.",
+        "code": "NON_PREDICTIVE_FALSIFIER",
+        "explanation": "The critique does not address the falsifier's administrative clause.",
+        "references": [
+          "critique.summary",
+          "draft.falsifier"
+        ],
+        "responsible_component": "critic",
+        "severity": "material",
+        "status": "SUPPORTED"
+      },
+      {
+        "applicability": "Critic comparison of narrative and structured scope.",
+        "code": "REQUIREMENT_SCOPE_CONFUSION",
+        "explanation": "The critique correctly reports CONSISTENT and explains that broker_costs is deferred as future_economic.",
+        "references": [
+          "critique.requirement_consistency",
+          "critique.requirement_explanation"
+        ],
+        "responsible_component": "critic",
+        "severity": "advisory",
+        "status": "NOT_SUPPORTED"
+      },
+      {
+        "applicability": "Linking a repeated market idea to its earlier attempt.",
+        "code": "DUPLICATE_LINEAGE_ERROR",
+        "explanation": "Neither role could express a linked correction under v2; the limitation is the service's, as recorded for the research action.",
+        "references": [
+          "critique.summary"
+        ],
+        "responsible_component": "contract_service",
+        "severity": "material",
+        "status": "UNRESOLVED"
+      }
+    ],
+    "information_cutoff": "2026-10-09T20:43:46.464259+00:00",
+    "limitations": [
+      "Human finding decisions supplied via the project conversation and transcribed by Codex. The reviewer and transcribing assessor are outcome-exposed; REVIEWED does not imply an outcome-blind assessment.",
+      "The assessor had read later development results, corrections and the 2.12/2.13 audit before assessing; this is not an ex-ante assessment."
+    ],
+    "packet_sha256": "b674a26b3f1919bedac0321dacd4043e94805436589800aee6b23a495e67d786",
+    "reason": "Explicit human review supplied in the project conversation on 10 October 2026; Codex transcribed the finding decisions and limitations. Original assessment retained by supersession; no new agent inference or market evaluation. Mini v2 critique: scope correctly confirmed, but the misattribution and mixed falsifier were not flagged.",
+    "review_state": "REVIEWED",
+    "reviewer": "human_user_via_chat_20261010",
+    "role": "critic",
+    "rubric_version": "process_rubric/1",
+    "run_id": "23632117-fb7e-40c6-bffc-b9bbc39df16e",
+    "supersedes": "e12677aeaf547c81b0b80019907dcf4a2bed93414b21fda046da9cffd4392580",
+    "test_basis": {
+      "context_invalidated": false,
+      "disputed_service_output": false,
+      "review_corrections": [
+        {
+          "actor": "codex_operator_under_explicit_user_revision_clarification",
+          "classification": "SAME_IDEA_REVISION_CANDIDATE",
+          "correction_sha256": "05ef4a24dc4784cac633dae3a3830f53adbdd85aac22570a5f5da970313013b9",
+          "reason": "Operator clarification: identical market diagnostic does not alone justify rejecting an authorized corrected contract revision. The v2 run lacked a revision route and link. Retain its actual rejection and wording defects; a separately linked, scope-only correction may be admitted without new family identity or fresh historical exposure."
+        }
+      ]
+    },
+    "version": "process_assessment/1"
+  },
+  "packet_sha256": "b674a26b3f1919bedac0321dacd4043e94805436589800aee6b23a495e67d786",
+  "packet": {
+    "action_time": "2026-10-09T20:43:46.464259+00:00",
+    "agent_definition": {
+      "instruction_sha256": "28d6277c4e25f05e42d1e85ce2a1610ed1a50d3e2e32517072233afaa72ccf13",
+      "research_contract_version": 2,
+      "role": "critic",
+      "tool_policy": "research_tools/1",
+      "tool_schema_sha256": "60b811b77c01c73d9d8f24844fe568e116fcd47686dab032511dfe943b5630ea",
+      "workflow": "discovery"
+    },
+    "critique": {
+      "disposition": "REVIEW",
+      "draft_sha256": "079119c60e0db938ba981e28ec54e4b622f9bf3ffd6b18da198b146b1995754a",
+      "objections": [
+        {
+          "code": "TEMPORAL_FAILURE",
+          "evidence_ids": [
+            "eurusd_four_hour_direction_2020_v1",
+            "eurusd_four_hour_direction_2021_replication_v1"
+          ],
+          "explanation": "The draft's own contrary evidence is supported by the released replication: the 2021 run failed with candidate_accuracy 0.4717223650385604 below baseline_accuracy 0.493573264781491 and a negative bootstrap lower bound (-0.06443298969072164). That makes temporal instability the dominant risk and validates the stated failure mode, but it does not by itself create a current scope violation.",
+          "severity": "material"
+        }
+      ],
+      "requirement_consistency": "CONSISTENT",
+      "requirement_explanation": "The narrative and structured fields align with the catalog scope. The diagnostic is price-only, orders_allowed is false, and the broker_costs item is explicitly filed under future_economic as a deferred prerequisite rather than a current diagnostic requirement. Source coverage also states execution costs are unverified, which supports deferral rather than blocking this attempt.",
+      "schema_version": "research_critique/2",
+      "sha256": "cd4c99129a4d51b253be59bb89972dc7fc5d8d8f1910fd3bb0010a39466e0a4f",
+      "summary": "Recommend REVIEW, not rejection. The proposal is internally consistent with the no-orders, price-only catalog scope, and its deferred broker_costs item is correctly scoped as future_economic. The main concern is temporal instability: the 2021 replication failed after the 2020 positive run, so the draft should be treated as fragile rather than validated."
+    },
+    "current_service_checks": {
+      "policy": "deterministic contract checks recomputed under current code; not an outcome",
+      "reasons": [
+        "DUPLICATE"
+      ],
+      "status": "REJECTED"
+    },
+    "draft": {
+      "admissibility_probability": 0.68,
+      "contrary_evidence": [
+        "The 2021 replication of the same rule failed temporally, with candidate_accuracy 0.4717 below baseline_accuracy 0.4936 and a negative bootstrap lower bound.",
+        "The 2020 positive result was modest and uneven across subperiods: Q3 was materially stronger than Q4, so the signal may be time-local rather than stable.",
+        "The source coverage notes retrospective quote visibility is assumed, many 2020 EURUSD bid/ask pairs are equal, and execution costs remain unverified.",
+        "There is no independent validation window; the catalog explicitly uses exploratory-only no-confirmatory-pass policy."
+      ],
+      "data_requirements": [
+        {
+          "reactivation_condition": "If a later operator request adds an orders_allowed=true or economic-eligibility extension, review execution-cost inputs then.",
+          "reason": "Deferred prerequisite for any future economic extension only; it does not block this current price-only diagnostic.",
+          "scope": "future_economic",
+          "source": "broker_costs"
+        }
+      ],
+      "diagnostic": {
+        "candidate_rule": "prior_hour_midquote_momentum_sign",
+        "catalog_version": "eurusd_direction/1",
+        "horizon_seconds": 14400,
+        "hours_utc": [
+          12
+        ],
+        "instrument": "EURUSD",
+        "lookback_seconds": 3600,
+        "orders_allowed": false
+      },
+      "evidence_ids": [
+        "eurusd_four_hour_direction_2020_v1",
+        "eurusd_four_hour_direction_2021_replication_v1"
+      ],
+      "falsifier": "If the retained 12 UTC prior-hour midquote momentum sign diagnostic cannot reproduce a positive candidate-versus-baseline gap under the catalog's exact historical constraints, or if admissibility requires converting the deferred broker_costs item into a current diagnostic requirement, the proposal is falsified.",
+      "mechanism": "At the 12 UTC decision hour, compare the prior one-hour EURUSD midquote drift sign against the catalog baseline rule. The hypothesis is that short-horizon continuation or reversal effects around this anchor can create a measurable four-hour directional edge in the retrospective diagnostic, without invoking any trade execution or economic claim.",
+      "predicted_failure": "TEMPORAL_FAILURE",
+      "schema_version": "research_proposal/2",
+      "sha256": "079119c60e0db938ba981e28ec54e4b622f9bf3ffd6b18da198b146b1995754a",
+      "support": [
+        "The 2020 released validation for the same diagnostic passed predictive validation, with candidate_accuracy 0.5243 above baseline_accuracy 0.4629 and a positive paired_accuracy_difference of 0.0614.",
+        "The catalog explicitly permits the 12 UTC decision hour, matching the retained draft's anchor subset.",
+        "The development snapshot contains many measurable 12 UTC anchors, so the diagnostic is not blocked by pervasive missingness in the permitted hour."
+      ],
+      "title": "prior_hour_midquote_momentum_sign at 12 UTC (retained price-only diagnostic)"
+    },
+    "excluded": [
+      "OPERATOR_DECISION",
+      "DESIGN_FREEZE",
+      "DEVELOPMENT_RESULT",
+      "CANDIDATE_LOCK",
+      "CONTRACT_REVIEW_ASSESSMENT",
+      "REPAIR_ELIGIBILITY_RECHECK",
+      "later drafts",
+      "later evidence"
+    ],
+    "grounding_context": null,
+    "grounding_context_sha256": null,
+    "information_cutoff": "2026-10-09T20:43:46.464259+00:00",
+    "recorded_contract_review": {
+      "family_id": "eurusd_four_hour_direction",
+      "loop": "B",
+      "reasons": [
+        "DUPLICATE"
+      ],
+      "sha256": "036f68428a0c5040463e94554e2615b2d7cb1a7a502e446ff8518afefc3c621c",
+      "signature": "24c3c3e2b3d52116469ac293d2be78ea9778a0a5cb3cb0628825b04c701e36b5",
+      "status": "REJECTED"
+    },
+    "role": "critic",
+    "run_id": "23632117-fb7e-40c6-bffc-b9bbc39df16e",
+    "task": {
+      "confirmatory_tests": 0,
+      "parent_campaign_id": "openai_astra_bootstrap_20261009",
+      "prior_issue": "Prior 12 UTC draft remains blocked under v1 because it listed costs as a current requirement although its narrative deferred them. This is not a measured economic failure. Retain that attempt; do not rename its exact diagnostic as a fresh one.",
+      "proposal_limit": 1,
+      "purpose": "Propose one falsifiable price-only diagnostic within the existing catalog. Read all required evidence. Distinguish current diagnostic data from future economic prerequisites. Do not create new windows or change the payoff.",
+      "related_draft_ids": [
+        "e7f85e02-fe52-473b-a786-6e659ae2f246"
+      ],
+      "relation": "RELATED_EXPOSED",
+      "stop_after": "one proposal and critique; operator review, freeze, development and lock only if admissible",
+      "validation_status": "NO_INDEPENDENT_WINDOW",
+      "version": "bounded_discovery_task/2"
+    },
+    "test_basis": {
+      "context_invalidated": false,
+      "disputed_service_output": false,
+      "review_corrections": [
+        {
+          "actor": "codex_operator_under_explicit_user_revision_clarification",
+          "classification": "SAME_IDEA_REVISION_CANDIDATE",
+          "correction_sha256": "05ef4a24dc4784cac633dae3a3830f53adbdd85aac22570a5f5da970313013b9",
+          "reason": "Operator clarification: identical market diagnostic does not alone justify rejecting an authorized corrected contract revision. The v2 run lacked a revision route and link. Retain its actual rejection and wording defects; a separately linked, scope-only correction may be admitted without new family identity or fresh historical exposure."
+        }
+      ]
+    },
+    "tool_results": [
+      {
+        "allowed": true,
+        "arguments": {},
+        "at": "2026-10-09T20:43:29.133801+00:00",
+        "name": "read_source_coverage",
+        "result": {
+          "catalog": {
+            "baseline_rule": "majority_development_target_class",
+            "baseline_tie": "PREDICT_NON_UP",
+            "candidate_rule": "prior_hour_midquote_momentum_sign",
+            "decision_delay_seconds": 1,
+            "development_end": "2020-07-01T00:00:00Z",
+            "development_start": "2020-01-01T00:00:00Z",
+            "economic_claim": "none_predictive_diagnostic_only",
+            "horizon_seconds": 14400,
+            "include_holidays": true,
+            "inference_policy": "exploratory_only_no_confirmatory_pass",
+            "instrument": "EURUSD",
+            "iso_weekdays": [
+              1,
+              2,
+              3,
+              4,
+              5
+            ],
+            "lookback_seconds": 3600,
+            "maximum_missing_fraction": 0.1,
+            "maximum_quote_age_seconds": 60,
+            "maximum_settlement_delay_seconds": 60,
+            "minimum_eligible_anchors": 100,
+            "orders_allowed": false,
+            "permitted_hours_utc": [
+              8,
+              12,
+              16
+            ],
+            "search_policy": "one_declared_candidate_no_optimization",
+            "validation_policy": "NO_INDEPENDENT_WINDOW",
+            "version": "eurusd_direction/1"
+          },
+          "family_id": "eurusd_four_hour_direction",
+          "legacy_attempts": 2,
+          "recorded_diagnostics": [
+            {
+              "diagnostic": {
+                "candidate_rule": "prior_hour_midquote_momentum_sign",
+                "catalog_version": "eurusd_direction/1",
+                "horizon_seconds": 14400,
+                "hours_utc": [
+                  12
+                ],
+                "instrument": "EURUSD",
+                "lookback_seconds": 3600,
+                "orders_allowed": false
+              },
+              "draft_id": "e7f85e02-fe52-473b-a786-6e659ae2f246",
+              "draft_sha256": "a09b3f29fc094bf0eb810a9953d9756f6bb428282b0c71c1b2495f89d144f034"
+            },
+            {
+              "diagnostic": {
+                "candidate_rule": "prior_hour_midquote_momentum_sign",
+                "catalog_version": "eurusd_direction/1",
+                "horizon_seconds": 14400,
+                "hours_utc": [
+                  12
+                ],
+                "instrument": "EURUSD",
+                "lookback_seconds": 3600,
+                "orders_allowed": false
+              },
+              "draft_id": "23632117-fb7e-40c6-bffc-b9bbc39df16e",
+              "draft_sha256": "079119c60e0db938ba981e28ec54e4b622f9bf3ffd6b18da198b146b1995754a"
+            }
+          ],
+          "recorded_drafts": 2,
+          "recorded_runs": 65,
+          "requirement_rules": "Every v2 data requirement has an explicit scope:\ncurrent_diagnostic blocks this attempt when the source is unavailable;\nfuture_economic records a deferred prerequisite and does not block this price\ndiagnostic or grant economic eligibility. Requiring broker_costs for the current\nno-orders, no-economic-claim catalog is REQUIREMENT_CONTRADICTION, a contract\nrejection, never a measured COST_FAILURE. Raw news or historical sentiment\nrequired now remains BLOCKED_DATA_REQUIREMENT, pending data and a reviewed\ncatalog extension. Do not silently execute an unsupported event-conditioned rule.\nCheck mechanism, support and falsifier against these structured scopes. A claim\nto use a source now while deferring its requirement is a narrative contradiction.\nPreserve it as a material REQUIREMENT_CONTRADICTION objection for operator review.\n",
+          "source": {
+            "cost_status": "COST_UNVERIFIED",
+            "historical_available_at": null,
+            "independent_windows": [],
+            "instrument": "EURUSD",
+            "limitations": [
+              "Historical server quote visibility is assumed, not observed.",
+              "Many 2020 EURUSD bid/ask pairs are equal and broker execution costs are unverified.",
+              "A single pair and a single later half-year cannot establish broad temporal or instrument transport."
+            ],
+            "source_id": "icm_eu_live_ACCOUNT_REDACTED_ctrader_desktop_server_ticks_20180522_20261008",
+            "source_sha256": "446d6fd78f61ebb54af9b38c4c44b41273cdbda0fca73e28a6af06783a9e571f",
+            "visibility": "retrospective_assumed_server_quote_visibility"
+          },
+          "total_family_attempts": 67
+        },
+        "result_sha256": "6aaf1484b9e49c48c2c5943639758b4d1699ac0b3f6d429e215c04fc4b8e994b"
+      },
+      {
+        "allowed": true,
+        "arguments": {},
+        "at": "2026-10-09T20:43:30.106338+00:00",
+        "name": "read_released_evidence",
+        "result": {
+          "all_windows_consumed": true,
+          "evidence": {
+            "eurusd_four_hour_direction_2020_v1": {
+              "audit_manifest_sha256": "8f13ae0c24395aad6f3f659416cffa547217305b9a79cc6d3ee7487355b2ea23",
+              "calibration": "not_applicable_no_probability_output",
+              "contract_sha256": "edb0bf2a3fe9aade8170cd8bcdf08d85b50c921e8417446ccab5dd70b1eb77a8",
+              "cost_stress": "not_applicable_no_trade",
+              "drawdown_and_tail_risk": "not_applicable_no_trade",
+              "economic_claim": "none_predictive_diagnostic_only",
+              "evaluated_at_utc": "2026-10-09T17:33:53Z",
+              "evaluation_code_sha256": "a8bab47e07daac543b10d2a3ac870496a2d8ce7f77675eaf7edfe257a34afd56",
+              "evidence_mode": "retrospective_historical_simulation",
+              "failure_reason": null,
+              "gate_decision": "PREDICTIVE_VALIDATION_PASSED",
+              "hypothesis_id": "eurusd_four_hour_direction_2020_v1",
+              "promotion_eligible": false,
+              "related_trial_count": 1,
+              "schema_version": 1,
+              "selection_sha256": "62388091916d9dbc7523f312b6127c03f636ca6e8bbc3ffcf1ffab3620ad16d0",
+              "source_sha256": "446d6fd78f61ebb54af9b38c4c44b41273cdbda0fca73e28a6af06783a9e571f",
+              "trial_id": "eurusd_four_hour_direction_2020_v1:trial_1",
+              "validation": {
+                "baseline_accuracy": 0.4629156010230179,
+                "bootstrap_lower_bound": 0.002564102564102564,
+                "bootstrap_method": "utc_date_block_bootstrap",
+                "bootstrap_percentile": 5,
+                "bootstrap_percentile_convention": "nearest_rank",
+                "bootstrap_resamples": 10000,
+                "bootstrap_seed": 20261009,
+                "candidate_accuracy": 0.5242966751918159,
+                "case_status_counts": {
+                  "INPUT_MISSING": 3,
+                  "MEASURABLE": 391,
+                  "OUTCOME_MISSING": 2
+                },
+                "forward_midquote_change_by_prediction": {
+                  "PREDICT_NON_UP": {
+                    "count": 197,
+                    "mean_midquote_change": "0.00006502538071065989847715736041"
+                  },
+                  "PREDICT_UP": {
+                    "count": 194,
+                    "mean_midquote_change": "0.0001032474226804123711340206186"
+                  }
+                },
+                "maximum_missingness_met": true,
+                "measurable_count": 391,
+                "minimum_support_met": true,
+                "paired_accuracy_difference": 0.06138107416879801,
+                "quarters": {
+                  "2020Q3": {
+                    "baseline_accuracy": 0.4494949494949495,
+                    "candidate_accuracy": 0.5606060606060606,
+                    "count": 198,
+                    "paired_accuracy_difference": 0.11111111111111105
+                  },
+                  "2020Q4": {
+                    "baseline_accuracy": 0.47668393782383417,
+                    "candidate_accuracy": 0.48704663212435234,
+                    "count": 193,
+                    "paired_accuracy_difference": 0.010362694300518172
+                  }
+                },
+                "scheduled_count": 396
+              },
+              "validation_cases_file": "validation_cases.jsonl",
+              "validation_cases_sha256": "6ad252647aac3afa6197a835428bcc766c73238f02cb9ffb95daa47fdbe889a2"
+            },
+            "eurusd_four_hour_direction_2021_replication_v1": {
+              "audit_manifest_sha256": "f3511928cf7ba8650b5c6f4536038322de3dc0bac6385411a943e3efb508d4c8",
+              "calibration": "not_applicable_no_probability_output",
+              "contract_sha256": "e0def15777b1a1317faf63eca4b68e7a6e6137346b0e32d60b7e18f3e7c85363",
+              "cost_stress": "not_applicable_no_trade",
+              "drawdown_and_tail_risk": "not_applicable_no_trade",
+              "economic_claim": "none_predictive_diagnostic_only",
+              "evaluated_at_utc": "2026-10-09T17:51:06Z",
+              "evaluation_code_sha256": "a8bab47e07daac543b10d2a3ac870496a2d8ce7f77675eaf7edfe257a34afd56",
+              "evidence_mode": "retrospective_historical_simulation",
+              "failure_reason": "TEMPORAL_FAILURE",
+              "gate_decision": "TEMPORAL_FAILED",
+              "hypothesis_id": "eurusd_four_hour_direction_2021_replication_v1",
+              "promotion_eligible": false,
+              "related_trial_count": 1,
+              "schema_version": 1,
+              "selection_sha256": "bcf54c45895bd314986a27203ef9919f71d43d32a0e8dc51091c65738185d4df",
+              "source_sha256": "446d6fd78f61ebb54af9b38c4c44b41273cdbda0fca73e28a6af06783a9e571f",
+              "trial_id": "eurusd_four_hour_direction_2021_replication_v1:trial_1",
+              "validation": {
+                "baseline_accuracy": 0.493573264781491,
+                "bootstrap_lower_bound": -0.06443298969072164,
+                "bootstrap_method": "utc_date_block_bootstrap",
+                "bootstrap_percentile": 5,
+                "bootstrap_percentile_convention": "nearest_rank",
+                "bootstrap_resamples": 10000,
+                "bootstrap_seed": 20261009,
+                "candidate_accuracy": 0.4717223650385604,
+                "case_status_counts": {
+                  "INPUT_MISSING": 3,
+                  "MEASURABLE": 778,
+                  "OUTCOME_MISSING": 2
+                },
+                "forward_midquote_change_by_prediction": {
+                  "PREDICT_NON_UP": {
+                    "count": 395,
+                    "mean_midquote_change": "-0.00001467088607594936708860759494"
+                  },
+                  "PREDICT_UP": {
+                    "count": 383,
+                    "mean_midquote_change": "-0.00009900783289817232375979112272"
+                  }
+                },
+                "maximum_missingness_met": true,
+                "measurable_count": 778,
+                "minimum_support_met": true,
+                "paired_accuracy_difference": -0.021850899742930585,
+                "quarters": {
+                  "2021Q1": {
+                    "baseline_accuracy": 0.5185185185185185,
+                    "candidate_accuracy": 0.5026455026455027,
+                    "count": 189,
+                    "paired_accuracy_difference": -0.015873015873015817
+                  },
+                  "2021Q2": {
+                    "baseline_accuracy": 0.4461538461538462,
+                    "candidate_accuracy": 0.4512820512820513,
+                    "count": 195,
+                    "paired_accuracy_difference": 0.00512820512820511
+                  },
+                  "2021Q3": {
+                    "baseline_accuracy": 0.5252525252525253,
+                    "candidate_accuracy": 0.46464646464646464,
+                    "count": 198,
+                    "paired_accuracy_difference": -0.06060606060606066
+                  },
+                  "2021Q4": {
+                    "baseline_accuracy": 0.4846938775510204,
+                    "candidate_accuracy": 0.46938775510204084,
+                    "count": 196,
+                    "paired_accuracy_difference": -0.015306122448979553
+                  }
+                },
+                "scheduled_count": 783
+              },
+              "validation_cases_file": "validation_cases.jsonl",
+              "validation_cases_sha256": "efd0f56ec8abf10b2751ec04dcd5e98f18b47d616f208da8a21a34a53ae1190c"
+            }
+          },
+          "invalidated_ids": []
+        },
+        "result_sha256": "8b44181c38b29e755130009db728acf2b11b309b823b51da3858ae57ce12a4b3"
+      },
+      {
+        "allowed": true,
+        "arguments": {
+          "limit": 20,
+          "offset": 0
+        },
+        "at": "2026-10-09T20:43:31.053277+00:00",
+        "name": "read_development_snapshot",
+        "result": {
+          "artifact_id": "b44d2abe89925bcdc86ba3aeb7501a4369b7bd3656b3d2d817f821deb2eb09c4",
+          "cases": [
+            {
+              "anchor_utc": "2020-01-01T08:00:00Z",
+              "baseline": null,
+              "baseline_correct": null,
+              "candidate": null,
+              "candidate_correct": null,
+              "case_id": "EURUSD:2020-01-01T08:00:00Z",
+              "forward_midquote_change": null,
+              "settlement_midquote": null,
+              "settlement_source_line": null,
+              "status": "INPUT_MISSING",
+              "target": null
+            },
+            {
+              "anchor_utc": "2020-01-01T12:00:00Z",
+              "baseline": null,
+              "baseline_correct": null,
+              "candidate": null,
+              "candidate_correct": null,
+              "case_id": "EURUSD:2020-01-01T12:00:00Z",
+              "forward_midquote_change": null,
+              "settlement_midquote": null,
+              "settlement_source_line": null,
+              "status": "INPUT_MISSING",
+              "target": null
+            },
+            {
+              "anchor_utc": "2020-01-01T16:00:00Z",
+              "baseline": null,
+              "baseline_correct": null,
+              "candidate": null,
+              "candidate_correct": null,
+              "case_id": "EURUSD:2020-01-01T16:00:00Z",
+              "forward_midquote_change": null,
+              "settlement_midquote": null,
+              "settlement_source_line": null,
+              "status": "INPUT_MISSING",
+              "target": null
+            },
+            {
+              "anchor_utc": "2020-01-02T08:00:00Z",
+              "baseline": "PREDICT_NON_UP",
+              "baseline_correct": true,
+              "candidate": "PREDICT_UP",
+              "candidate_correct": false,
+              "case_id": "EURUSD:2020-01-02T08:00:00Z",
+              "forward_midquote_change": "-0.00252",
+              "settlement_midquote": "1.11846",
+              "settlement_source_line": 55047,
+              "status": "MEASURABLE",
+              "target": "PREDICT_NON_UP"
+            },
+            {
+              "anchor_utc": "2020-01-02T12:00:00Z",
+              "baseline": "PREDICT_NON_UP",
+              "baseline_correct": false,
+              "candidate": "PREDICT_NON_UP",
+              "candidate_correct": false,
+              "case_id": "EURUSD:2020-01-02T12:00:00Z",
+              "forward_midquote_change": "0.00159",
+              "settlement_midquote": "1.12007",
+              "settlement_source_line": 63948,
+              "status": "MEASURABLE",
+              "target": "PREDICT_UP"
+            },
+            {
+              "anchor_utc": "2020-01-02T16:00:00Z",
+              "baseline": "PREDICT_NON_UP",
+              "baseline_correct": true,
+              "candidate": "PREDICT_UP",
+              "candidate_correct": false,
+              "case_id": "EURUSD:2020-01-02T16:00:00Z",
+              "forward_midquote_change": "-0.00341",
+              "settlement_midquote": "1.11665",
+              "settlement_source_line": 70814,
+              "status": "MEASURABLE",
+              "target": "PREDICT_NON_UP"
+            },
+            {
+              "anchor_utc": "2020-01-03T08:00:00Z",
+              "baseline": "PREDICT_NON_UP",
+              "baseline_correct": true,
+              "candidate": "PREDICT_NON_UP",
+              "candidate_correct": true,
+              "case_id": "EURUSD:2020-01-03T08:00:00Z",
+              "forward_midquote_change": "-0.00234",
+              "settlement_midquote": "1.11299",
+              "settlement_source_line": 91169,
+              "status": "MEASURABLE",
+              "target": "PREDICT_NON_UP"
+            },
+            {
+              "anchor_utc": "2020-01-03T12:00:00Z",
+              "baseline": "PREDICT_NON_UP",
+              "baseline_correct": false,
+              "candidate": "PREDICT_NON_UP",
+              "candidate_correct": false,
+              "case_id": "EURUSD:2020-01-03T12:00:00Z",
+              "forward_midquote_change": "0.00338",
+              "settlement_midquote": "1.11638",
+              "settlement_source_line": 100176,
+              "status": "MEASURABLE",
+              "target": "PREDICT_UP"
+            },
+            {
+              "anchor_utc": "2020-01-03T16:00:00Z",
+              "baseline": "PREDICT_NON_UP",
+              "baseline_correct": false,
+              "candidate": "PREDICT_UP",
+              "candidate_correct": true,
+              "case_id": "EURUSD:2020-01-03T16:00:00Z",
+              "forward_midquote_change": "0.00036",
+              "settlement_midquote": "1.1167",
+              "settlement_source_line": 107666,
+              "status": "MEASURABLE",
+              "target": "PREDICT_UP"
+            },
+            {
+              "anchor_utc": "2020-01-06T08:00:00Z",
+              "baseline": "PREDICT_NON_UP",
+              "baseline_correct": false,
+              "candidate": "PREDICT_UP",
+              "candidate_correct": true,
+              "case_id": "EURUSD:2020-01-06T08:00:00Z",
+              "forward_midquote_change": "0.00387",
+              "settlement_midquote": "1.12033",
+              "settlement_source_line": 127917,
+              "status": "MEASURABLE",
+              "target": "PREDICT_UP"
+            },
+            {
+              "anchor_utc": "2020-01-06T12:00:00Z",
+              "baseline": "PREDICT_NON_UP",
+              "baseline_correct": true,
+              "candidate": "PREDICT_UP",
+              "candidate_correct": false,
+              "case_id": "EURUSD:2020-01-06T12:00:00Z",
+              "forward_midquote_change": "-0.00144",
+              "settlement_midquote": "1.11888",
+              "settlement_source_line": 135007,
+              "status": "MEASURABLE",
+              "target": "PREDICT_NON_UP"
+            },
+            {
+              "anchor_utc": "2020-01-06T16:00:00Z",
+              "baseline": "PREDICT_NON_UP",
+              "baseline_correct": false,
+              "candidate": "PREDICT_UP",
+              "candidate_correct": true,
+              "case_id": "EURUSD:2020-01-06T16:00:00Z",
+              "forward_midquote_change": "0.00028",
+              "settlement_midquote": "1.11914",
+              "settlement_source_line": 139690,
+              "status": "MEASURABLE",
+              "target": "PREDICT_UP"
+            },
+            {
+              "anchor_utc": "2020-01-07T08:00:00Z",
+              "baseline": "PREDICT_NON_UP",
+              "baseline_correct": false,
+              "candidate": "PREDICT_NON_UP",
+              "candidate_correct": false,
+              "case_id": "EURUSD:2020-01-07T08:00:00Z",
+              "forward_midquote_change": "0.00076",
+              "settlement_midquote": "1.11817",
+              "settlement_source_line": 158218,
+              "status": "MEASURABLE",
+              "target": "PREDICT_UP"
+            },
+            {
+              "anchor_utc": "2020-01-07T12:00:00Z",
+              "baseline": "PREDICT_NON_UP",
+              "baseline_correct": true,
+              "candidate": "PREDICT_UP",
+              "candidate_correct": false,
+              "case_id": "EURUSD:2020-01-07T12:00:00Z",
+              "forward_midquote_change": "-0.00408",
+              "settlement_midquote": "1.1141",
+              "settlement_source_line": 168073,
+              "status": "MEASURABLE",
+              "target": "PREDICT_NON_UP"
+            },
+            {
+              "anchor_utc": "2020-01-07T16:00:00Z",
+              "baseline": "PREDICT_NON_UP",
+              "baseline_correct": false,
+              "candidate": "PREDICT_NON_UP",
+              "candidate_correct": false,
+              "case_id": "EURUSD:2020-01-07T16:00:00Z",
+              "forward_midquote_change": "0.00032",
+              "settlement_midquote": "1.11448",
+              "settlement_source_line": 173344,
+              "status": "MEASURABLE",
+              "target": "PREDICT_UP"
+            },
+            {
+              "anchor_utc": "2020-01-08T08:00:00Z",
+              "baseline": "PREDICT_NON_UP",
+              "baseline_correct": true,
+              "candidate": "PREDICT_UP",
+              "candidate_correct": false,
+              "case_id": "EURUSD:2020-01-08T08:00:00Z",
+              "forward_midquote_change": "-0.00242",
+              "settlement_midquote": "1.1127",
+              "settlement_source_line": 205765,
+              "status": "MEASURABLE",
+              "target": "PREDICT_NON_UP"
+            },
+            {
+              "anchor_utc": "2020-01-08T12:00:00Z",
+              "baseline": "PREDICT_NON_UP",
+              "baseline_correct": true,
+              "candidate": "PREDICT_NON_UP",
+              "candidate_correct": true,
+              "case_id": "EURUSD:2020-01-08T12:00:00Z",
+              "forward_midquote_change": "-0.00073",
+              "settlement_midquote": "1.11199",
+              "settlement_source_line": 214938,
+              "status": "MEASURABLE",
+              "target": "PREDICT_NON_UP"
+            },
+            {
+              "anchor_utc": "2020-01-08T16:00:00Z",
+              "baseline": "PREDICT_NON_UP",
+              "baseline_correct": true,
+              "candidate": "PREDICT_NON_UP",
+              "candidate_correct": true,
+              "case_id": "EURUSD:2020-01-08T16:00:00Z",
+              "forward_midquote_change": "-0.00085",
+              "settlement_midquote": "1.11113",
+              "settlement_source_line": 223062,
+              "status": "MEASURABLE",
+              "target": "PREDICT_NON_UP"
+            },
+            {
+              "anchor_utc": "2020-01-09T08:00:00Z",
+              "baseline": "PREDICT_NON_UP",
+              "baseline_correct": true,
+              "candidate": "PREDICT_UP",
+              "candidate_correct": false,
+              "case_id": "EURUSD:2020-01-09T08:00:00Z",
+              "forward_midquote_change": "-0.00104",
+              "settlement_midquote": "1.11048",
+              "settlement_source_line": 241902,
+              "status": "MEASURABLE",
+              "target": "PREDICT_NON_UP"
+            },
+            {
+              "anchor_utc": "2020-01-09T12:00:00Z",
+              "baseline": "PREDICT_NON_UP",
+              "baseline_correct": true,
+              "candidate": "PREDICT_NON_UP",
+              "candidate_correct": true,
+              "case_id": "EURUSD:2020-01-09T12:00:00Z",
+              "forward_midquote_change": "-0.00024",
+              "settlement_midquote": "1.11022",
+              "settlement_source_line": 249504,
+              "status": "MEASURABLE",
+              "target": "PREDICT_NON_UP"
+            }
+          ],
+          "end": "2020-07-01T00:00:00Z",
+          "evidence_mode": "development",
+          "offset": 0,
+          "start": "2020-01-01T00:00:00Z",
+          "total_cases": 390
+        },
+        "result_sha256": "72bc97597b9da658285d733bf4b6ad96556424f77a3d648cefd594ebe90dba5e"
+      }
+    ],
+    "version": "sealed_process_packet/1"
+  },
+  "recorded_at": "2026-10-10T00:26:11.732190+00:00",
+  "source_state": {
+    "state": "CURRENT",
+    "reasons": [],
+    "review_state": "REVIEWED",
+    "run_id": "23632117-fb7e-40c6-bffc-b9bbc39df16e",
+    "role": "critic",
+    "sha256": "f95b2e4e1e7101ea90431de465144de07554b2f9cfd563ec9dc4439add0f5a29",
+    "created_at": "2026-10-10T00:26:11.732190+00:00"
+  },
+  "exported_at": "2026-10-10T00:26:17.427470+00:00",
+  "current_packet_sha256": "b674a26b3f1919bedac0321dacd4043e94805436589800aee6b23a495e67d786"
+}

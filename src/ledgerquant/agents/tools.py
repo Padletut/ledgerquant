@@ -134,6 +134,7 @@ class ResearchTools:
                     ("version", "cutoff_at", "prior_groups", "unused_catalog_hours", "revision_parents", "exposure", "independence")}
                 result["prior_inventory"]["repair_policy"] = context.get("repair_policy")
                 result["prior_inventory"]["tool_policy"] = context.get("tool_policy", "research_tools/1")
+                result["method_feedback"] = context.get("feedback", {"arm": "HISTORY_ONLY", "items": [], "manifest": None})
             return result
         if name == "read_released_evidence":
             evidence = self._released(c)

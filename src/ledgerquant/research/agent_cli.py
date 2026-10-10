@@ -53,6 +53,19 @@ def parser():
     admission.add_argument("--decision", required=True)
     review_correction = commands.add_parser("correct-contract-review")
     review_correction.add_argument("--decision", required=True)
+    packet = commands.add_parser("process-packet", help="Export the sealed pre-action packet an assessor may review.")
+    packet.add_argument("--run-id", required=True)
+    packet.add_argument("--role", choices=["research", "critic"], required=True)
+    process_review = commands.add_parser("process-review", help="Read an assessment with exact source excerpts; does not approve it.")
+    process_review.add_argument("--assessment-id", required=True)
+    process_review.add_argument("--format", choices=["markdown", "json"], default="markdown")
+    assessment = commands.add_parser("assess-process", help="Append an operator process assessment of one recorded action.")
+    assessment.add_argument("--decision", required=True)
+    feedback = commands.add_parser("record-feedback", help="Append typed research feedback derived from recorded sources.")
+    feedback.add_argument("--decision", required=True)
+    selection = commands.add_parser("select-feedback", help="Show what a feedback policy would supply at a cutoff.")
+    selection.add_argument("--policy", required=True)
+    selection.add_argument("--cutoff", default=None, help="ISO-8601 UTC cutoff; defaults to now.")
     invalidation = commands.add_parser("invalidate")
     for name in ("evidence-id", "reason", "actor"):
         invalidation.add_argument("--" + name, required=True)
@@ -102,6 +115,35 @@ def main():
         elif args.command == "correct-contract-review":
             from .review_corrections import ReviewCorrection, correct_review
             result = correct_review(registry, ReviewCorrection.model_validate(read(args.decision)))
+        elif args.command == "process-packet":
+            from .process_assessment import sealed_packet
+            from .types import digest
+            with engine.connect() as connection:
+                packet = sealed_packet(connection, args.run_id, args.role)
+            result = {"packet_sha256": digest(packet), "packet": packet}
+        elif args.command == "process-review":
+            from sqlalchemy import text
+            from .process_review import review_process, render_process_review
+            with engine.connect() as connection:
+                connection.execute(text("SET TRANSACTION READ ONLY"))
+                result = review_process(connection, args.assessment_id)
+            if args.format == "markdown":
+                print(render_process_review(result), end="")
+                return
+        elif args.command == "assess-process":
+            from .process_assessment import ProcessAssessment, assess_process
+            result = assess_process(registry, ProcessAssessment.model_validate(read(args.decision)))
+        elif args.command == "record-feedback":
+            from .feedback import Feedback, record_feedback
+            result = record_feedback(registry, Feedback.model_validate(read(args.decision)))
+        elif args.command == "select-feedback":
+            from datetime import datetime
+            from .feedback import FeedbackPolicy, select_feedback
+            from .registry import now
+            cutoff = datetime.fromisoformat(args.cutoff) if args.cutoff else now()
+            with engine.connect() as connection:
+                items, manifest = select_feedback(connection, FeedbackPolicy.model_validate(read(args.policy)), cutoff)
+            result = {"items": items, "manifest": manifest}
         elif args.command == "invalidate-process":
             from .process_corrections import invalidate_suite
             result = invalidate_suite(registry, args.suite_sha256, args.reason, args.actor)

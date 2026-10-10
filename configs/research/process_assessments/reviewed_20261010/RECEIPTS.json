@@ -1,0 +1,59 @@
+{
+  "assessments": [
+    {
+      "file": "e7f85e02-research.json",
+      "assessment_id": "85067e5bcc8051778ebfc0e6e40d71afd5273e4b73955bcef405358621e7a60c",
+      "assessment_sha256": "85067e5bcc8051778ebfc0e6e40d71afd5273e4b73955bcef405358621e7a60c",
+      "packet_sha256": "b7ed262f2f031cdd496a933d68b12369d2d5b09a9ef467909f8bc059741f4296",
+      "review_state": "REVIEWED",
+      "findings": 4
+    },
+    {
+      "file": "e7f85e02-critic.json",
+      "assessment_id": "6f35330be69c89316c0be8c1d46c7e310bd7e66ace29224c89348cca4dadab9f",
+      "assessment_sha256": "6f35330be69c89316c0be8c1d46c7e310bd7e66ace29224c89348cca4dadab9f",
+      "packet_sha256": "ed36ab51484e8d70b9da0bcb2db74973168fe11e451804ecd797190b4db2d035",
+      "review_state": "REVIEWED",
+      "findings": 2
+    },
+    {
+      "file": "23632117-research.json",
+      "assessment_id": "cf503658736f0414b511df15034677c0fd0e046389af5fb224ae511c28c97ebe",
+      "assessment_sha256": "cf503658736f0414b511df15034677c0fd0e046389af5fb224ae511c28c97ebe",
+      "packet_sha256": "82c0458ad1555a457f8708d252f2aaa66adeafb3b6b2781943281ab317e75116",
+      "review_state": "REVIEWED",
+      "findings": 4
+    },
+    {
+      "file": "23632117-critic.json",
+      "assessment_id": "f95b2e4e1e7101ea90431de465144de07554b2f9cfd563ec9dc4439add0f5a29",
+      "assessment_sha256": "f95b2e4e1e7101ea90431de465144de07554b2f9cfd563ec9dc4439add0f5a29",
+      "packet_sha256": "b674a26b3f1919bedac0321dacd4043e94805436589800aee6b23a495e67d786",
+      "review_state": "REVIEWED",
+      "findings": 4
+    },
+    {
+      "file": "d6149cdb-research.json",
+      "assessment_id": "2037bd14051a3891f24871c4c6ad3ee88ee326a6145723d9b2b5749b026f35e7",
+      "assessment_sha256": "2037bd14051a3891f24871c4c6ad3ee88ee326a6145723d9b2b5749b026f35e7",
+      "packet_sha256": "733a9c570add616bf16b00175e5c0a7a9a6f41ac2d3dc421628bd3cc8da96071",
+      "review_state": "REVIEWED",
+      "findings": 4
+    },
+    {
+      "file": "d6149cdb-critic.json",
+      "assessment_id": "d0ec23f561548309c45ff10625376b5023733b0ed434825ea6aa65e3eb4671fa",
+      "assessment_sha256": "d0ec23f561548309c45ff10625376b5023733b0ed434825ea6aa65e3eb4671fa",
+      "packet_sha256": "7f5d6af5f8ed589d56bfc6b533b2b10e76cd7a81459eeb25dd4a88fcd0d2b6b5",
+      "review_state": "REVIEWED",
+      "findings": 3
+    }
+  ],
+  "method_lesson": {
+    "feedback_id": "75d98e05811f9d2852ef86422200d9ef488a96f94151a736c0501845219c571b",
+    "feedback_sha256": "75d98e05811f9d2852ef86422200d9ef488a96f94151a736c0501845219c571b",
+    "lineage_key": "process:e7f85e02-fe52-473b-a786-6e659ae2f246",
+    "release_state": "RELEASED",
+    "available_at": "2026-10-10T00:26:11.766907+00:00"
+  }
+}

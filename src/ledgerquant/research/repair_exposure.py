@@ -50,7 +50,10 @@ def combined_exposure(registry_state, declared):
 
 
 def participant_runs(connection, parent_draft_id, signature, related_ids, current_run_id):
-    """Parent, same-idea attempts, operator-listed related attempts and this run."""
+    """Lineage runs: parent, same-idea attempts, operator-listed related attempts and this run.
+
+    Lineage only tags findings; every recorded outcome read is scanned regardless.
+    """
     c = connection
     runs = {current_run_id}
     for row in c.execute(select(t.drafts).where((t.drafts.c.id == parent_draft_id) | (t.drafts.c.signature == signature))).mappings():
@@ -87,23 +90,32 @@ def registry_findings(connection, manifest, hours, cutoff, participants):
         for row in measured:
             findings.append(finding(row["kind"], draft["id"], row["artifact_id"], row["created_at"].isoformat(), relevance,
                                     hours_utc=list(draft_hours)))
+    lineage = set(participants)
     for run_id in participants:
         if c.execute(select(t.runs.c.id).where(t.runs.c.id == run_id)).scalar_one_or_none() is None:
             findings.append(finding("PARTICIPANT_RUN", run_id, None, None, "UNKNOWN"))
+    # Every recorded outcome read before the cutoff counts, including abandoned runs and
+    # unlisted variants: a served page of this development population with a labelled case
+    # in the repaired hours is exposure wherever it was read.
+    reads = c.execute(select(t.tool_calls).where(t.tool_calls.c.name.in_(OUTCOME_READS), t.tool_calls.c.created_at <= cutoff)
+                      .order_by(t.tool_calls.c.created_at, t.tool_calls.c.id)).mappings()
+    for row in reads:
+        result = value(c, row["result_id"])
+        if "error" in result:
+            continue  # a denied or failed read served no cases
+        tag = {"role": row["role"], "lineage": "LINEAGE" if row["run_id"] in lineage else "OTHER_RUN"}
+        cases = result.get("cases")
+        same_population = result.get("artifact_id") == manifest["development_id"]
+        try:
+            labelled = labelled_overlap(cases, hours) if same_population and isinstance(cases, list) else 0
+        except (KeyError, TypeError, ValueError):
+            cases = None
+        if not isinstance(cases, list):
+            findings.append(finding("LABELLED_CASE_READ", row["run_id"], row["result_id"], row["created_at"].isoformat(), "UNKNOWN", **tag))
             continue
-        reads = c.execute(select(t.tool_calls).where(t.tool_calls.c.run_id == run_id, t.tool_calls.c.name.in_(OUTCOME_READS),
-            t.tool_calls.c.created_at <= cutoff).order_by(t.tool_calls.c.created_at, t.tool_calls.c.id)).mappings()
-        for row in reads:
-            result = value(c, row["result_id"])
-            if "error" in result:
-                continue
-            cases = result.get("cases")
-            if not isinstance(cases, list):
-                findings.append(finding("LABELLED_CASE_READ", run_id, row["result_id"], row["created_at"].isoformat(), "UNKNOWN", role=row["role"]))
-                continue
-            labelled = labelled_overlap(cases, hours)
-            findings.append(finding("LABELLED_CASE_READ", run_id, row["result_id"], row["created_at"].isoformat(),
-                "OVERLAPPING" if labelled else "UNRELATED", role=row["role"], cases_read=len(cases), labelled_overlapping_cases=labelled))
+        findings.append(finding("LABELLED_CASE_READ", row["run_id"], row["result_id"], row["created_at"].isoformat(),
+            "OVERLAPPING" if labelled else "UNRELATED", same_population=same_population, cases_read=len(cases),
+            labelled_overlapping_cases=labelled, **tag))
     return findings
 
 

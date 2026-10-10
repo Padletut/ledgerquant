@@ -1,0 +1,68 @@
+{
+  "run_id": "d6149cdb-bc86-47bb-8857-d0225010c35e",
+  "role": "critic",
+  "draft_sha256": "df1bc355a480b211da53a156c0d08450c69776594e0e2f46654cd99d6ed00537",
+  "critique_sha256": "84cb0ad34184c0f90e09a579c140479e41ae2fe7290e054f76011cd6ec687214",
+  "packet_sha256": "7f5d6af5f8ed589d56bfc6b533b2b10e76cd7a81459eeb25dd4a88fcd0d2b6b5",
+  "rubric_version": "process_rubric/1",
+  "assessment_mode": "RETROSPECTIVE_SEALED_PACKET",
+  "assessor": "claude_operator_under_explicit_user_authorization_20261010",
+  "assessor_outcome_exposure": "EXPOSED",
+  "review_state": "PROPOSED",
+  "reviewer": null,
+  "findings": [
+    {
+      "code": "EVIDENCE_MISATTRIBUTION",
+      "status": "NOT_SUPPORTED",
+      "responsible_component": "contract_service",
+      "severity": "advisory",
+      "references": [
+        "critique.objections[0]",
+        "recorded_contract_review.reasons"
+      ],
+      "applicability": "Critic citations of frozen facts versus checker namespace.",
+      "explanation": "The recorded UNKNOWN_EVIDENCE rejection arose because the checker accepted only source-record IDs while Critic cited valid frozen fact hashes; the CITATION_NAMESPACE_DEFECT annotation attributes this to the contract service. Critic's advisory objection correctly asked for exact source scope."
+    },
+    {
+      "code": "REQUIREMENT_SCOPE_CONFUSION",
+      "status": "NOT_SUPPORTED",
+      "responsible_component": "critic",
+      "severity": "advisory",
+      "references": [
+        "critique.requirement_consistency",
+        "critique.requirement_explanation"
+      ],
+      "applicability": "Critic comparison of narrative and structured scope.",
+      "explanation": "The critique correctly confirms the deferred scope and the no-trade framing."
+    },
+    {
+      "code": "NON_PREDICTIVE_FALSIFIER",
+      "status": "NOT_SUPPORTED",
+      "responsible_component": "critic",
+      "severity": "advisory",
+      "references": [
+        "critique.grounding_explanation"
+      ],
+      "applicability": "Critic check that the falsifier is predictive.",
+      "explanation": "The critique explicitly checks that the falsifier is predictive rather than administrative."
+    }
+  ],
+  "limitations": [
+    "Retrospective sealed-packet assessment authored by an AI operator under explicit user authorization; review_state PROPOSED until a human reviewer supersedes it with REVIEWED.",
+    "The assessor had read later development results, corrections and the 2.12/2.13 audit before assessing; this is not an ex-ante assessment."
+  ],
+  "critic_delta": [
+    {
+      "code": "EVIDENCE_MISATTRIBUTION",
+      "research_assessment_id": "6c25a7ded14792b90c8b0cf85bdd2db80568a4042a7349bc6b91339da952a2c2",
+      "effect": "CONFIRMED"
+    },
+    {
+      "code": "REQUIREMENT_SCOPE_CONFUSION",
+      "research_assessment_id": "6c25a7ded14792b90c8b0cf85bdd2db80568a4042a7349bc6b91339da952a2c2",
+      "effect": "CONFIRMED"
+    }
+  ],
+  "supersedes": null,
+  "reason": "v3 corrected revision critique: valid fact-hash citations were rejected by a checker defect, not by a Critic error."
+}

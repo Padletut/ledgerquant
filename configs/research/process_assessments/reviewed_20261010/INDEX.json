@@ -1,0 +1,71 @@
+{
+  "status": "RECORDED_REVIEWED",
+  "review_date": "2026-10-10",
+  "reviewer": "human_user_via_chat_20261010",
+  "reviewer_outcome_exposure": "EXPOSED",
+  "note": "Review decisions supplied by the human user via conversation; Codex transcribed them. This directory contains new commands; original commands and registered records are retained.",
+  "items": [
+    {
+      "file": "e7f85e02-research.json",
+      "expected_assessment_id": "85067e5bcc8051778ebfc0e6e40d71afd5273e4b73955bcef405358621e7a60c",
+      "supersedes": "bbbfaa970ed0e53235dfd5057c55a00ca8f8f6244f93232171c874a822882cb7",
+      "packet_sha256": "b7ed262f2f031cdd496a933d68b12369d2d5b09a9ef467909f8bc059741f4296",
+      "recorded_assessment_id": "85067e5bcc8051778ebfc0e6e40d71afd5273e4b73955bcef405358621e7a60c",
+      "recorded_at": "2026-10-10T00:26:11.695888+00:00",
+      "review_state": "REVIEWED"
+    },
+    {
+      "file": "e7f85e02-critic.json",
+      "expected_assessment_id": "6f35330be69c89316c0be8c1d46c7e310bd7e66ace29224c89348cca4dadab9f",
+      "supersedes": "f4ca6549427ef519955aedd4b0d8a49b9cc8404c9b7bae24521c98b0d35a8fea",
+      "packet_sha256": "ed36ab51484e8d70b9da0bcb2db74973168fe11e451804ecd797190b4db2d035",
+      "recorded_assessment_id": "6f35330be69c89316c0be8c1d46c7e310bd7e66ace29224c89348cca4dadab9f",
+      "recorded_at": "2026-10-10T00:26:11.708128+00:00",
+      "review_state": "REVIEWED"
+    },
+    {
+      "file": "23632117-research.json",
+      "expected_assessment_id": "cf503658736f0414b511df15034677c0fd0e046389af5fb224ae511c28c97ebe",
+      "supersedes": "055be6fb09f0f63720299ef837df0ad8eab3b6580f6d97dc9d0304183feb0c3b",
+      "packet_sha256": "82c0458ad1555a457f8708d252f2aaa66adeafb3b6b2781943281ab317e75116",
+      "recorded_assessment_id": "cf503658736f0414b511df15034677c0fd0e046389af5fb224ae511c28c97ebe",
+      "recorded_at": "2026-10-10T00:26:11.719223+00:00",
+      "review_state": "REVIEWED"
+    },
+    {
+      "file": "23632117-critic.json",
+      "expected_assessment_id": "f95b2e4e1e7101ea90431de465144de07554b2f9cfd563ec9dc4439add0f5a29",
+      "supersedes": "e12677aeaf547c81b0b80019907dcf4a2bed93414b21fda046da9cffd4392580",
+      "packet_sha256": "b674a26b3f1919bedac0321dacd4043e94805436589800aee6b23a495e67d786",
+      "recorded_assessment_id": "f95b2e4e1e7101ea90431de465144de07554b2f9cfd563ec9dc4439add0f5a29",
+      "recorded_at": "2026-10-10T00:26:11.732190+00:00",
+      "review_state": "REVIEWED"
+    },
+    {
+      "file": "d6149cdb-research.json",
+      "expected_assessment_id": "2037bd14051a3891f24871c4c6ad3ee88ee326a6145723d9b2b5749b026f35e7",
+      "supersedes": "6c25a7ded14792b90c8b0cf85bdd2db80568a4042a7349bc6b91339da952a2c2",
+      "packet_sha256": "733a9c570add616bf16b00175e5c0a7a9a6f41ac2d3dc421628bd3cc8da96071",
+      "recorded_assessment_id": "2037bd14051a3891f24871c4c6ad3ee88ee326a6145723d9b2b5749b026f35e7",
+      "recorded_at": "2026-10-10T00:26:11.745757+00:00",
+      "review_state": "REVIEWED"
+    },
+    {
+      "file": "d6149cdb-critic.json",
+      "expected_assessment_id": "d0ec23f561548309c45ff10625376b5023733b0ed434825ea6aa65e3eb4671fa",
+      "supersedes": "30df4977ee2fd59e8118c1918ac184e787abface84bd81b5e79498a975107039",
+      "packet_sha256": "7f5d6af5f8ed589d56bfc6b533b2b10e76cd7a81459eeb25dd4a88fcd0d2b6b5",
+      "recorded_assessment_id": "d0ec23f561548309c45ff10625376b5023733b0ed434825ea6aa65e3eb4671fa",
+      "recorded_at": "2026-10-10T00:26:11.759490+00:00",
+      "review_state": "REVIEWED"
+    }
+  ],
+  "method_lesson_file": "requirement_scope_method_lesson.json",
+  "method_lesson": {
+    "feedback_id": "75d98e05811f9d2852ef86422200d9ef488a96f94151a736c0501845219c571b",
+    "feedback_sha256": "75d98e05811f9d2852ef86422200d9ef488a96f94151a736c0501845219c571b",
+    "lineage_key": "process:e7f85e02-fe52-473b-a786-6e659ae2f246",
+    "release_state": "RELEASED",
+    "available_at": "2026-10-10T00:26:11.766907+00:00"
+  }
+}
