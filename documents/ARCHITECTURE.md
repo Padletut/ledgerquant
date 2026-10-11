@@ -319,7 +319,7 @@ version that produced them.
 | Provider | Role | Notes |
 | --- | --- | --- |
 | GPT (OpenAI) | Analyst, Scout, Research | Adapter implemented (Responses API) |
-| Claude (Anthropic) | Analyst, Scout, Research | Adapter target |
+| Claude (Anthropic) | Analyst, Scout, Research | Adapter target. Opus 4.6 for replay track 1, Sonnet 5.5 for track 2; Haiku 5.5 is a cheaper Scout option |
 | Jev (TypeSafe) | Validation and final decision; Scout option | Typed `Choice`, `Score`, `Noul`; text input only; adapter target |
 
 Which model fills which role is configuration. Each model profile records its
@@ -387,7 +387,43 @@ cutoff is a lower bound, not a guarantee of clean data.
 
 This rule makes post-cutoff data the scarce resource (Section 6). New models
 with later cutoffs shrink the usable window, which is why continuous capture
-matters.
+matters. The rule uses the **training data cutoff**, which is later than or equal
+to the reliable knowledge cutoff, and every model profile records it. Cutoffs are
+not available from provider APIs; they come from the providers' published model
+documentation.
+
+**Replay tracks.** Because current models have recent cutoffs, replay runs in two
+tracks that share one holdout:
+
+| Track | Models | Training data cutoff | Development window |
+| --- | --- | --- | --- |
+| 1. Long history | GPT-5.4 mini and Claude Opus 4.6 | Aug 2025 (both) | 1 Sep 2025 – 31 Aug 2026 |
+| 2. Current models | GPT-5.4 mini and Claude Sonnet 5.5 | Jun 2026 (Sonnet 5.5) | 1 Jul 2026 – 31 Aug 2026 |
+| Holdout (both) | | | 1 Sep 2026 – 8 Oct 2026 |
+
+Track 1 has a long, clean history and is where the pipeline, instructions and
+context recipes are developed. Its results hold for those models; they do not
+carry over to newer ones. Track 2 evaluates the models intended for live use on
+their own clean window and in prospective shadow. A model with a cutoff later
+than June 2026 shrinks track 2 further. Jev's training cutoff is not yet known
+and must be recorded before Jev enters a ranked variant.
+
+**Replay settings.**
+
+- **Decision cadence:** one decision cycle every hour on the hour, 07:00–20:00
+  UTC on trading days (the London and New York sessions), for EURUSD, GBPUSD and
+  XAUUSD. The cadence is variant configuration.
+- **Backfilled broker ticks:** exported ticks have no real `available_at`; replay
+  treats each as visible at its event time. This is a declared assumption, so a
+  replay over exported ticks is a retrospective simulation, labelled as such, and
+  never reported as live performance.
+- **Backfilled news visibility:** GDELT items backfilled without a real
+  `available_at` count as visible 15 minutes after their GKG batch time. This is
+  a declared assumption, recorded with every replay that uses it. Live-captured
+  items use their real `available_at`.
+- **Macro vintages:** an ALFRED value is visible from the start of the UTC day
+  after its `realtime_start` date, because release times are not recorded.
+- **cTrader sentiment:** `UNAVAILABLE` before 9 October 2026.
 
 ### 5.3 Scoring
 
@@ -414,7 +450,9 @@ the agents add anything.
 ### 5.4 Avoiding self-deception
 
 - Keep a **holdout** part of the post-cutoff window untouched while proposing and
-  choosing variants. Evaluate the chosen variant on it once.
+  choosing variants. Evaluate the chosen variant on it once. The current holdout
+  is 1 September – 8 October 2026 (Section 5.2); after it has been used, new
+  evaluation is prospective.
 - Record every variant tried, including failures.
 - Because agents are not deterministic, compare variants over enough decision
   points and, where it matters, run the same points several times. Report the
@@ -913,7 +951,8 @@ checks without changing the meaning of existing records.
 | Historical tick exporter cBot | Implemented ([TICK_EXPORT.md](data/TICK_EXPORT.md)) |
 | OpenAI adapter, model profiles and budget | Implemented |
 | Shadow Executor: one GPT agent, quotes only, `NO_SIGNAL`/`WAIT`/`LONG`/`SHORT`, manual schedule, no positions | Implemented ([SHADOW_EXECUTOR.md](operations/SHADOW_EXECUTOR.md)) |
-| Replay engine, Scout, GPT/Claude analysts, Jev validation, watchlist | Target |
+| Replay tick archive (Parquet, built from verified exports) and point-in-time market context | Implemented |
+| Replay of news and macro context, decision schedule, Scout, GPT/Claude analysts, Jev validation, watchlist | Target |
 | Shadow positions and position review (`HOLD`/`CLOSE`/`ADJUST`) | Target |
 | Claude and Jev adapters | Target |
 | User settings, Risk Engine, execution cBot, demo/live execution | Target |
@@ -951,6 +990,7 @@ src/ledgerquant/
   integrations/   model provider adapters (OpenAI implemented)
   models/         model profiles, generation types, budget (implemented)
   news/           news and macro capture: GDELT, central-bank feeds, FRED/ALFRED (implemented)
+  replay/         tick archive and point-in-time market context (started)
   records.py      canonical JSON and content hashes
 cbots/            cTrader cBots: LiveCapture, TickExport, MarketData probe
 deploy/           Docker Compose for capture, news and manual shadow runs
@@ -958,5 +998,5 @@ tools/            operator tools, such as the batch tick export
 migrations/       Alembic schema history
 ```
 
-New packages (`replay/`, `pipeline/`, `risk/`, `execution/`, `journal/`,
+New packages (`pipeline/`, `risk/`, `execution/`, `journal/`,
 `research/`) are added when their first slice is built, not before.
