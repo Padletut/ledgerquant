@@ -64,3 +64,19 @@ def test_instructions_explain_the_weekend_limit():
     from ledgerquant.pipeline.analyst import INSTRUCTIONS
     assert "close_before_weekend" in INSTRUCTIONS and "hours_to_weekend_close" in INSTRUCTIONS
     assert "risk limit chosen by the user" in INSTRUCTIONS and "next week" not in INSTRUCTIONS
+
+
+def test_only_overlong_explanatory_text_is_cut_and_reported():
+    import json
+    import pytest
+    from pydantic import ValidationError
+    from ledgerquant.pipeline.analyst import parse_analysis
+    long_reason = {"views": VIEWS, "action": "HOLD", "reason": "x" * 700}
+    parsed, cut = parse_analysis(json.dumps(long_reason))
+    assert parsed.reason == "x" * 500 and cut == ["reason"]
+    assert parse_analysis(json.dumps({"views": VIEWS, "action": "NO_SIGNAL"}))[1] == []
+    long_price = {"views": VIEWS, "action": "LONG", "setup": setup(stop="1." + "1" * 40)}
+    with pytest.raises(ValidationError):
+        parse_analysis(json.dumps(long_price))
+    with pytest.raises(ValidationError):
+        parse_analysis(json.dumps(long_reason | {"action": "MAYBE"}))

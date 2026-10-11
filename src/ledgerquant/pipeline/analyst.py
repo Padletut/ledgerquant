@@ -7,10 +7,11 @@ answer against the context it was given: cited IDs must exist, levels must lie
 on the right side of the current quote, and fields must match the action.
 """
 
+import json
 from decimal import Decimal, InvalidOperation
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from ledgerquant.decision.shadow import Wait
 
@@ -137,6 +138,31 @@ TOOL = {
     "description": "Record the analysis: views and one action, with only that action's fields filled.",
     "parameters": Analysis.model_json_schema(),
 }
+
+
+TEXT_FIELDS = {"reason", "thesis", "invalidation", "uncertainty", "waiting_for", "key_points"}
+
+
+def parse_analysis(arguments: str) -> tuple[Analysis, list[str]]:
+    """Parse a tool call; free text over its length limit is cut to the limit and reported.
+
+    Only explanatory text is cut. A price, ID, action or any other error still fails,
+    so nothing that drives a trade is changed.
+    """
+    data = json.loads(arguments)
+    try:
+        return Analysis.model_validate(data), []
+    except ValidationError as exc:
+        errors = exc.errors()
+        if any(e["type"] != "string_too_long" or not TEXT_FIELDS & set(map(str, e["loc"])) for e in errors):
+            raise
+        for e in errors:
+            *path, last = e["loc"]
+            parent = data
+            for key in path:
+                parent = parent[key]
+            parent[last] = parent[last][: e["ctx"]["max_length"]]
+        return Analysis.model_validate(data), [".".join(map(str, e["loc"])) for e in errors]
 
 
 def context_ids(value) -> set[str]:

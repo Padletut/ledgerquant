@@ -26,7 +26,8 @@ from pathlib import Path
 from pydantic import ValidationError
 
 from ledgerquant.models.generation import ModelProfile
-from ledgerquant.pipeline.analyst import CONTRACT_VERSION, INSTRUCTIONS, TOOL, Analysis, unknown_citations, validate
+from ledgerquant.pipeline.analyst import (CONTRACT_VERSION, INSTRUCTIONS, TOOL, parse_analysis, unknown_citations,
+                                          validate)
 from ledgerquant.records import canonical, digest
 from ledgerquant.replay.context import NEWS_RECIPE, NewsArchive, replay_context
 from ledgerquant.replay.costs import commission_r, policy_rates, swap_r, weekend_close
@@ -119,9 +120,11 @@ def decide(provider, context: dict, position_state: dict | None, budget: Budget,
     if call.name != TOOL["name"]:
         return record | {"status": "WRONG_TOOL"}
     try:
-        analysis = Analysis.model_validate(json.loads(call.arguments))
+        analysis, truncated = parse_analysis(call.arguments)
     except (ValueError, ValidationError):
         return record | {"status": "INVALID_MODEL_OUTPUT"}
+    if truncated:
+        record["truncated_text_fields"] = truncated
     return record | {"analysis": analysis.model_dump(mode="json"),
                      "unknown_citations": unknown_citations(analysis, context),
                      "status": validate(analysis, context, position_state)}
