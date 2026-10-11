@@ -129,6 +129,20 @@ def test_report_summarises_decisions_cost_and_comparisons(tmp_path):
     assert summary["cost"]["usd"] == "0.0024"  # 2 calls x (1000 in + 200 out) at 1 USD per million
     assert "| agent managed | 1.2127 |" in markdown(summary)
 
+    rules = summarise(tmp_path / "run", root)["baselines"]
+    assert rules["rules"]["always_long"]["entries"] == 2 and rules["rules"]["always_short"]["entries"] == 2
+    assert rules["rules"]["momentum_23h"]["entries"] == 0  # the test archive has fewer than 24 hourly bars
+    assert rules["rules"]["agent"] == {"entries": 1, "total_r": "1.21", "mean_r": "1.213"}
+    assert rules["geometry"]["EURUSD"]["source"] == "declared default"
+
+
+def test_momentum_direction_follows_the_last_23_hourly_closes():
+    from ledgerquant.replay.baselines import momentum_direction
+    bars = [{"close": str(1 + i / 1000)} for i in range(24)]
+    assert momentum_direction({"market": {"bars": {"H1": bars}}}) == "LONG"
+    assert momentum_direction({"market": {"bars": {"H1": bars[::-1]}}}) == "SHORT"
+    assert momentum_direction({"market": {"bars": {"H1": bars[:23]}}}) is None
+
 
 def long_setup(hours):
     return {"views": VIEWS, "action": "LONG", "setup": {

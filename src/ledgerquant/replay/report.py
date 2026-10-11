@@ -19,7 +19,7 @@ def _read(path: Path) -> list[dict]:
     return [json.loads(line) for line in path.read_text().splitlines()] if path.exists() else []
 
 
-def summarise(run_dir: Path) -> dict:
+def summarise(run_dir: Path, archive: Path | None = None) -> dict:
     run = json.loads((run_dir / "run.json").read_text())
     decisions, trades = _read(run_dir / "decisions.jsonl"), _read(run_dir / "trades.jsonl")
     called = [d for d in decisions if "provider_status" in d]
@@ -35,7 +35,13 @@ def summarise(run_dir: Path) -> dict:
     random_direction = [(s + m) / 2 for s, m in zip(static, mirror)]
     hold_minutes = [(datetime.fromisoformat(t["closed_at_utc"]) - datetime.fromisoformat(t["opened_at_utc"]))
                     .total_seconds() / 60 for t in trades]
+    rules = None
+    if archive is not None:
+        from ledgerquant.replay.baselines import evaluate
+        rules = evaluate(decisions, trades, archive,
+                         (run["variant"].get("limits") or {}).get("close_before_weekend", True))
     return {
+        "baselines": rules,
         "run_id": run["run_id"], "kind": run["kind"], "pipeline": run["variant"]["pipeline"],
         "plan": run["plan"],
         "decisions": {
@@ -100,16 +106,36 @@ def markdown(summary: dict) -> str:
         f"- Exit reasons: {t['exit_reasons']}", "",
         "| Comparison | Total R |", "| --- | ---: |",
         *[f"| {name.replace('_', ' ')} | {value} |" for name, value in t["total_r"].items()], "",
+        *baseline_lines(summary.get("baselines")),
         "A small sample shows whether the pipeline works and what the agent does; it is not evidence of an edge.",
     ]
     return "\n".join(lines) + "\n"
 
 
+def baseline_lines(baselines: dict | None) -> list[str]:
+    if not baselines:
+        return []
+    return [
+        "## Agent against free rules (net R)", "",
+        "| Strategy | Entries | Total R | Mean R per entry |", "| --- | ---: | ---: | ---: |",
+        *[f"| {name.replace('_', ' ')} | {row['entries']} | {row['total_r']} | {row['mean_r']} |"
+          for name, row in baselines["rules"].items()], "",
+        f"- Agent entries in the direction of the last 23 hours: {baselines['agent_entries_with_23h_momentum']}",
+        f"- Rule geometry per symbol: " + "; ".join(
+            f"{s} risk {float(g['risk_share']) * 100:.3f} % of price, reward/risk {float(g['reward_risk']):.2f} "
+            f"({g['source']})" for s, g in baselines["geometry"].items()),
+        f"- Basis: {baselines['basis']}. Compare mean R per entry; the rules enter far more often.", "",
+    ]
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Summarise a replay run")
     parser.add_argument("run_dir", type=Path)
+    parser.add_argument("--archive", type=Path, default=Path("data/archive"),
+                        help="replay archive for the free-rule comparison")
+    parser.add_argument("--no-baselines", action="store_true")
     args = parser.parse_args()
-    summary = summarise(args.run_dir)
+    summary = summarise(args.run_dir, None if args.no_baselines else args.archive)
     (args.run_dir / "report.json").write_text(json.dumps(summary, indent=1))
     (args.run_dir / "REPORT.md").write_text(markdown(summary))
     print(markdown(summary))
