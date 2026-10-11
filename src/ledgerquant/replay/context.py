@@ -12,6 +12,7 @@ Visibility rules (architecture, Section 5.2):
 Which items are shown is a context recipe, versioned so Research can change it.
 """
 
+import hashlib
 import json
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -20,7 +21,7 @@ import duckdb
 
 from ledgerquant.replay.snapshot import SNAPSHOT_VERSION
 
-NEWS_RECIPE = "news_recipe_v1"  # keyword patterns per instrument; change the version when they change
+NEWS_RECIPE = "news_recipe_v2"  # keyword patterns per instrument; change the version when they change
 BACKFILL_VISIBILITY = timedelta(minutes=15)
 CENTRAL_BANK_SOURCES = ("fed_press", "ecb_press", "boe_news")
 _MOVE = r"(falls?|rises?|slips?|gains?|hits?|climbs?|drops?|steady|steadies|edges?|jumps?|slides?|tumbles?|rall(y|ies)|record|weakens?|strengthens?)"
@@ -43,6 +44,11 @@ def _naive_utc(value: datetime) -> datetime:
     if value.tzinfo is None:
         raise ValueError("decision time must be timezone-aware")
     return value.astimezone(timezone.utc).replace(tzinfo=None)
+
+
+def news_id(url: str) -> str:
+    """A short, stable citation ID; long URLs are copied unreliably by models."""
+    return "news:" + hashlib.sha256(url.encode()).hexdigest()[:10]
 
 
 def _iso(value) -> str | None:
@@ -82,10 +88,11 @@ class NewsArchive:
         for published, source, title, url, details in rows:
             info = json.loads(details or "{}")
             tone = (info.get("tone") or "").split(",")[0]
-            headlines.append({"id": f"news:{url}", "published_utc": _iso(published), "title": title,
-                              "source": info.get("source_name"), "tone": tone or None})
-        statements = [{"id": f"news:{url}", "published_utc": _iso(published), "source": source, "title": title,
-                       "summary": (summary or "")[:400] or None} for published, source, title, url, summary in banks]
+            headlines.append({"id": news_id(url), "published_utc": _iso(published), "title": title,
+                              "source": info.get("source_name"), "tone": tone or None, "url": url})
+        statements = [{"id": news_id(url), "published_utc": _iso(published), "source": source, "title": title,
+                       "summary": (summary or "")[:400] or None, "url": url}
+                      for published, source, title, url, summary in banks]
         status = "READY" if headlines or statements else "UNAVAILABLE"
         return {"status": status, "recipe": NEWS_RECIPE, "window_hours": hours, "headlines": headlines,
                 "central_bank": statements}
@@ -110,7 +117,8 @@ class NewsArchive:
         series: dict[str, list] = {}
         for series_id, observed, value, vintage in rows:
             series.setdefault(series_id, []).append(
-                {"date": observed.isoformat(), "value": value, "vintage": vintage.isoformat()})
+                {"id": f"macro:{series_id}:{observed.isoformat()}", "date": observed.isoformat(),
+                 "value": value, "vintage": vintage.isoformat()})
         missing = [s for s in MACRO_SERIES if s not in series]
         return {"status": "READY" if series else "UNAVAILABLE", "series": series, "missing": missing,
                 "visibility": "a vintage is visible from the UTC day after its realtime_start"}
@@ -125,7 +133,8 @@ class NewsArchive:
             ORDER BY release_date, release_id
         """).fetchall()
         today = t.date()
-        events = [{"release": EVENT_RELEASES[release_id], "date": day.isoformat(),
+        events = [{"id": f"event:{release_id}:{day.isoformat()}", "release": EVENT_RELEASES[release_id],
+                   "date": day.isoformat(),
                    "when": "past" if day < today else "today, time unknown" if day == today else "upcoming"}
                   for release_id, day in rows]
         return {"events": events, "basis": "schedule as captured; reschedules after the decision time may show"}

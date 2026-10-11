@@ -53,7 +53,8 @@ class TickArchive:
         """).fetchone()
         if row is None:
             return None
-        return {"event_time_utc": _iso(row[0]), "bid": _text(row[1]), "ask": _text(row[2]),
+        return {"id": f"quote:{symbol}:{_iso(row[0])}", "event_time_utc": _iso(row[0]),
+                "bid": _text(row[1]), "ask": _text(row[2]),
                 "spread": _text(row[2] - row[1]), "age_seconds": (t - row[0]).total_seconds()}
 
     def bars(self, symbol: str, at: datetime, timeframe: str, count: int) -> list[dict]:
@@ -76,7 +77,7 @@ class TickArchive:
         bars = []
         for open_time, open_, high, low, close, ticks, spread_avg, spread_max in reversed(rows):
             bars.append({
-                "open_time_utc": _iso(open_time), "open": _text(open_), "high": _text(high),
+                "id": f"bar:{symbol}:{timeframe}:{_iso(open_time)}", "open_time_utc": _iso(open_time), "open": _text(open_), "high": _text(high),
                 "low": _text(low), "close": _text(close), "ticks": ticks,
                 "spread_avg": _text(round(Decimal(spread_avg), 6)), "spread_max": _text(spread_max),
                 "complete": open_time + step <= t,

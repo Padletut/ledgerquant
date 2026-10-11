@@ -61,14 +61,14 @@ def test_news_follows_visibility_rules_and_instrument_patterns(news):
 
 def test_macro_vintage_is_visible_from_the_next_day_only(news):
     cpi = news.macro(T)["series"]["CPIAUCSL"]
-    assert cpi == [{"date": "2025-09-01", "value": "324.4", "vintage": "2025-11-11"}]
+    assert cpi == [{"id": "macro:CPIAUCSL:2025-09-01", "date": "2025-09-01", "value": "324.4", "vintage": "2025-11-11"}]
     later = news.macro(datetime(2025, 11, 13, 9, tzinfo=UTC))["series"]["CPIAUCSL"]
     assert [o["value"] for o in later] == ["999.9", "888.8"]
 
 
 def test_calendar_lists_scheduled_events_only(news):
     events = news.calendar(T)["events"]
-    assert events == [{"release": "US CPI", "date": "2025-11-13", "when": "upcoming"}]
+    assert events == [{"id": "event:10:2025-11-13", "release": "US CPI", "date": "2025-11-13", "when": "upcoming"}]
 
 
 def profile(cutoff):
