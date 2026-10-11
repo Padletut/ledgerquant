@@ -25,8 +25,9 @@ LedgerQuant is a **multi-agent CFD trading system, not a rule-driven one**.
   proposed adjustments, from the first shadow version. The Risk Engine never
   changes an agent's stop or target; it sizes from the agent's stop and approves
   or rejects an adjustment against the user's risk limits. Every pending order
-  has an expiry. A maximum holding time is a safety limit, not the only allowed
-  exit.
+  has an expiry. There is no maximum holding time: the agents choose their style
+  and expected horizon, and positions end at stop, target, an agent decision or a
+  user limit such as closing before the weekend.
 - An independent, deterministic Risk Engine protects capital under limits only
   the user sets: it decides what is allowed, the maximum exposure and when a
   position must be force-closed. No model is part of it. Deterministic

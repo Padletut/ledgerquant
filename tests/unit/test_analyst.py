@@ -12,7 +12,7 @@ def analysis(**fields):
 
 def setup(**overrides):
     return {"thesis": "t", "citations": ["bar:X:H1:1"], "stop": "99.0", "target": "103.0",
-            "max_holding_minutes": 120, "invalidation": "i", "uncertainty": "u"} | overrides
+            "style": "SWING", "expected_horizon_hours": 24, "invalidation": "i", "uncertainty": "u"} | overrides
 
 
 def test_entry_levels_must_sit_around_the_entry_price():

@@ -123,7 +123,8 @@ output. Each returns a typed `Analysis`:
 - a **proposal**: `NO_SIGNAL` (nothing required), `WAIT` (what it waits for and
   when to look again), or `LONG`/`SHORT` with a setup: thesis, cited context
   IDs, entry (at market, or a pending order with price and expiry), stop
-  (invalidation level), target or horizon, and what it is
+  (invalidation level), target, trading style (intraday or swing) and expected
+  horizon, and what it is
   unsure about.
 
 A perspective whose source is `UNAVAILABLE` is `NO_VIEW`; the analyst does not
@@ -205,9 +206,9 @@ not move, tighten or widen levels.
 For an open position or pending order, a `CLOSE` is always allowed. An `ADJUST`
 is approved when the position with the new levels still fits the user's
 per-trade risk, portfolio risk and margin; otherwise it is rejected and the
-position keeps its current stop and target. The Risk Engine **force-closes** a position, whatever the agents say, when its maximum holding
-time is reached, a loss limit is breached, or free margin falls below the
-user's minimum.
+position keeps its current stop and target. The Risk Engine **force-closes** a
+position, whatever the agents say, when a loss limit is breached, free margin
+falls below the user's minimum, or the user's close before the weekend applies.
 
 The Risk Engine protects capital. It does not judge whether a setup is good; that
 is the agents' job, and Research measures it.
@@ -229,8 +230,13 @@ open) and the original thesis and invalidation, and propose `HOLD`, `CLOSE` or
 Risk Engine checks the result. If both analysts propose `HOLD`, the position is
 held without a Jev call.
 
-The horizon set at entry is a **maximum holding time**: a safety limit enforced
-by the Risk Engine, not the only allowed exit. The agents may close earlier.
+There is no maximum holding time. The agents choose their own style, intraday or
+swing, and state an expected horizon, which is an expectation, not an exit. A
+position ends at its stop or target, when the agents close it, or when a user
+limit applies, such as closing before the weekend. Replay showed that a fixed
+holding limit mostly cut trades before their targets could be reached. The
+agents see the time to the next rollover and to the weekly close and the
+estimated swap for each direction, so holding costs are part of their decision.
 Position review runs from the first shadow version, where a close or adjustment
 changes a shadow position and no real order. This is what lets Research measure
 whether GPT, Claude and Jev manage positions better than a static exit.
@@ -299,7 +305,7 @@ read-only with the time it was last updated.
 | Minimum free margin | The lowest free margin the account may reach, as a percentage of equity. |
 | Reserved trades | `N` trade slots. Each new trade may use at most `1/N` of the portfolio risk, and at most the margin above the minimum free margin divided by the slots still free. |
 | Loss limits | Daily and weekly loss limits. When breached, no new trades open and open positions are force-closed. |
-| Maximum holding time | The longest a position may stay open; an agent's horizon cannot exceed it. |
+| Close before the weekend | When on, open positions are closed before the weekly close, so nothing is held through the weekend gap. |
 | Maximum pending-order lifetime | The longest a pending order may stay open before it expires. |
 
 **Reserved-trades example** (illustrative numbers): equity 10,000, portfolio risk
@@ -438,8 +444,12 @@ Each decision is scored after its horizon has passed:
 - **Pending orders:** how often they filled or expired, and whether a filled
   order beat entering at market at decision time.
 - **Position management:** the agents' `HOLD`/`CLOSE`/`ADJUST` decisions against
-  a static exit on the same positions (hold to stop, target or maximum holding
-  time). This tests whether the agents manage open positions better.
+  a static exit on the same positions (hold to stop or target, within the user's
+  limits). This tests whether the agents manage open positions better.
+- **Costs:** results are net of the spread (entry at the ask or bid, exit at the
+  other side) and of swap for each rollover held. Replay estimates swap from the
+  policy-rate differential minus an assumed broker markup and keeps gross and
+  swap separately; commission is added once the account's terms are known.
 - **Process:** disagreement between analysts, Jev's choices, Risk Engine
   rejections, invalid outputs, unsupported citations, latency and model cost.
 
@@ -552,8 +562,8 @@ close a position manually.
 ### 7.4 When LedgerQuant or a connection fails
 
 - **LedgerQuant or the control API down:** stops, targets and pending expiries
-  hold at the broker. The execution cBot keeps a local copy of each position's
-  maximum holding time and the account's loss limits and minimum free margin,
+  hold at the broker. The execution cBot keeps a local copy of the account's
+  loss limits, minimum free margin and close before the weekend,
   and enforces them itself when it loses contact with LedgerQuant (missed
   heartbeats). It opens nothing new on its own.
 - **Execution cBot disconnected or restarted:** LedgerQuant sends it no orders
@@ -564,7 +574,7 @@ close a position manually.
   broker shows what actually exists. The cBot reports the broker's positions,
   orders and fills, and LedgerQuant reconciles them with its own state. Each
   position and order is matched by the LedgerQuant ID it carries at the broker
-  and adopted again, with its stop, target, maximum holding time or expiry from
+  and adopted again, with its stop, target or expiry from
   LedgerQuant. A cBot that lost its local state reloads it from LedgerQuant; it
   never treats a LedgerQuant position or order it no longer remembers as an
   orphan to close. A position or order at the broker that LedgerQuant did not
@@ -578,8 +588,8 @@ close a position manually.
   nothing executes twice.
 
 **Validity after a reconnect.** A pending order is valid while it has not
-expired and still fits the user's limits. An open position is valid while it is
-within its maximum holding time, the user's limits are not breached and, for a
+expired and still fits the user's limits. An open position is valid while the
+user's limits are not breached and, for a
 global signal, the signal is still open. Anything no longer valid is closed or
 cancelled; everything still valid stays as it is.
 
@@ -707,7 +717,7 @@ global signals.
 | Risk settings and Risk Engine | The user's own | The user's own |
 
 A global signal is the lifecycle of one global decision: entry (with setup,
-stop, target, maximum holding time and, for a pending order, its expiry), then
+stop, target, style and expected horizon, and, for a pending order, its expiry), then
 `ADJUST`, `CLOSE` or cancellation. The global pipeline's agents manage a
 reference position per signal, and each event carries the signal ID and a
 sequence number.
@@ -910,12 +920,12 @@ rejections by reason; agent `HOLD`/`CLOSE`/`ADJUST` decisions on open positions.
 balance curve (closed trades), equity curve including floating P/L, return
 curve, daily return and drawdown curves; P/L distribution in pips and in R.
 
-**Exit reasons:** agent close, stop-loss, take-profit, maximum holding time, Risk
+**Exit reasons:** agent close, stop-loss, take-profit, close before the weekend, Risk
 Engine forced close (with its reason), manual close, reconciled and unknown.
 Pending orders that expire unfilled are counted separately, not as trades.
 
 **Open trades and pending orders:** entry, current price, floating P/L, stop,
-target, time open against the maximum holding time, the latest agent review and
+target, time open against the expected horizon, swap so far, the latest agent review and
 its time, and the time left before a pending order expires.
 
 **Trade history:** broker ticket, instrument, direction, entry, exit, volume,

@@ -142,13 +142,21 @@ class NewsArchive:
 
 def replay_context(symbol: str, at: datetime, ticks, news: NewsArchive) -> dict:
     """Everything visible at `at` for one instrument, with the assumptions behind it."""
+    from decimal import Decimal
+
+    from ledgerquant.replay.costs import swap_context, time_context
+
     sentiment_start = datetime(2026, 10, 9, tzinfo=timezone.utc)
+    market, macro = ticks.context(symbol, at), news.macro(at)
+    latest = market.get("latest")
     return {
         "symbol": symbol,
         "decision_at_utc": at.astimezone(timezone.utc).isoformat(),
-        "market": ticks.context(symbol, at),
+        "market": market,
+        "market_times": time_context(at),
+        "swap": swap_context(symbol, Decimal(latest["bid"]), macro) if latest else {"status": "UNAVAILABLE"},
         "news": news.news(symbol, at),
-        "macro": news.macro(at),
+        "macro": macro,
         "calendar": news.calendar(at),
         "sentiment": {"status": "UNAVAILABLE",
                       "reason": "not captured before 2026-10-09" if at < sentiment_start
@@ -158,5 +166,6 @@ def replay_context(symbol: str, at: datetime, ticks, news: NewsArchive) -> dict:
             "exported ticks are visible at their event time",
             "backfilled GDELT items are visible 15 minutes after their batch time",
             "macro vintages are visible from the UTC day after their realtime_start",
+            "rollover and weekly close at 17:00 New York time; swap estimated from policy rates (assumed markup)",
         ],
     }

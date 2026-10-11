@@ -3,9 +3,10 @@
 A LONG enters at the ask and exits at the bid; a SHORT enters at the bid and exits
 at the ask. A stop or target is filled at the first tick that reaches it, at that
 tick's price, so a gap past the level is filled worse than the level. When stop
-and target are reached on the same tick, the stop counts. A position still open
-at its maximum holding time closes at the last price before that time. Results
-are in R: the move divided by the initial risk (entry to initial stop).
+and target are reached on the same tick, the stop counts. A position with a time
+limit (such as the user's close before the weekend) that is still open then
+closes at the last price before it. Results are in R: the move divided by the
+initial risk (entry to initial stop).
 """
 
 from dataclasses import dataclass, field
@@ -23,11 +24,12 @@ class Position:
     entry: Decimal
     stop: Decimal
     target: Decimal
-    close_by: datetime
+    close_by: datetime | None
     decision_id: str
     initial_stop: Decimal = None
     checked_until: datetime = None
     adjustments: list = field(default_factory=list)
+    close_reason: str = "TIME_LIMIT"
 
     def __post_init__(self):
         self.initial_stop = self.initial_stop if self.initial_stop is not None else self.stop
@@ -43,7 +45,8 @@ class Position:
 
     def state(self, mark: Decimal | None) -> dict:
         return {"direction": self.direction, "opened_at_utc": self.opened_at.isoformat(), "entry": str(self.entry),
-                "stop": str(self.stop), "target": str(self.target), "close_by_utc": self.close_by.isoformat(),
+                "stop": str(self.stop), "target": str(self.target),
+                "close_by_utc": self.close_by.isoformat() if self.close_by else None,
                 "initial_stop": str(self.initial_stop),
                 "current_r": str(self.r(mark)) if mark is not None else None}
 
@@ -54,7 +57,7 @@ def exit_side(direction: str) -> str:
 
 def advance(archive: TickArchive, position: Position, until: datetime) -> dict | None:
     """Move the position forward to `until`; return the exit if it closed on the way."""
-    end = min(until, position.close_by)
+    end = min(until, position.close_by) if position.close_by else until
     if end <= position.checked_until:
         return None
     side = exit_side(position.direction)
@@ -70,10 +73,10 @@ def advance(archive: TickArchive, position: Position, until: datetime) -> dict |
         at, price, reason = hit
         return close(position, at.replace(tzinfo=timezone.utc), Decimal(price), reason)
     position.checked_until = end
-    if end >= position.close_by:
+    if position.close_by and end >= position.close_by:
         latest = archive.latest(position.symbol, position.close_by)
         price = Decimal(latest[side]) if latest else position.entry
-        return close(position, position.close_by, price, "MAX_HOLDING_TIME")
+        return close(position, position.close_by, price, position.close_reason)
     return None
 
 
@@ -86,9 +89,9 @@ def close(position: Position, at: datetime, price: Decimal, reason: str) -> dict
 
 
 def static_outcome(archive: TickArchive, symbol: str, direction: str, opened_at: datetime, entry: Decimal,
-                   stop: Decimal, target: Decimal, close_by: datetime) -> dict:
+                   stop: Decimal, target: Decimal, close_by: datetime, close_reason: str = "TIME_LIMIT") -> dict:
     """The same levels held without any review: the static-exit comparison."""
-    shadow = Position(symbol, direction, opened_at, entry, stop, target, close_by, "static")
+    shadow = Position(symbol, direction, opened_at, entry, stop, target, close_by, "static", close_reason=close_reason)
     return advance(archive, shadow, close_by)
 
 
@@ -102,4 +105,5 @@ def mirrored(archive: TickArchive, trade_open: dict, symbol: str) -> dict:
     sign = 1 if direction == "LONG" else -1
     opened = datetime.fromisoformat(trade_open["opened_at_utc"])
     return static_outcome(archive, symbol, direction, opened, entry, entry - sign * stop_distance,
-                          entry + sign * target_distance, datetime.fromisoformat(trade_open["close_by_utc"]))
+                          entry + sign * target_distance, datetime.fromisoformat(trade_open["close_by_utc"]),
+                          trade_open.get("close_reason", "TIME_LIMIT"))

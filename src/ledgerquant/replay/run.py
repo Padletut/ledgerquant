@@ -5,7 +5,9 @@ moved forward to the decision time, the context visible at that time is built,
 the model is called within the run's spending cap, and the validated answer is
 applied (open, hold, close or adjust). Every decision, with its context, request,
 raw response, validation and cost, and every closed trade, with its static-exit
-and mirrored-direction comparisons, is appended to the run's journal.
+and mirrored-direction comparisons, is appended to the run's journal. Each trade
+result is net of estimated swap (see replay.costs); the gross R and the swap are
+kept alongside.
 
 This is a retrospective simulation over backfilled data and a single-analyst
 variant without Jev or the Risk Engine; results are in R and labelled as such.
@@ -27,6 +29,7 @@ from ledgerquant.models.generation import ModelProfile
 from ledgerquant.pipeline.analyst import CONTRACT_VERSION, INSTRUCTIONS, TOOL, Analysis, unknown_citations, validate
 from ledgerquant.records import canonical, digest
 from ledgerquant.replay.context import NEWS_RECIPE, NewsArchive, replay_context
+from ledgerquant.replay.costs import policy_rates, swap_r, weekend_close
 from ledgerquant.replay.market import TickArchive
 from ledgerquant.replay.positions import Position, advance, close, exit_side, mirrored, static_outcome
 from ledgerquant.replay.schedule import plan
@@ -72,9 +75,19 @@ class Journal:
             handle.write(json.dumps(record, default=str) + "\n")
 
 
-def decide(provider, context: dict, position_state: dict | None, budget: Budget) -> dict:
+OPEN_ENDED = timedelta(days=30)
+
+
+def net_of_swap(result: dict, symbol: str, rates) -> dict:
+    """Add estimated swap to a closed trade: `r` becomes net, `r_gross` and `swap_r` are kept."""
+    swap = swap_r(symbol, result["direction"], Decimal(result["entry"]), Decimal(result["initial_stop"]),
+                  datetime.fromisoformat(result["opened_at_utc"]), datetime.fromisoformat(result["closed_at_utc"]), rates)
+    return result | {"r_gross": result["r"], "swap_r": str(swap), "r": str(Decimal(result["r"]) + swap)}
+
+
+def decide(provider, context: dict, position_state: dict | None, budget: Budget, limits: dict | None = None) -> dict:
     """One model call; returns the decision record without applying it."""
-    payload = dict(context, position=position_state)
+    payload = dict(context, position=position_state, limits=limits or {})
     record = {"context_sha256": digest(payload), "context": payload}
     try:
         request = provider.prepare(INSTRUCTIONS, [provider.user_message(canonical(payload))], [TOOL])
@@ -104,18 +117,22 @@ def decide(provider, context: dict, position_state: dict | None, budget: Budget)
                      "status": validate(analysis, context, position_state)}
 
 
-def run_symbol(symbol: str, times: list, archive_root: Path, provider, budget: Budget, journal: Journal) -> None:
+def run_symbol(symbol: str, times: list, archive_root: Path, provider, budget: Budget, journal: Journal,
+               close_before_weekend: bool = True) -> None:
     ticks, news = TickArchive(archive_root), NewsArchive(archive_root)
-    position, opening = None, None
+    position, opening, rates = None, None, None
+    limits = {"close_before_weekend": close_before_weekend}
 
     def finish(exit_: dict) -> None:
         nonlocal position, opening
         closes_by = datetime.fromisoformat(opening["close_by_utc"])
-        exit_["label"] = opening["label"]
-        exit_["static"] = static_outcome(ticks, symbol, opening["direction"],
-                                         datetime.fromisoformat(opening["opened_at_utc"]), Decimal(opening["entry"]),
-                                         Decimal(opening["stop"]), Decimal(opening["target"]), closes_by)
-        exit_["mirrored"] = mirrored(ticks, opening, symbol)
+        exit_ = net_of_swap(exit_, symbol, rates) | {"label": opening["label"], "style": opening["style"],
+                                                      "expected_horizon_hours": opening["expected_horizon_hours"]}
+        static = static_outcome(ticks, symbol, opening["direction"], datetime.fromisoformat(opening["opened_at_utc"]),
+                                Decimal(opening["entry"]), Decimal(opening["stop"]), Decimal(opening["target"]),
+                                closes_by, opening["close_reason"])
+        exit_["static"] = net_of_swap(static, symbol, rates)
+        exit_["mirrored"] = net_of_swap(mirrored(ticks, opening, symbol), symbol, rates)
         journal.append("trades", exit_)
         position, opening = None, None
 
@@ -131,7 +148,7 @@ def run_symbol(symbol: str, times: list, archive_root: Path, provider, budget: B
             journal.append("decisions", base | {"status": f"CONTEXT_{context['market']['status']}",
                                                 "context_sha256": digest(context)})
             continue
-        record = base | decide(provider, context, state, budget)
+        record = base | decide(provider, context, state, budget, limits)
         journal.append("decisions", record)
         if record["status"] == "BUDGET_STOP":
             break
@@ -142,11 +159,17 @@ def run_symbol(symbol: str, times: list, archive_root: Path, provider, budget: B
         if position is None and action in ("LONG", "SHORT"):
             setup = analysis["setup"]
             entry = Decimal(latest["ask"] if action == "LONG" else latest["bid"])
-            close_by = at + timedelta(minutes=setup["max_holding_minutes"])
+            # No fixed holding limit; only the user's close before the weekend, when set.
+            close_by = weekend_close(at) if close_before_weekend else None
+            reason = "WEEKEND_CLOSE" if close_before_weekend else "OPEN_ENDED"
+            rates = policy_rates(context["macro"])
             position = Position(symbol, action, at, entry, Decimal(setup["stop"]), Decimal(setup["target"]),
-                                close_by, decision_id)
+                                close_by, decision_id, close_reason=reason)
+            horizon_end = close_by or at + OPEN_ENDED
             opening = {"direction": action, "entry": str(entry), "stop": setup["stop"], "target": setup["target"],
-                       "opened_at_utc": at.isoformat(), "close_by_utc": close_by.isoformat(), "label": label,
+                       "opened_at_utc": at.isoformat(), "close_by_utc": horizon_end.isoformat(), "label": label,
+                       "close_reason": reason, "style": setup["style"],
+                       "expected_horizon_hours": setup["expected_horizon_hours"],
                        "quote": {"bid": latest["bid"], "ask": latest["ask"]}}
         elif position is not None and action == "CLOSE":
             finish(close(position, at, Decimal(latest[exit_side(position.direction)]), "AGENT_CLOSE"))
@@ -157,8 +180,13 @@ def run_symbol(symbol: str, times: list, archive_root: Path, provider, budget: B
             position.stop = Decimal(levels["new_stop"]) if levels["new_stop"] else position.stop
             position.target = Decimal(levels["new_target"]) if levels["new_target"] else position.target
     if position is not None:
-        exit_ = advance(ticks, position, position.close_by)
-        finish(exit_ if exit_ else close(position, position.checked_until, position.entry, "OPEN_AT_END"))
+        end = datetime.fromisoformat(opening["close_by_utc"])
+        exit_ = advance(ticks, position, end)
+        if exit_ is None:
+            latest = ticks.latest(symbol, end)
+            exit_ = close(position, end, Decimal(latest[exit_side(position.direction)]) if latest else position.entry,
+                          "OPEN_AT_END")
+        finish(exit_)
 
 
 def main() -> None:
@@ -173,6 +201,8 @@ def main() -> None:
     parser.add_argument("--runs", type=Path, default=Path("data/replay_runs"))
     parser.add_argument("--cost-cap", type=float, required=True, help="hard cap in USD for the whole run")
     parser.add_argument("--max-decisions", type=int, help="per symbol, for smoke tests")
+    parser.add_argument("--no-weekend-close", action="store_true",
+                        help="do not apply the user limit that closes positions before the weekend")
     args = parser.parse_args()
 
     from ledgerquant.integrations.model_providers.openai import OpenAIResponses
@@ -190,7 +220,9 @@ def main() -> None:
         "variant": {"contract": CONTRACT_VERSION, "instructions_sha256": digest(INSTRUCTIONS),
                     "tool_sha256": digest(TOOL), "news_recipe": NEWS_RECIPE,
                     "model_profile": profile.model_dump(mode="json"),
-                    "pipeline": "single GPT analyst; no Jev, no Risk Engine; market entries only"},
+                    "pipeline": "single GPT analyst; no Jev, no Risk Engine; market entries only",
+                    "limits": {"close_before_weekend": not args.no_weekend_close},
+                    "costs": "spread from bid/ask; swap estimated from policy rates (replay.costs); no commission"},
         "inputs": {"archive_manifest_sha256": manifests},
         "plan": {"start": str(args.start), "end_exclusive": str(args.end), "symbols": args.symbols,
                  "hours_utc": args.hours, "decisions_per_symbol": len(times),
@@ -200,8 +232,8 @@ def main() -> None:
     budget = Budget(args.cost_cap, profile)
     provider = OpenAIResponses(profile, args.key_file.read_text().strip())
     with ThreadPoolExecutor(max_workers=len(args.symbols)) as pool:
-        for future in [pool.submit(run_symbol, s, times, args.archive, provider, budget, journal)
-                       for s in args.symbols]:
+        for future in [pool.submit(run_symbol, s, times, args.archive, provider, budget, journal,
+                                   not args.no_weekend_close) for s in args.symbols]:
             future.result()
     print(json.dumps({"run_id": run_id, "spent_usd": str(budget.spent.quantize(Decimal("0.0001")))}))
 

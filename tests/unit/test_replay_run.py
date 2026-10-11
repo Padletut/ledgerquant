@@ -69,7 +69,7 @@ def test_run_opens_closes_and_journals_with_comparisons(tmp_path):
     answers = [
         {"views": VIEWS, "action": "LONG", "setup": {
             "thesis": "momentum", "citations": ["bar:EURUSD:H1:2026-03-02T09:00:00+00:00"], "stop": "1.0990",
-            "target": "1.1040", "max_holding_minutes": 240, "invalidation": "below 1.0990", "uncertainty": "thin data"}},
+            "target": "1.1040", "style": "INTRADAY", "expected_horizon_hours": 4, "invalidation": "below 1.0990", "uncertainty": "thin data"}},
         {"views": VIEWS, "action": "CLOSE", "reason": "momentum faded"},
         {"views": VIEWS, "action": "NO_SIGNAL"},
     ]
@@ -84,14 +84,14 @@ def test_run_opens_closes_and_journals_with_comparisons(tmp_path):
     # entry at the 10:00 ask 1.1001, closed by the agent at the 11:00 bid 1.1015; risk 0.0011
     assert trade["exit_reason"] == "AGENT_CLOSE" and trade["entry"] == "1.1001" and trade["exit"] == "1.1015"
     assert trade["r"] == "1.2727" and trade["label"] == "DEVELOPMENT"
-    assert trade["static"]["exit_reason"] == "MAX_HOLDING_TIME" and trade["mirrored"]["direction"] == "SHORT"
+    assert trade["static"]["exit_reason"] == "WEEKEND_CLOSE" and trade["mirrored"]["direction"] == "SHORT"
 
 
 def test_invalid_levels_open_nothing_and_budget_stops_the_run(tmp_path):
     root = setup_archive(tmp_path)
     bad = {"views": VIEWS, "action": "LONG", "setup": {
         "thesis": "x", "citations": ["bar:EURUSD:H1:2026-03-02T09:00:00+00:00"], "stop": "1.2000", "target": "1.3000",
-        "max_holding_minutes": 60, "invalidation": "x", "uncertainty": "x"}}
+        "style": "INTRADAY", "expected_horizon_hours": 1, "invalidation": "x", "uncertainty": "x"}}
     provider = FakeProvider([bad, bad])
     journal = Journal(tmp_path / "run")
     tight = Budget(0.0001, profile())  # below one worst-case call
@@ -111,7 +111,7 @@ def test_report_summarises_decisions_cost_and_comparisons(tmp_path):
     answers = [
         {"views": VIEWS, "action": "LONG", "setup": {
             "thesis": "m", "citations": ["bar:EURUSD:H1:2026-03-02T09:00:00+00:00"], "stop": "1.0990",
-            "target": "1.1040", "max_holding_minutes": 240, "invalidation": "i", "uncertainty": "u"}},
+            "target": "1.1040", "style": "INTRADAY", "expected_horizon_hours": 4, "invalidation": "i", "uncertainty": "u"}},
         {"views": VIEWS, "action": "CLOSE"},
     ]
     journal = Journal(tmp_path / "run")

@@ -44,7 +44,7 @@ def test_maximum_holding_time_closes_at_the_last_price(tmp_path):
     store = archive(tmp_path, [(t(1), "1.1005", "1.1006"), (t(30), "1.1008", "1.1009")])
     position = long(close_by=datetime(2026, 3, 2, 10, 40, tzinfo=UTC))
     exit_ = advance(store, position, datetime(2026, 3, 2, 12, 0, tzinfo=UTC))
-    assert exit_["exit_reason"] == "MAX_HOLDING_TIME" and exit_["exit"] == "1.1008"
+    assert exit_["exit_reason"] == "TIME_LIMIT" and exit_["exit"] == "1.1008"
     assert exit_["closed_at_utc"].startswith("2026-03-02T10:40")
 
 
@@ -59,5 +59,5 @@ def test_static_and_mirrored_outcomes(tmp_path):
                               "opened_at_utc": opened.isoformat(), "close_by_utc": close_by.isoformat(),
                               "quote": {"bid": "1.0999", "ask": "1.1000"}}, "EURUSD")
     # SHORT at 1.0999, stop 1.1009, target 1.0979: never reached, closes at the last ask
-    assert mirror["direction"] == "SHORT" and mirror["exit_reason"] == "MAX_HOLDING_TIME"
+    assert mirror["direction"] == "SHORT" and mirror["exit_reason"] == "TIME_LIMIT"
     assert mirror["exit"] == "1.0986" and mirror["r"] == "1.3000"

@@ -1,8 +1,8 @@
 """The analyst contract: one typed analysis per instrument and decision time.
 
 The required `action` is `NO_SIGNAL`, `WAIT`, `LONG` or `SHORT` without an open
-position (a LONG/SHORT is a market entry with stop, target and maximum holding
-time), and `HOLD`, `CLOSE` or `ADJUST` with one. Validation checks the
+position (a LONG/SHORT is a market entry with stop, target, style and expected
+horizon; there is no fixed holding limit), and `HOLD`, `CLOSE` or `ADJUST` with one. Validation checks the
 answer against the context it was given: cited IDs must exist, levels must lie
 on the right side of the current quote, and fields must match the action.
 """
@@ -14,8 +14,10 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from ledgerquant.decision.shadow import Wait
 
-CONTRACT_VERSION = "analyst/3"
-MAX_HOLDING_MINUTES = 1440
+CONTRACT_VERSION = "analyst/4"
+# analyst/4 is a combined change from analyst/3: own trading style and horizon instead of a
+# maximum holding time, explicit costs (spread, swap, rollover and weekly close), symmetric
+# assessment of LONG and SHORT, and position management only when the thesis changes.
 
 
 class View(BaseModel):
@@ -41,7 +43,8 @@ class EntrySetup(BaseModel):
     citations: list[str] = Field(max_length=12)
     stop: str = Field(max_length=32, description="Stop price as a decimal string")
     target: str = Field(max_length=32, description="Target price as a decimal string")
-    max_holding_minutes: int = Field(ge=15, le=MAX_HOLDING_MINUTES)
+    style: Literal["INTRADAY", "SWING"]
+    expected_horizon_hours: int = Field(ge=1, le=240, description="An expectation, not an exit")
     invalidation: str = Field(max_length=500)
     uncertainty: str = Field(max_length=500)
 
@@ -73,7 +76,8 @@ class Analysis(BaseModel):
 INSTRUCTIONS = """You are a CFD market analyst in LedgerQuant. You receive the context visible
 at one decision time for one instrument: quotes and bars, news headlines,
 central-bank releases, macro data with the vintage that was known, scheduled
-releases, and sentiment when available. Analyse it and give your own view.
+releases, market times, an estimated swap, any user limits, and sentiment when
+available. Analyse it and give your own view.
 
 Give a view for news, sentiment and chart. A view whose data is UNAVAILABLE or
 empty is NO_VIEW. Cite the context IDs you rely on, copied exactly from the "id"
@@ -88,12 +92,28 @@ If there is no open position, choose one action:
   tradable CONDITIONS, or CLARITY between conflicting evidence. A condition that
   is only a price level is not a WAIT.
 - LONG or SHORT for a setup you would actually take, entered at market now: give
-  the thesis, cited IDs, stop and target prices, a maximum holding time, what
-  would invalidate it and what you are unsure about. A LONG enters at the ask,
-  a SHORT at the bid.
+  the thesis, cited IDs, stop and target prices, your style and expected horizon,
+  what would invalidate it and what you are unsure about.
 
-If there is an open position, choose HOLD, CLOSE, or ADJUST with a new stop
-and/or target in `adjustment`.
+Choose the style that fits the setup: INTRADAY when the move should play out
+within hours, SWING when the thesis needs a day or more. There is no fixed holding
+limit: a position ends at its stop, at its target, when you close it, or when a
+user limit in "limits" applies. Set a target the expected horizon can realistically
+reach.
+
+Costs count against every trade. A LONG enters at the ask and exits at the bid, a
+SHORT the reverse, so the spread is paid on each trade. Holding through a rollover
+("market_times") charges or credits swap ("swap", per day; Wednesday's rollover
+counts three days), which matters most for SWING trades. Fewer, better trades are
+preferred over frequent ones.
+
+Assess LONG and SHORT with equal care. A narrative that dominates the news may
+already be in the price.
+
+If there is an open position, choose HOLD while the thesis holds, and CLOSE or
+ADJUST (new stop and/or target in `adjustment`) when the thesis is invalidated or
+the context has materially changed. Do not close or tighten only to lock in a
+small gain.
 
 Always set `action`. Fill only the fields that belong to it and leave the others
 null: `setup` only for LONG or SHORT, `wait` only for WAIT, `adjustment` only for
