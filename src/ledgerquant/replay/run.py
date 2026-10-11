@@ -32,6 +32,7 @@ from ledgerquant.records import canonical, digest
 from ledgerquant.replay.context import NEWS_RECIPE, NewsArchive, replay_context
 from ledgerquant.replay.costs import commission_r, policy_rates, swap_r, weekend_close
 from ledgerquant.replay.risk import check_entry, rejection_feedback
+from ledgerquant.replay.waiting import start_wait, wake
 from ledgerquant.replay.market import TickArchive
 from ledgerquant.replay.positions import Position, advance, close, exit_side, mirrored, static_outcome
 from ledgerquant.replay.schedule import plan
@@ -131,9 +132,9 @@ def decide(provider, context: dict, position_state: dict | None, budget: Budget,
 
 
 def run_symbol(symbol: str, times: list, archive_root: Path, provider, budget: Budget, journal: Journal,
-               close_before_weekend: bool = True) -> None:
+               close_before_weekend: bool = True, honour_wait: bool = False) -> None:
     ticks, news = TickArchive(archive_root), NewsArchive(archive_root)
-    position, opening, rates = None, None, None
+    position, opening, rates, waiting = None, None, None, None
     limits = {"close_before_weekend": close_before_weekend}
 
     def finish(exit_: dict) -> None:
@@ -161,6 +162,15 @@ def run_symbol(symbol: str, times: list, archive_root: Path, provider, budget: B
             journal.append("decisions", base | {"status": f"CONTEXT_{context['market']['status']}",
                                                 "context_sha256": digest(context)})
             continue
+        if waiting and position is None:
+            reason, move = wake(waiting, at, context)
+            if reason is None:
+                # No model call: the agent asked to wait and the price has not woken it.
+                journal.append("decisions", base | {"status": "WAITING", "waiting": waiting, "move_ranges": move,
+                                                    "context_sha256": digest(context), "context": context})
+                continue
+            base |= {"woken_by": reason, "move_ranges": move}
+        waiting = None
         record = base | decide(provider, context, state, budget, limits)
         if position is None and record["status"] == "VALID" and record["analysis"]["action"] in ("LONG", "SHORT") \
                 and (risk := check_entry(record["analysis"]["setup"], limits, context["market_times"])):
@@ -178,6 +188,8 @@ def run_symbol(symbol: str, times: list, archive_root: Path, provider, budget: B
             continue
         analysis = record["analysis"]
         action = analysis["action"]
+        if honour_wait and position is None and action == "WAIT":
+            waiting = start_wait(at, analysis["wait"]["recheck_after_minutes"], context)
         if position is None and action in ("LONG", "SHORT"):
             setup = analysis["setup"]
             entry = Decimal(latest["ask"] if action == "LONG" else latest["bid"])
@@ -223,6 +235,8 @@ def main() -> None:
     parser.add_argument("--runs", type=Path, default=Path("data/replay_runs"))
     parser.add_argument("--cost-cap", type=float, required=True, help="hard cap in USD for the whole run")
     parser.add_argument("--max-decisions", type=int, help="per symbol, for smoke tests")
+    parser.add_argument("--honour-wait", action="store_true",
+                        help="after a WAIT, call the agent again only at its recheck time or on a large price move")
     parser.add_argument("--no-weekend-close", action="store_true",
                         help="do not apply the user limit that closes positions before the weekend")
     args = parser.parse_args()
@@ -252,6 +266,9 @@ def main() -> None:
                                 "deterministic limit check (rejects, never adjusts); "
                                 "market entries only",
                     "limits": {"close_before_weekend": not args.no_weekend_close},
+                    "scheduling": "every decision time" if not args.honour_wait else
+                                  "after WAIT, next call at the agent's recheck time (1-24 h) or on a price move "
+                                  "of 1.5 mean hourly ranges (replay.schedule)",
                     "costs": "spread from bid/ask; swap from policy rates with broker-calibrated markup; "
                              "commission from broker terms (replay.costs)"},
         "inputs": {"archive_manifest_sha256": manifests},
@@ -264,7 +281,7 @@ def main() -> None:
     provider = Provider(profile, key_file.read_text().strip())
     with ThreadPoolExecutor(max_workers=len(args.symbols)) as pool:
         for future in [pool.submit(run_symbol, s, times, args.archive, provider, budget, journal,
-                                   not args.no_weekend_close) for s in args.symbols]:
+                                   not args.no_weekend_close, args.honour_wait) for s in args.symbols]:
             future.result()
     print(json.dumps({"run_id": run_id, "spent_usd": str(budget.spent.quantize(Decimal("0.0001")))}))
 

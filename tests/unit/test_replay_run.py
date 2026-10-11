@@ -176,3 +176,21 @@ def test_without_the_weekend_limit_a_long_horizon_is_accepted(tmp_path):
     run_symbol("EURUSD", times, root, provider, Budget(1, profile()), Journal(tmp_path / "run"), close_before_weekend=False)
     decision, = read(tmp_path / "run" / "decisions.jsonl")
     assert decision["status"] == "VALID" and provider.calls == 1
+
+
+def test_after_wait_the_model_is_not_called_until_woken(tmp_path):
+    root = setup_archive(tmp_path)
+    wait = {"views": VIEWS, "action": "WAIT", "wait": {"kind": "EVENT", "waiting_for": "CPI",
+                                                       "recheck_after_minutes": 120}}
+    times = [(datetime(2026, 3, 2, h, tzinfo=UTC), "DEVELOPMENT") for h in (10, 11, 12)]
+    provider = FakeProvider([wait, {"views": VIEWS, "action": "NO_SIGNAL"}, {"views": VIEWS, "action": "NO_SIGNAL"}])
+    run_symbol("EURUSD", times, root, provider, Budget(1, profile()), Journal(tmp_path / "run"), honour_wait=True)
+    decisions = read(tmp_path / "run" / "decisions.jsonl")
+    statuses = [d["status"] for d in decisions]
+    assert statuses[0] == "VALID" and provider.calls == 1 + sum(1 for d in decisions[1:] if d["status"] != "WAITING")
+    for d in decisions[1:]:
+        assert d["status"] == "WAITING" or d["woken_by"] in ("RECHECK_DUE", "PRICE_MOVE")
+    assert decisions[-1]["status"] != "WAITING"  # 12:00 is the recheck time at the latest
+    every_hour = FakeProvider([wait, {"views": VIEWS, "action": "NO_SIGNAL"}, {"views": VIEWS, "action": "NO_SIGNAL"}])
+    run_symbol("EURUSD", times, root, every_hour, Budget(1, profile()), Journal(tmp_path / "run2"))
+    assert every_hour.calls == 3
