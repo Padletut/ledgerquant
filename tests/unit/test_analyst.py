@@ -58,3 +58,8 @@ def test_hold_may_repeat_current_levels_but_not_change_them():
     assert validate(moved, CONTEXT, open_long) == "INCONSISTENT_DECISION"
     assert validate(analysis(action="WAIT", wait={"kind": "EVENT", "waiting_for": "x", "recheck_after_minutes": 60}),
                     CONTEXT, open_long) == "INCONSISTENT_DECISION"
+
+
+def test_instructions_explain_the_weekend_limit():
+    from ledgerquant.pipeline.analyst import INSTRUCTIONS
+    assert "close_before_weekend" in INSTRUCTIONS and "hours_to_weekend_close" in INSTRUCTIONS

@@ -98,8 +98,12 @@ If there is no open position, choose one action:
 Choose the style that fits the setup: INTRADAY when the move should play out
 within hours, SWING when the thesis needs a day or more. There is no fixed holding
 limit: a position ends at its stop, at its target, when you close it, or when a
-user limit in "limits" applies. Set a target the expected horizon can realistically
-reach.
+user limit in "limits" applies. When "close_before_weekend" is true, every open
+position is closed at market at the weekly close ("weekend_close_utc" in
+"market_times"), whatever its stop and target. Fit the target and expected
+horizon to the hours left ("hours_to_weekend_close"); a setup that needs more time
+than that is better left for the next week. Set a target the expected horizon can
+realistically reach.
 
 Costs count against every trade. A LONG enters at the ask and exits at the bid, a
 SHORT the reverse, so the spread is paid on each trade. Holding through a rollover
