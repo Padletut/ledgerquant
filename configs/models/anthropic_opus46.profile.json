@@ -1,0 +1,17 @@
+{
+  "provider": "anthropic",
+  "endpoint": "https://api.anthropic.com/v1/messages",
+  "model": "claude-opus-4-6",
+  "max_output_tokens": 8192,
+  "max_request_bytes": 80000,
+  "timeout_seconds": 300,
+  "max_steps_per_agent": 6,
+  "reasoning_effort": "medium",
+  "input_usd_per_million": 5,
+  "cache_write_usd_per_million": 0,
+  "output_usd_per_million": 25,
+  "max_run_usd": 40,
+  "price_basis": "Anthropic standard pricing for Claude Opus 4.6 (USD 5 / 25 per million input / output tokens) as listed in the Claude API model table on 2026-10-11; adaptive thinking tokens bill as output; no prompt caching (the fixed prefix is below the 4096-token minimum for this model); no server tools.",
+  "training_data_cutoff": "2025-08-31",
+  "knowledge_exposure": "Published training data cutoff August 2025, the same month as the GPT-5.4 mini profile, so both share the replay period from September 2025. Retrospective engineering research, not a clean historical simulation."
+}

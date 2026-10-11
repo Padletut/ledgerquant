@@ -84,3 +84,25 @@ rejected decision is journalled as `RISK_REJECTED` with `risk_reason`. The agent
 is then asked once more for the same time, with `risk_feedback` in its context;
 if that proposal is also rejected, no position is opened. Run directories are
 named `<UTC start>_<contract>_<model>_<plan start date>`.
+
+## Running the Claude analyst
+
+The provider follows the model profile. `configs/models/anthropic_opus46.profile.json`
+selects Claude Opus 4.6 (same August 2025 training cutoff as GPT-5.4 mini) through
+the official `anthropic` SDK with retries off. Adaptive thinking cannot be combined
+with a forced tool call, so the request asks for exactly one tool call with
+`tool_choice: auto`; an answer without it is journalled as `NO_TOOL_CALL`. Put the
+API key in `credentials/anthropic-api.key` (mode 600), then run, for example:
+
+```bash
+PYTHONPATH=src .venv/bin/python -m ledgerquant.replay.run --profile configs/models/anthropic_opus46.profile.json \
+  --start 2025-09-08 --end 2025-09-13 --cost-cap 40
+```
+
+At the token use measured with GPT (about 12 400 input and 1 200 output tokens
+per decision, 210 decisions per week), a week costs roughly 25-35 USD with Opus
+4.6; measure it with a smoke run first.
+
+Every report (`python -m ledgerquant.replay.report <run dir>`) compares the agent
+with always long, always short and 23-hour momentum at the same decision times,
+using the agent's own geometry and the same costs (`replay/baselines.py`).

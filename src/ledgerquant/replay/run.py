@@ -215,7 +215,7 @@ def main() -> None:
     parser.add_argument("--symbols", nargs="+", default=["EURUSD", "GBPUSD", "XAUUSD"])
     parser.add_argument("--hours", nargs="+", type=int, default=list(range(7, 21)))
     parser.add_argument("--profile", type=Path, default=Path("configs/models/openai_gpt54_mini.profile.json"))
-    parser.add_argument("--key-file", type=Path, default=Path("credentials/openai-api.key"))
+    parser.add_argument("--key-file", type=Path, help="default credentials/<provider>-api.key")
     parser.add_argument("--archive", type=Path, default=Path("data/archive"))
     parser.add_argument("--runs", type=Path, default=Path("data/replay_runs"))
     parser.add_argument("--cost-cap", type=float, required=True, help="hard cap in USD for the whole run")
@@ -224,9 +224,14 @@ def main() -> None:
                         help="do not apply the user limit that closes positions before the weekend")
     args = parser.parse_args()
 
-    from ledgerquant.integrations.model_providers.openai import OpenAIResponses
-
     profile = ModelProfile.model_validate_json(args.profile.read_text())
+    if profile.provider == "openai":
+        from ledgerquant.integrations.model_providers.openai import OpenAIResponses as Provider
+    elif profile.provider == "anthropic":
+        from ledgerquant.integrations.model_providers.anthropic import AnthropicMessages as Provider
+    else:
+        raise SystemExit(f"no adapter for provider {profile.provider!r}")
+    key_file = args.key_file or Path(f"credentials/{profile.provider}-api.key")
     times = plan(args.start, args.end, [profile], hours=args.hours)
     if args.max_decisions:
         times = times[: args.max_decisions]
@@ -240,7 +245,8 @@ def main() -> None:
         "variant": {"contract": CONTRACT_VERSION, "instructions_sha256": digest(INSTRUCTIONS),
                     "tool_sha256": digest(TOOL), "news_recipe": NEWS_RECIPE,
                     "model_profile": profile.model_dump(mode="json"),
-                    "pipeline": "single GPT analyst; no Jev; deterministic limit check (rejects, never adjusts); "
+                    "pipeline": f"single {profile.provider} analyst; no Jev; "
+                                "deterministic limit check (rejects, never adjusts); "
                                 "market entries only",
                     "limits": {"close_before_weekend": not args.no_weekend_close},
                     "costs": "spread from bid/ask; swap from policy rates with broker-calibrated markup; "
@@ -252,7 +258,7 @@ def main() -> None:
         "cost_cap_usd": args.cost_cap,
     }, indent=1, default=str))
     budget = Budget(args.cost_cap, profile)
-    provider = OpenAIResponses(profile, args.key_file.read_text().strip())
+    provider = Provider(profile, key_file.read_text().strip())
     with ThreadPoolExecutor(max_workers=len(args.symbols)) as pool:
         for future in [pool.submit(run_symbol, s, times, args.archive, provider, budget, journal,
                                    not args.no_weekend_close) for s in args.symbols]:
