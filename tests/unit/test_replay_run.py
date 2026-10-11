@@ -194,3 +194,14 @@ def test_after_wait_the_model_is_not_called_until_woken(tmp_path):
     every_hour = FakeProvider([wait, {"views": VIEWS, "action": "NO_SIGNAL"}, {"views": VIEWS, "action": "NO_SIGNAL"}])
     run_symbol("EURUSD", times, root, every_hour, Budget(1, profile()), Journal(tmp_path / "run2"))
     assert every_hour.calls == 3
+
+
+def test_an_open_position_is_reviewed_every_hour_even_with_honoured_waits(tmp_path):
+    root = setup_archive(tmp_path)
+    wait = {"views": VIEWS, "action": "WAIT", "wait": {"kind": "EVENT", "waiting_for": "x", "recheck_after_minutes": 60}}
+    times = [(datetime(2026, 3, 2, h, tzinfo=UTC), "DEVELOPMENT") for h in (10, 11, 12)]
+    provider = FakeProvider([wait, long_setup(4), {"views": VIEWS, "action": "HOLD"}])
+    run_symbol("EURUSD", times, root, provider, Budget(1, profile()), Journal(tmp_path / "run"), honour_wait=True)
+    decisions = read(tmp_path / "run" / "decisions.jsonl")
+    assert provider.calls == 3 and [d["analysis"]["action"] for d in decisions] == ["WAIT", "LONG", "HOLD"]
+    assert decisions[2]["context"]["position"]["direction"] == "LONG"

@@ -4,8 +4,12 @@ The agent states how long it wants to wait (`recheck_after_minutes`). Without an
 open position the run does not call the model again until that time has passed,
 clamped to MIN_RECHECK..MAX_RECHECK, unless the price wakes it earlier: a move of
 WAKE_RANGES times the mean hourly range (from the 24 hourly bars the agent saw at
-the WAIT) away from the mid at the WAIT. The check is deterministic and free;
-NO_SIGNAL and open positions are still reviewed at every decision time.
+the WAIT) away from the mid at the WAIT. The check is deterministic and free.
+
+The thresholds are declared defaults, not fitted to any replay week; change them
+only on evidence from runs made after the change (prospective evaluation).
+Waiting applies to new entries only: NO_SIGNAL and every open position are still
+reviewed at every decision time, whatever the agent said about new entries.
 """
 
 from datetime import datetime, timedelta

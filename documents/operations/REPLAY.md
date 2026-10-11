@@ -106,3 +106,16 @@ per decision, 210 decisions per week), a week costs roughly 25-35 USD with Opus
 Every report (`python -m ledgerquant.replay.report <run dir>`) compares the agent
 with always long, always short and 23-hour momentum at the same decision times,
 using the agent's own geometry and the same costs (`replay/baselines.py`).
+
+## Honouring WAIT (`--honour-wait`, off by default)
+
+After a WAIT with no open position, the run calls the model again only at the
+agent's `recheck_after_minutes` (clamped to 1-24 hours) or when the mid price has
+moved 1.5 mean hourly ranges from the mid at the WAIT (`replay/waiting.py`).
+Skipped times are journalled as `WAITING` with their context, so the free-rule
+comparison still covers every decision time. The thresholds are declared
+defaults, not fitted to a replay week; evaluate them on runs made after the
+change rather than tuning them to past entries. Open positions are a separate
+category and are reviewed at every decision time regardless. Measured on the
+Claude Opus 4.6 weeks of 2025-10-13 and 2025-12-08 (hourly polling), honouring
+WAIT would have skipped 23 and 106 of 210 calls.
