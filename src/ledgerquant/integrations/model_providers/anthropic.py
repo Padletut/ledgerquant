@@ -3,7 +3,8 @@
 Adaptive thinking cannot be combined with a forced tool choice, so the request
 uses `tool_choice: auto` with parallel calls disabled and a fixed note asking for
 exactly one tool call. An answer without that call is `NO_TOOL_CALL`, never
-parsed from text.
+parsed from text. Opus 4.6 has no strict tool schemas, so the note also states
+the schema's length limits; the contract itself is the same as for other providers.
 """
 
 import json
@@ -14,7 +15,9 @@ from ledgerquant.models.generation import Generation, ModelProfile, ToolCall
 from ledgerquant.records import canonical
 
 ENDPOINT = "https://api.anthropic.com/v1/messages"
-TOOL_NOTE = "\n\nAnswer only by calling the provided tool exactly once. Do not answer in text."
+TOOL_NOTE = ("\n\nAnswer only by calling the provided tool exactly once. Do not answer in text. Keep every "
+             "string within its maxLength and every list within its maxItems in the tool schema; longer answers "
+             "are rejected.")
 
 
 class AnthropicMessages:
