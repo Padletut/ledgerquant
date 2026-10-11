@@ -83,7 +83,9 @@ def test_run_opens_closes_and_journals_with_comparisons(tmp_path):
     trade, = read(tmp_path / "run" / "trades.jsonl")
     # entry at the 10:00 ask 1.1001, closed by the agent at the 11:00 bid 1.1015; risk 0.0011
     assert trade["exit_reason"] == "AGENT_CLOSE" and trade["entry"] == "1.1001" and trade["exit"] == "1.1015"
-    assert trade["r"] == "1.2727" and trade["label"] == "DEVELOPMENT"
+    # gross 0.0014 / 0.0011; net of commission (no swap: the test snapshot has no policy rates)
+    assert trade["r_gross"] == "1.2727" and trade["swap_r"] == "0" and trade["r"] == "1.2127"
+    assert trade["label"] == "DEVELOPMENT"
     assert trade["static"]["exit_reason"] == "WEEKEND_CLOSE" and trade["mirrored"]["direction"] == "SHORT"
 
 
@@ -123,6 +125,6 @@ def test_report_summarises_decisions_cost_and_comparisons(tmp_path):
     run_symbol("EURUSD", times, root, FakeProvider(answers), Budget(1, profile()), journal)
     summary = summarise(tmp_path / "run")
     assert summary["decisions"]["valid_by_action"] == {"LONG": 1, "CLOSE": 1}
-    assert summary["trades"]["count"] == 1 and summary["trades"]["total_r"]["agent_managed"] == "1.2727"
+    assert summary["trades"]["count"] == 1 and summary["trades"]["total_r"]["agent_managed"] == "1.2127"
     assert summary["cost"]["usd"] == "0.0024"  # 2 calls x (1000 in + 200 out) at 1 USD per million
-    assert "| agent managed | 1.2727 |" in markdown(summary)
+    assert "| agent managed | 1.2127 |" in markdown(summary)

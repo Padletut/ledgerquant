@@ -447,9 +447,12 @@ Each decision is scored after its horizon has passed:
   a static exit on the same positions (hold to stop or target, within the user's
   limits). This tests whether the agents manage open positions better.
 - **Costs:** results are net of the spread (entry at the ask or bid, exit at the
-  other side) and of swap for each rollover held. Replay estimates swap from the
-  policy-rate differential minus an assumed broker markup and keeps gross and
-  swap separately; commission is added once the account's terms are known.
+  other side), of commission from the broker's terms (IC Markets EU: 30 USD per
+  million USD per side), and of swap for each rollover held. Replay estimates
+  swap from the policy-rate differential visible at the time minus a markup
+  calibrated per symbol and side from the broker's swap terms on one date
+  (`configs/broker_terms/`); a symbol without broker terms uses an assumed markup
+  and is labelled uncalibrated. Gross R, swap and commission are kept separately.
 - **Process:** disagreement between analysts, Jev's choices, Risk Engine
   rejections, invalid outputs, unsupported citations, latency and model cost.
 

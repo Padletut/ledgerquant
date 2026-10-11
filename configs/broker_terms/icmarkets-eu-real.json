@@ -1,0 +1,79 @@
+{
+ "schema": "broker_terms/1",
+ "broker": "IC Markets EU Ltd",
+ "environment": "real",
+ "note": "Symbol terms read with cTrader Symbol properties on 15 September 2026 (order-free reader in the fx-algo project). Account balances, equity and identifiers are deliberately left out. Swap rates are the broker's values on that date only; historical broker swaps are not available.",
+ "swap_markup_derivation": "annual markup per side = policy-rate carry (FRED: DFEDTARU, ECBDFR, IUDSOIA as visible on 2026-09-15) minus the broker's swap at that date expressed as an annual rate (swap pips x pip size x day basis / price at 2026-09-15 23:00 UTC). Replay applies it to the carry visible at each decision time.",
+ "symbols": {
+  "EURUSD": {
+   "terms": {
+    "broker": "IC Markets EU Ltd",
+    "is_live": true,
+    "symbol": "EURUSD",
+    "base_asset": "EUR",
+    "quote_asset": "USD",
+    "pip_size": 0.0001,
+    "tick_size": 1e-05,
+    "lot_size": 100000,
+    "minimum_units": 1000,
+    "step_units": 1000,
+    "maximum_units": 10000000,
+    "commission": 30,
+    "commission_type": "UsdPerMillionUsdVolume",
+    "minimum_commission": 0,
+    "pnl_conversion_fee_rate": 0,
+    "swap_long": -0.82,
+    "swap_short": 0.15,
+    "swap_calculation_type": "Pips",
+    "swap_three_day_rollover": "Wednesday",
+    "administrative_charge": 0,
+    "minimum_stop_distance": 0,
+    "stop_distance_type": "Pips"
+   },
+   "observed_utc": "2026-09-15T22:58:59.4693686Z",
+   "source": {
+    "file": "fx-algo:scripts/ctrader/artifacts/account-snapshots/20260916-majors-v1/icmarkets-real-EURUSD.json",
+    "sha256": "f811be217e30c9a808da603019f8ae6e1ca65268cc39fad722e3f45d5b4bbef7"
+   },
+   "swap_markup_annual": {
+    "LONG": 0.0106,
+    "SHORT": 0.0103
+   }
+  },
+  "GBPUSD": {
+   "terms": {
+    "broker": "IC Markets EU Ltd",
+    "is_live": true,
+    "symbol": "GBPUSD",
+    "base_asset": "GBP",
+    "quote_asset": "USD",
+    "pip_size": 0.0001,
+    "tick_size": 1e-05,
+    "lot_size": 100000,
+    "minimum_units": 1000,
+    "step_units": 1000,
+    "maximum_units": 10000000,
+    "commission": 30,
+    "commission_type": "UsdPerMillionUsdVolume",
+    "minimum_commission": 0,
+    "pnl_conversion_fee_rate": 0,
+    "swap_long": -0.47,
+    "swap_short": -0.34,
+    "swap_calculation_type": "Pips",
+    "swap_three_day_rollover": "Wednesday",
+    "administrative_charge": 0,
+    "minimum_stop_distance": 0,
+    "stop_distance_type": "Pips"
+   },
+   "observed_utc": "2026-09-15T23:01:25.5329681Z",
+   "source": {
+    "file": "fx-algo:scripts/ctrader/artifacts/account-snapshots/20260916-majors-v1/icmarkets-real-GBPUSD.json",
+    "sha256": "82523889f86a5b9d5ca49a745156c698bebda49e6b657a47169aa158b6c4e597"
+   },
+   "swap_markup_annual": {
+    "LONG": 0.0125,
+    "SHORT": 0.0094
+   }
+  }
+ }
+}

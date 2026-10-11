@@ -64,6 +64,7 @@ def summarise(run_dir: Path) -> dict:
             "mean_r": str((sum(managed, Decimal(0)) / len(managed)).quantize(Decimal("0.0001"))) if managed else None,
             "holding_minutes_median": statistics.median(hold_minutes) if hold_minutes else None,
             "swap_r": str(sum((Decimal(t.get("swap_r", "0")) for t in trades), Decimal(0))),
+            "commission_r": str(sum((Decimal(t.get("commission_r", "0")) for t in trades), Decimal(0))),
             "gross_r": str(sum((Decimal(t.get("r_gross", t["r"])) for t in trades), Decimal(0))),
             "by_style": dict(Counter(t.get("style", "UNSPECIFIED") for t in trades)),
             "expected_horizon_hours_median": statistics.median(
@@ -95,7 +96,7 @@ def markdown(summary: dict) -> str:
         f"{t['holding_minutes_median']} minutes",
         f"- By symbol {t['by_symbol']}, by direction {t['by_direction']}, by style {t['by_style']}",
         f"- Expected horizon median {t['expected_horizon_hours_median']} hours; gross {t['gross_r']} R, "
-        f"estimated swap {t['swap_r']} R (results below are net of swap)",
+        f"estimated swap {t['swap_r']} R, commission {t['commission_r']} R (results below are net of both)",
         f"- Exit reasons: {t['exit_reasons']}", "",
         "| Comparison | Total R |", "| --- | ---: |",
         *[f"| {name.replace('_', ' ')} | {value} |" for name, value in t["total_r"].items()], "",

@@ -29,7 +29,7 @@ from ledgerquant.models.generation import ModelProfile
 from ledgerquant.pipeline.analyst import CONTRACT_VERSION, INSTRUCTIONS, TOOL, Analysis, unknown_citations, validate
 from ledgerquant.records import canonical, digest
 from ledgerquant.replay.context import NEWS_RECIPE, NewsArchive, replay_context
-from ledgerquant.replay.costs import policy_rates, swap_r, weekend_close
+from ledgerquant.replay.costs import commission_r, policy_rates, swap_r, weekend_close
 from ledgerquant.replay.market import TickArchive
 from ledgerquant.replay.positions import Position, advance, close, exit_side, mirrored, static_outcome
 from ledgerquant.replay.schedule import plan
@@ -79,10 +79,16 @@ OPEN_ENDED = timedelta(days=30)
 
 
 def net_of_swap(result: dict, symbol: str, rates) -> dict:
-    """Add estimated swap to a closed trade: `r` becomes net, `r_gross` and `swap_r` are kept."""
-    swap = swap_r(symbol, result["direction"], Decimal(result["entry"]), Decimal(result["initial_stop"]),
-                  datetime.fromisoformat(result["opened_at_utc"]), datetime.fromisoformat(result["closed_at_utc"]), rates)
-    return result | {"r_gross": result["r"], "swap_r": str(swap), "r": str(Decimal(result["r"]) + swap)}
+    """Net a closed trade of swap and commission: `r` becomes net; gross, swap and commission are kept.
+
+    The spread is already in the gross result (entry and exit on opposite sides of the quote).
+    """
+    entry, stop = Decimal(result["entry"]), Decimal(result["initial_stop"])
+    swap = swap_r(symbol, result["direction"], entry, stop, datetime.fromisoformat(result["opened_at_utc"]),
+                  datetime.fromisoformat(result["closed_at_utc"]), rates)
+    commission = commission_r(symbol, entry, Decimal(result["exit"]), stop)
+    return result | {"r_gross": result["r"], "swap_r": str(swap), "commission_r": str(commission),
+                     "r": str(Decimal(result["r"]) + swap + commission)}
 
 
 def decide(provider, context: dict, position_state: dict | None, budget: Budget, limits: dict | None = None) -> dict:
@@ -222,7 +228,8 @@ def main() -> None:
                     "model_profile": profile.model_dump(mode="json"),
                     "pipeline": "single GPT analyst; no Jev, no Risk Engine; market entries only",
                     "limits": {"close_before_weekend": not args.no_weekend_close},
-                    "costs": "spread from bid/ask; swap estimated from policy rates (replay.costs); no commission"},
+                    "costs": "spread from bid/ask; swap from policy rates with broker-calibrated markup; "
+                             "commission from broker terms (replay.costs)"},
         "inputs": {"archive_manifest_sha256": manifests},
         "plan": {"start": str(args.start), "end_exclusive": str(args.end), "symbols": args.symbols,
                  "hours_utc": args.hours, "decisions_per_symbol": len(times),

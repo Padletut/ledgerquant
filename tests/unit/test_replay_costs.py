@@ -21,11 +21,19 @@ def test_wednesday_rollover_counts_three_days():
     assert time_context(datetime(2025, 11, 12, 14, tzinfo=UTC))["next_rollover_days_charged"] == 3
 
 
-def test_swap_signs_follow_the_rate_differential_minus_markup():
-    eur = annual_swap("EURUSD", RATES)
-    assert eur["LONG"] == Decimal("-0.035") and eur["SHORT"] == Decimal("0.005")
-    gold = annual_swap("XAUUSD", RATES)
+def test_swap_uses_calibrated_markups_where_broker_terms_exist():
+    eur = annual_swap("EURUSD", RATES)  # carry -2%; calibrated markups 1.06% long, 1.03% short
+    assert eur["LONG"] == Decimal("-0.0306") and eur["SHORT"] == Decimal("0.0097")
+    gold = annual_swap("XAUUSD", RATES)  # no broker terms: default 1.5% markup, uncalibrated
     assert gold["LONG"] == Decimal("-0.055") and gold["SHORT"] == Decimal("0.025")
+    assert "calibrated from broker terms" in swap_context("EURUSD", Decimal("1.16"), {"series": {
+        "DFEDTARU": [{"value": "4"}], "ECBDFR": [{"value": "2"}], "IUDSOIA": [{"value": "4"}]}})["basis"]
+
+
+def test_commission_is_thirty_usd_per_million_per_side():
+    from ledgerquant.replay.costs import commission_r
+    # 1.1000 and 1.1010 at 30 per million: 0.000033 + 0.00003303 = 0.00006603 over a 0.0010 risk
+    assert commission_r("EURUSD", Decimal("1.1000"), Decimal("1.1010"), Decimal("1.0990")) == Decimal("-0.0660")
 
 
 def test_swap_in_r_over_a_held_week_and_missing_rates():

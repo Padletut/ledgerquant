@@ -8,20 +8,29 @@ Times (declared assumptions, not yet verified against IC Markets' schedule):
 - The weekly close is Friday 17:00 New York time.
 
 Swap estimate: the annual carry of a position from central-bank rates visible at
-the decision time, minus a broker markup on either side. EURUSD and GBPUSD earn
+the decision time, minus a broker markup on each side. The markup is calibrated
+per symbol and side from the broker's actual swap terms on one date
+(configs/broker_terms); a symbol without terms uses DEFAULT_MARKUP and is marked
+uncalibrated. Commission follows the broker's terms (USD per million USD of
+volume, per side). EURUSD and GBPUSD earn
 the base rate and pay the quote rate when long, and the reverse when short.
 XAUUSD long pays the USD rate (gold lease income taken as zero); short earns it.
 Rates: USD = Fed funds target upper bound (DFEDTARU), EUR = ECB deposit rate
-(ECBDFR), GBP = SONIA (IUDSOIA). The markup is an assumption to calibrate with
-the broker's published swap rates; historical broker swaps are not available.
+(ECBDFR), GBP = SONIA (IUDSOIA). Historical broker swaps are not available, so
+the swap at a past date is the carry then minus today's calibrated markup.
 """
 
+import json
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
+from functools import lru_cache
+from pathlib import Path
 from zoneinfo import ZoneInfo
 
 NEW_YORK = ZoneInfo("America/New_York")
-MARKUP_ANNUAL = Decimal("0.015")
+TERMS_FILE = Path(__file__).resolve().parents[3] / "configs/broker_terms/icmarkets-eu-real.json"
+DEFAULT_MARKUP = Decimal("0.015")
+DEFAULT_COMMISSION_PER_MILLION_USD = Decimal("30")
 DAY_BASIS = {"EURUSD": 360, "GBPUSD": 365, "XAUUSD": 360}
 RATE_SERIES = {"USD": "DFEDTARU", "EUR": "ECBDFR", "GBP": "IUDSOIA"}
 PAIRS = {"EURUSD": ("EUR", "USD"), "GBPUSD": ("GBP", "USD"), "XAUUSD": (None, "USD")}
@@ -82,11 +91,33 @@ def policy_rates(macro: dict) -> dict[str, Decimal] | None:
     return rates
 
 
+@lru_cache(maxsize=1)
+def broker_terms() -> dict:
+    return json.loads(TERMS_FILE.read_text())["symbols"] if TERMS_FILE.exists() else {}
+
+
+def markups(symbol: str) -> tuple[dict[str, Decimal], bool]:
+    """Annual markup per side and whether it is calibrated from broker terms."""
+    calibrated = broker_terms().get(symbol, {}).get("swap_markup_annual")
+    if calibrated:
+        return {side: Decimal(str(value)) for side, value in calibrated.items()}, True
+    return {"LONG": DEFAULT_MARKUP, "SHORT": DEFAULT_MARKUP}, False
+
+
+def commission_per_side(symbol: str, price: Decimal) -> tuple[Decimal, bool]:
+    """Commission per unit and side in price units (all three symbols are quoted in USD)."""
+    terms = broker_terms().get(symbol, {}).get("terms")
+    if terms and terms.get("commission_type") == "UsdPerMillionUsdVolume" and not terms.get("minimum_commission"):
+        return price * Decimal(str(terms["commission"])) / 10 ** 6, True
+    return price * DEFAULT_COMMISSION_PER_MILLION_USD / 10 ** 6, False
+
+
 def annual_swap(symbol: str, rates: dict[str, Decimal]) -> dict[str, Decimal]:
     """Estimated annual swap rate for each direction, as a fraction of the position's value."""
     base, quote = PAIRS[symbol]
     carry = (rates[base] if base else Decimal(0)) - rates[quote]
-    return {"LONG": carry - MARKUP_ANNUAL, "SHORT": -carry - MARKUP_ANNUAL}
+    markup, _ = markups(symbol)
+    return {"LONG": carry - markup["LONG"], "SHORT": -carry - markup["SHORT"]}
 
 
 def swap_per_day(symbol: str, direction: str, price: Decimal, rates: dict[str, Decimal]) -> Decimal:
@@ -95,17 +126,32 @@ def swap_per_day(symbol: str, direction: str, price: Decimal, rates: dict[str, D
 
 
 def swap_context(symbol: str, price: Decimal, macro: dict) -> dict:
+    """Estimated swap per direction and commission per side, as shown to the agents."""
+    commission, commission_known = commission_per_side(symbol, price)
+    costs = {"commission_per_side_price": str(commission.quantize(Decimal("0.000001"))),
+             "commission_basis": "broker terms" if commission_known else "assumed 30 USD per million USD per side"}
     rates = policy_rates(macro)
     if rates is None:
-        return {"status": "UNAVAILABLE", "reason": "a policy rate is not visible at the decision time"}
+        return {"status": "UNAVAILABLE", "reason": "a policy rate is not visible at the decision time", **costs}
     swaps = annual_swap(symbol, rates)
+    _, calibrated = markups(symbol)
     return {
         "status": "ESTIMATED",
         **{direction: {"annual_pct": str((swaps[direction] * 100).quantize(Decimal("0.01"))),
                        "per_day_price": str(swap_per_day(symbol, direction, price, rates).quantize(Decimal("0.000001")))}
            for direction in ("LONG", "SHORT")},
-        "basis": f"policy-rate differential minus an assumed {MARKUP_ANNUAL * 100}% broker markup; negative is a cost",
+        "basis": ("policy-rate differential minus the broker markup "
+                  + ("calibrated from broker terms" if calibrated else f"assumed at {DEFAULT_MARKUP * 100}% (uncalibrated)")
+                  + "; negative is a cost"),
+        **costs,
     }
+
+
+def commission_r(symbol: str, entry: Decimal, exit_: Decimal, initial_stop: Decimal) -> Decimal:
+    """Round-trip commission in R (a cost, so negative)."""
+    risk = abs(entry - initial_stop)
+    paid = commission_per_side(symbol, entry)[0] + commission_per_side(symbol, exit_)[0]
+    return (-paid / risk).quantize(Decimal("0.0001"))
 
 
 def swap_r(symbol: str, direction: str, entry: Decimal, initial_stop: Decimal, opened: datetime,
