@@ -70,3 +70,17 @@ as the tick exporter (any past one-day window, one `--symbol` per run), and take
 the `SYMBOL_TERMS` line from the log. Store raw output under the ignored
 `data/broker_terms/`; the config keeps only symbol terms, never account balances
 or identifiers. Recalibrate the markup when the terms change.
+
+## User limits in a run
+
+Positions have no fixed holding limit. They end at the stop, at the target, when
+the agent closes them, or at a user limit. Closing before the weekend is a
+user-chosen risk limit (on by default, `--no-weekend-close` to turn it off). The
+agent gets `limits.close_before_weekend` and `market_times.hours_to_weekend_close`
+in its context. A deterministic check (`replay/risk.py`, a precursor to the Risk
+Engine) rejects an entry when its `expected_horizon_hours` is longer than the
+time to the weekly close. It never shortens the horizon or moves a level. The
+rejected decision is journalled as `RISK_REJECTED` with `risk_reason`. The agent
+is then asked once more for the same time, with `risk_feedback` in its context;
+if that proposal is also rejected, no position is opened. Run directories are
+named `<UTC start>_<contract>_<model>_<plan start date>`.

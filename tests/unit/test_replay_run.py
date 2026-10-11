@@ -128,3 +128,37 @@ def test_report_summarises_decisions_cost_and_comparisons(tmp_path):
     assert summary["trades"]["count"] == 1 and summary["trades"]["total_r"]["agent_managed"] == "1.2127"
     assert summary["cost"]["usd"] == "0.0024"  # 2 calls x (1000 in + 200 out) at 1 USD per million
     assert "| agent managed | 1.2127 |" in markdown(summary)
+
+
+def long_setup(hours):
+    return {"views": VIEWS, "action": "LONG", "setup": {
+        "thesis": "trend", "citations": ["bar:EURUSD:H1:2026-03-02T09:00:00+00:00"], "stop": "1.0990",
+        "target": "1.1040", "style": "SWING", "expected_horizon_hours": hours, "invalidation": "x", "uncertainty": "x"}}
+
+
+def test_horizon_past_the_weekend_close_is_rejected_not_shortened(tmp_path):
+    root = setup_archive(tmp_path)
+    times = [(datetime(2026, 3, 2, 10, tzinfo=UTC), "DEVELOPMENT")]  # Monday; weekly close Friday 22:00 UTC, 108 h
+    provider = FakeProvider([long_setup(120), long_setup(24)])
+    run_symbol("EURUSD", times, root, provider, Budget(1, profile()), Journal(tmp_path / "run"))
+    first, second = read(tmp_path / "run" / "decisions.jsonl")
+    assert first["status"] == "RISK_REJECTED" and first["risk_reason"] == "HORIZON_EXCEEDS_WEEKEND_CLOSE"
+    assert "risk_feedback" not in first["context"]
+    assert second["attempt"] == 2 and second["status"] == "VALID"
+    assert second["context"]["risk_feedback"]["proposed_expected_horizon_hours"] == 120
+    trade, = read(tmp_path / "run" / "trades.jsonl")
+    assert trade["expected_horizon_hours"] == 24  # the agent's own second proposal, as given
+
+    twice = FakeProvider([long_setup(120), long_setup(110)])
+    run_symbol("EURUSD", times, root, twice, Budget(1, profile()), Journal(tmp_path / "run2"))
+    assert [d["status"] for d in read(tmp_path / "run2" / "decisions.jsonl")] == ["RISK_REJECTED", "RISK_REJECTED"]
+    assert twice.calls == 2 and not (tmp_path / "run2" / "trades.jsonl").exists()
+
+
+def test_without_the_weekend_limit_a_long_horizon_is_accepted(tmp_path):
+    root = setup_archive(tmp_path)
+    times = [(datetime(2026, 3, 2, 10, tzinfo=UTC), "DEVELOPMENT")]
+    provider = FakeProvider([long_setup(200)])
+    run_symbol("EURUSD", times, root, provider, Budget(1, profile()), Journal(tmp_path / "run"), close_before_weekend=False)
+    decision, = read(tmp_path / "run" / "decisions.jsonl")
+    assert decision["status"] == "VALID" and provider.calls == 1

@@ -63,3 +63,4 @@ def test_hold_may_repeat_current_levels_but_not_change_them():
 def test_instructions_explain_the_weekend_limit():
     from ledgerquant.pipeline.analyst import INSTRUCTIONS
     assert "close_before_weekend" in INSTRUCTIONS and "hours_to_weekend_close" in INSTRUCTIONS
+    assert "risk limit chosen by the user" in INSTRUCTIONS and "next week" not in INSTRUCTIONS

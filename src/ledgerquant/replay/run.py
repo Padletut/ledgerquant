@@ -30,6 +30,7 @@ from ledgerquant.pipeline.analyst import CONTRACT_VERSION, INSTRUCTIONS, TOOL, A
 from ledgerquant.records import canonical, digest
 from ledgerquant.replay.context import NEWS_RECIPE, NewsArchive, replay_context
 from ledgerquant.replay.costs import commission_r, policy_rates, swap_r, weekend_close
+from ledgerquant.replay.risk import check_entry, rejection_feedback
 from ledgerquant.replay.market import TickArchive
 from ledgerquant.replay.positions import Position, advance, close, exit_side, mirrored, static_outcome
 from ledgerquant.replay.schedule import plan
@@ -91,9 +92,12 @@ def net_of_swap(result: dict, symbol: str, rates) -> dict:
                      "r": str(Decimal(result["r"]) + swap + commission)}
 
 
-def decide(provider, context: dict, position_state: dict | None, budget: Budget, limits: dict | None = None) -> dict:
+def decide(provider, context: dict, position_state: dict | None, budget: Budget, limits: dict | None = None,
+           risk_feedback: dict | None = None) -> dict:
     """One model call; returns the decision record without applying it."""
     payload = dict(context, position=position_state, limits=limits or {})
+    if risk_feedback:
+        payload["risk_feedback"] = risk_feedback
     record = {"context_sha256": digest(payload), "context": payload}
     try:
         request = provider.prepare(INSTRUCTIONS, [provider.user_message(canonical(payload))], [TOOL])
@@ -155,6 +159,15 @@ def run_symbol(symbol: str, times: list, archive_root: Path, provider, budget: B
                                                 "context_sha256": digest(context)})
             continue
         record = base | decide(provider, context, state, budget, limits)
+        if position is None and record["status"] == "VALID" and record["analysis"]["action"] in ("LONG", "SHORT") \
+                and (risk := check_entry(record["analysis"]["setup"], limits, context["market_times"])):
+            # Rejected, never adjusted: the agent is told why and asked once for a new analysis.
+            journal.append("decisions", record | {"status": "RISK_REJECTED", "risk_reason": risk})
+            feedback = rejection_feedback(risk, record["analysis"]["setup"], context["market_times"])
+            record = base | {"attempt": 2} | decide(provider, context, state, budget, limits, feedback)
+            if record["status"] == "VALID" and record["analysis"]["action"] in ("LONG", "SHORT") \
+                    and (risk := check_entry(record["analysis"]["setup"], limits, context["market_times"])):
+                record |= {"status": "RISK_REJECTED", "risk_reason": risk}
         journal.append("decisions", record)
         if record["status"] == "BUDGET_STOP":
             break
@@ -217,7 +230,8 @@ def main() -> None:
     times = plan(args.start, args.end, [profile], hours=args.hours)
     if args.max_decisions:
         times = times[: args.max_decisions]
-    run_id = f"{datetime.now(timezone.utc):%Y%m%dT%H%M%SZ}_{CONTRACT_VERSION.replace('/', '')}_{profile.model}"
+    run_id = (f"{datetime.now(timezone.utc):%Y%m%dT%H%M%SZ}_{CONTRACT_VERSION.replace('/', '')}_{profile.model}"
+              f"_{args.start:%Y%m%d}")
     journal = Journal(args.runs / run_id)
     manifests = {p.parent.name: hashlib.sha256(p.read_bytes()).hexdigest()
                  for p in sorted(args.archive.glob("*/*/manifest.json")) + sorted(args.archive.glob("*/manifest.json"))}
@@ -226,7 +240,8 @@ def main() -> None:
         "variant": {"contract": CONTRACT_VERSION, "instructions_sha256": digest(INSTRUCTIONS),
                     "tool_sha256": digest(TOOL), "news_recipe": NEWS_RECIPE,
                     "model_profile": profile.model_dump(mode="json"),
-                    "pipeline": "single GPT analyst; no Jev, no Risk Engine; market entries only",
+                    "pipeline": "single GPT analyst; no Jev; deterministic limit check (rejects, never adjusts); "
+                                "market entries only",
                     "limits": {"close_before_weekend": not args.no_weekend_close},
                     "costs": "spread from bid/ask; swap from policy rates with broker-calibrated markup; "
                              "commission from broker terms (replay.costs)"},
