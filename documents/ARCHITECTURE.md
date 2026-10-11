@@ -951,8 +951,8 @@ checks without changing the meaning of existing records.
 | Historical tick exporter cBot | Implemented ([TICK_EXPORT.md](data/TICK_EXPORT.md)) |
 | OpenAI adapter, model profiles and budget | Implemented |
 | Shadow Executor: one GPT agent, quotes only, `NO_SIGNAL`/`WAIT`/`LONG`/`SHORT`, manual schedule, no positions | Implemented ([SHADOW_EXECUTOR.md](operations/SHADOW_EXECUTOR.md)) |
-| Replay tick archive (Parquet, built from verified exports) and point-in-time market context | Implemented |
-| Replay of news and macro context, decision schedule, Scout, GPT/Claude analysts, Jev validation, watchlist | Target |
+| Replay archive and snapshot, point-in-time market, news, macro and calendar context, decision plan with cutoff and holdout guards | Implemented ([REPLAY.md](operations/REPLAY.md)) |
+| Scout, GPT/Claude analysts, Jev validation, watchlist | Target |
 | Shadow positions and position review (`HOLD`/`CLOSE`/`ADJUST`) | Target |
 | Claude and Jev adapters | Target |
 | User settings, Risk Engine, execution cBot, demo/live execution | Target |
@@ -990,7 +990,7 @@ src/ledgerquant/
   integrations/   model provider adapters (OpenAI implemented)
   models/         model profiles, generation types, budget (implemented)
   news/           news and macro capture: GDELT, central-bank feeds, FRED/ALFRED (implemented)
-  replay/         tick archive and point-in-time market context (started)
+  replay/         replay archive, snapshot, point-in-time context, decision plan (implemented)
   records.py      canonical JSON and content hashes
 cbots/            cTrader cBots: LiveCapture, TickExport, MarketData probe
 deploy/           Docker Compose for capture, news and manual shadow runs

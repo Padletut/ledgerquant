@@ -1,6 +1,7 @@
 """The runner accepts only explicit, versioned model bindings."""
 
 from dataclasses import dataclass
+from datetime import date
 from typing import Literal, Protocol
 
 from pydantic import Field
@@ -23,6 +24,9 @@ class ModelProfile(Record):
     max_run_usd: float = Field(gt=0, allow_inf_nan=False)
     price_basis: str = Field(min_length=1, max_length=500)
     knowledge_exposure: str = Field(min_length=1, max_length=500)
+    # Published training data cutoff (last day of the stated month). Replay uses it to
+    # keep ranked decision points after the cutoff; it is not available from provider APIs.
+    training_data_cutoff: date | None = None
 
 
 @dataclass(frozen=True)
