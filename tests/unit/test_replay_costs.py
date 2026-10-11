@@ -21,13 +21,22 @@ def test_wednesday_rollover_counts_three_days():
     assert time_context(datetime(2025, 11, 12, 14, tzinfo=UTC))["next_rollover_days_charged"] == 3
 
 
-def test_swap_uses_calibrated_markups_where_broker_terms_exist():
-    eur = annual_swap("EURUSD", RATES)  # carry -2%; calibrated markups 1.06% long, 1.03% short
-    assert eur["LONG"] == Decimal("-0.0306") and eur["SHORT"] == Decimal("0.0097")
-    gold = annual_swap("XAUUSD", RATES)  # no broker terms: default 1.5% markup, uncalibrated
-    assert gold["LONG"] == Decimal("-0.055") and gold["SHORT"] == Decimal("0.025")
-    assert "calibrated from broker terms" in swap_context("EURUSD", Decimal("1.16"), {"series": {
-        "DFEDTARU": [{"value": "4"}], "ECBDFR": [{"value": "2"}], "IUDSOIA": [{"value": "4"}]}})["basis"]
+def test_swap_is_carry_minus_the_calibrated_markup():
+    from ledgerquant.replay.costs import markups
+    for symbol, carry in (("EURUSD", Decimal("-0.02")), ("GBPUSD", Decimal("0")), ("XAUUSD", Decimal("-0.04"))):
+        markup, calibrated = markups(symbol)
+        assert calibrated, f"{symbol} should have broker terms"
+        swap = annual_swap(symbol, RATES)
+        assert swap["LONG"] == carry - markup["LONG"] and swap["SHORT"] == -carry - markup["SHORT"]
+    macro = {"series": {"DFEDTARU": [{"value": "4"}], "ECBDFR": [{"value": "2"}], "IUDSOIA": [{"value": "4"}]}}
+    assert "calibrated from broker terms" in swap_context("EURUSD", Decimal("1.16"), macro)["basis"]
+
+
+def test_symbols_without_terms_use_the_labelled_default(monkeypatch):
+    import ledgerquant.replay.costs as costs
+    monkeypatch.setattr(costs, "broker_terms", lambda: {})
+    markup, calibrated = costs.markups("XAUUSD")
+    assert not calibrated and markup == {"LONG": costs.DEFAULT_MARKUP, "SHORT": costs.DEFAULT_MARKUP}
 
 
 def test_commission_is_thirty_usd_per_million_per_side():
@@ -38,8 +47,9 @@ def test_commission_is_thirty_usd_per_million_per_side():
 
 def test_swap_in_r_over_a_held_week_and_missing_rates():
     opened, closed = datetime(2025, 11, 10, 9, tzinfo=UTC), datetime(2025, 11, 14, 9, tzinfo=UTC)
-    # 6 days of -5.5% a year on 4100, over a 20 risk: 4100 * -0.055 / 360 * 6 / 20
-    assert swap_r("XAUUSD", "LONG", Decimal("4100"), Decimal("4080"), opened, closed, RATES) == Decimal("-0.1879")
+    # 6 days (Wednesday counts three) of the long swap rate on 4100, over a 20 risk
+    expected = (Decimal("4100") * annual_swap("XAUUSD", RATES)["LONG"] / 360 * 6 / 20).quantize(Decimal("0.0001"))
+    assert swap_r("XAUUSD", "LONG", Decimal("4100"), Decimal("4080"), opened, closed, RATES) == expected < 0
     assert swap_r("XAUUSD", "LONG", Decimal("4100"), Decimal("4080"), opened, closed, None) == 0
     macro = {"series": {"DFEDTARU": [{"value": "4.00"}], "ECBDFR": [{"value": "2.00"}]}}
     assert policy_rates(macro) is None

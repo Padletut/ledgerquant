@@ -57,3 +57,16 @@ contaminated times unless `allow_contaminated` is passed for pipeline debugging.
 On this machine a full context takes about 0.25 s. The tick archive holds
 114.4 million ticks in 779 MB; the news snapshot of 1.38 million items (GDELT
 backfill through mid-December 2025) takes about 15 s to build.
+
+## Broker terms for costs
+
+Replay nets every trade of commission and estimated swap using
+`configs/broker_terms/icmarkets-eu-real.json`: the broker's symbol terms and the
+swap markup calibrated from them. Refresh the terms with the order-free
+`cbots/LedgerQuant.SymbolTerms` probe, which prints the symbol's commission,
+swap and size terms once in a cTrader CLI backtest and stops. Build it with
+`dotnet build -c Release`, run it with the same `docker run ... backtest` command
+as the tick exporter (any past one-day window, one `--symbol` per run), and take
+the `SYMBOL_TERMS` line from the log. Store raw output under the ignored
+`data/broker_terms/`; the config keeps only symbol terms, never account balances
+or identifiers. Recalibrate the markup when the terms change.
