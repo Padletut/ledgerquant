@@ -20,9 +20,19 @@ prints them. Run one symbol at a time:
 
 ```bash
 .venv/bin/python tools/tick_export_batch.py --symbol XAUUSD \
-  --start 2025-09-01 --end 2026-10-09 --chunk-days 2 \
+  --start 2025-09-01 --end 2026-10-09 --chunk-days 4 --parallel 2 \
   --out data/ctrader_tick_exports/post_cutoff_v1/XAUUSD
 ```
+
+The backtest replays every tick from its start, so most of a run's time can go to
+the warm-up before the chunk. The tool therefore starts the backtest on the
+previous weekday (Friday for a Monday chunk) and uses the full `--margin-days`
+warm-up only when retrying a failed run, for example across a holiday. Larger
+chunks need fewer warm-ups. XAUUSD had a median of about 170,000 ticks per
+trading day in 2025–2026, so four-day chunks usually stay below the
+1,000,000-row limit; volatile periods (up to about 340,000 per day in late
+January 2026) exceed it and are split automatically. EURUSD and GBPUSD fit in
+seven-day chunks. `--parallel` runs several backtests at once.
 
 Each run needs an actual tick at or after its end as a witness. An end on a
 weekend therefore completes only after the market has reopened, and an end at or

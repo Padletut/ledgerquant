@@ -1,7 +1,10 @@
 """Run the TickExport cBot over a long interval, one bounded cTrader CLI backtest at a time.
 
-Each chunk is one TickExport run (at most seven days). A chunk that hits the row
-limit is split in half and retried under new run IDs. Completed runs are verified
+Each chunk is one TickExport run (at most seven days). The backtest replays every
+tick from its start, so the warm-up before a chunk is kept short: back to the
+previous weekday. A run that fails is retried once with the long warm-up margin,
+which covers holidays. A chunk that hits the row limit is split in half and
+retried under new run IDs. Up to --parallel chunks run at the same time. Completed runs are verified
 against their manifest and skipped on the next invocation, so the batch can be
 resumed. Every attempt is appended to ``batch.jsonl`` in the output directory.
 
@@ -13,6 +16,8 @@ number until the account registry exists.
 """
 
 import argparse
+from collections import deque
+from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 import hashlib
 import json
 import os
@@ -31,6 +36,7 @@ ALGO_DIR = REPO / "cbots/LedgerQuant.TickExport/LedgerQuant.TickExport/bin/Relea
 PASSWORD_FILE = REPO / "credentials/ctrader-cli.pwd"
 ROW_LIMIT_MESSAGE = "row limit"
 MIN_CHUNK = timedelta(hours=2)
+POLL_SECONDS = 2
 
 
 @dataclass(frozen=True)
@@ -60,6 +66,20 @@ def chunks(start: datetime, end: datetime, days: float) -> list[Chunk]:
 
 def cli_time(value: datetime) -> str:
     return value.strftime("%d/%m/%Y %H:%M")
+
+
+def cli_start(chunk: Chunk, attempt: int, margin_days: int) -> datetime:
+    """Start of the CLI backtest, which must contain one tick before the chunk.
+
+    The first attempt goes back one day, and to Friday when that lands on a weekend.
+    A retry uses the full margin, for example across a holiday without ticks.
+    """
+    if attempt > 1:
+        return chunk.start - timedelta(days=margin_days)
+    start = chunk.start - timedelta(days=1)
+    while start.weekday() >= 5:  # Saturday or Sunday
+        start -= timedelta(days=1)
+    return start
 
 
 def cli_end(chunk: Chunk, margin_days: int, now: datetime) -> datetime:
@@ -123,7 +143,8 @@ def credentials() -> tuple[str, str]:
     return ctid, account
 
 
-def run_one(symbol: str, chunk: Chunk, run_id: str, out: Path, args, ctid: str, account: str) -> tuple[str, str]:
+def run_one(symbol: str, chunk: Chunk, run_id: str, attempt: int, out: Path, args, ctid: str,
+            account: str) -> tuple[str, str]:
     name = f"lq-tick-export-{run_id}".replace("_", "-")
     command = [
         "docker", "run", "-d", "--name", name,
@@ -133,7 +154,7 @@ def run_one(symbol: str, chunk: Chunk, run_id: str, out: Path, args, ctid: str, 
         IMAGE, "backtest", "/algo/LedgerQuant.TickExport.algo",
         f"--ctid={ctid}", "--pwd-file=/run/secrets/ctrader-cli.pwd",
         f"--account={account}", f"--symbol={symbol}", "--period=h1",
-        f"--start={cli_time(chunk.start - timedelta(days=args.margin_days))}",
+        f"--start={cli_time(cli_start(chunk, attempt, args.margin_days))}",
         f"--end={cli_time(cli_end(chunk, args.margin_days, datetime.now(timezone.utc)))}",
         "--data-mode=ticks",
         f"--StartUtc={utc_text(chunk.start)}", f"--EndExclusiveUtc={utc_text(chunk.end)}",
@@ -147,7 +168,7 @@ def run_one(symbol: str, chunk: Chunk, run_id: str, out: Path, args, ctid: str, 
     deadline, status, detail = time.monotonic() + args.timeout_minutes * 60, "TIMEOUT", ""
     try:
         while time.monotonic() < deadline:
-            time.sleep(10)
+            time.sleep(POLL_SECONDS)
             log = subprocess.run(["docker", "logs", name], capture_output=True, text=True)
             status, detail = outcome(log.stdout + log.stderr)
             if status != "PENDING":
@@ -173,7 +194,9 @@ def main() -> None:
     parser.add_argument("--end", required=True, type=date.fromisoformat, help="exclusive UTC date")
     parser.add_argument("--out", required=True, type=Path)
     parser.add_argument("--chunk-days", type=float, default=7)
-    parser.add_argument("--margin-days", type=int, default=4, help="CLI warm-up and end-witness margin")
+    parser.add_argument("--margin-days", type=int, default=4,
+                        help="end-witness margin, and the warm-up margin on a retry")
+    parser.add_argument("--parallel", type=int, default=1, help="chunks run at the same time")
     parser.add_argument("--max-rows", type=int, default=1_000_000)
     parser.add_argument("--timeout-minutes", type=int, default=90)
     parser.add_argument("--broker", default="IC Markets EU Ltd")
@@ -188,34 +211,49 @@ def main() -> None:
     # followed by an already traded tick would only wait for its timeout.
     if end > datetime.now(timezone.utc) - timedelta(hours=1):
         sys.exit("--end must lie in the past, before ticks that have already traded")
-    queue = chunks(start, end, args.chunk_days)
+    queue = deque(chunks(start, end, args.chunk_days))
     ledger = out / "batch.jsonl"
-    while queue:
-        chunk = queue.pop(0)
-        attempt = 1
-        while verify(out, chunk.run_id(args.symbol, attempt)) is None and any(
-                out.glob(chunk.run_id(args.symbol, attempt) + ".*")):
-            attempt += 1
-        run_id = chunk.run_id(args.symbol, attempt)
-        if verify(out, run_id) is not None:
-            print(f"{run_id} VERIFIED_EXISTING", flush=True)
-            continue
-        status, detail = run_one(args.symbol, chunk, run_id, out, args, ctid, account)
-        if status == "COMPLETE" and verify(out, run_id) is None:
-            status = "UNVERIFIED"
-        record = {"run_id": run_id, "symbol": args.symbol, "start_utc": utc_text(chunk.start),
-                  "end_exclusive_utc": utc_text(chunk.end), "status": status,
-                  "recorded_at_utc": utc_text(datetime.now(timezone.utc))}
-        if status != "COMPLETE":
-            record["detail"] = redact(detail, ctid, account)
-        with ledger.open("a") as handle:
-            handle.write(json.dumps(record) + "\n")
-        print(f"{run_id} {status}", flush=True)
-        if status == "ROW_LIMIT" and chunk.end - chunk.start >= 2 * MIN_CHUNK:
-            queue[:0] = chunk.halves()
-        elif status in ("FAILED", "TIMEOUT", "UNVERIFIED") and attempt < 2:
-            queue.insert(0, chunk)
+    with ThreadPoolExecutor(max_workers=max(1, args.parallel)) as pool:
+        running = {}
+        while queue or running:
+            while queue and len(running) < max(1, args.parallel):
+                chunk = queue.popleft()
+                attempt = next_attempt(out, args.symbol, chunk)
+                run_id = chunk.run_id(args.symbol, attempt)
+                if verify(out, run_id) is not None:
+                    print(f"{run_id} VERIFIED_EXISTING", flush=True)
+                    continue
+                future = pool.submit(run_one, args.symbol, chunk, run_id, attempt, out, args, ctid, account)
+                running[future] = (chunk, run_id, attempt)
+            if not running:
+                continue
+            done, _ = wait(running, return_when=FIRST_COMPLETED)
+            for future in done:
+                chunk, run_id, attempt = running.pop(future)
+                status, detail = future.result()
+                if status == "COMPLETE" and verify(out, run_id) is None:
+                    status = "UNVERIFIED"
+                record = {"run_id": run_id, "symbol": args.symbol, "start_utc": utc_text(chunk.start),
+                          "end_exclusive_utc": utc_text(chunk.end), "status": status,
+                          "recorded_at_utc": utc_text(datetime.now(timezone.utc))}
+                if status != "COMPLETE":
+                    record["detail"] = redact(detail, ctid, account)
+                with ledger.open("a") as handle:
+                    handle.write(json.dumps(record) + "\n")
+                print(f"{run_id} {status}", flush=True)
+                if status == "ROW_LIMIT" and chunk.end - chunk.start >= 2 * MIN_CHUNK:
+                    queue.extendleft(reversed(chunk.halves()))
+                elif status in ("FAILED", "TIMEOUT", "UNVERIFIED") and attempt < 2:
+                    queue.appendleft(chunk)
 
+
+def next_attempt(out: Path, symbol: str, chunk: Chunk) -> int:
+    """The first attempt that is verified or has left no artifacts yet."""
+    attempt = 1
+    while verify(out, chunk.run_id(symbol, attempt)) is None and any(
+            out.glob(chunk.run_id(symbol, attempt) + ".*")):
+        attempt += 1
+    return attempt
 
 if __name__ == "__main__":
     main()
