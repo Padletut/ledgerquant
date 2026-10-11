@@ -965,9 +965,11 @@ checks without changing the meaning of existing records.
 | OpenAI adapter, model profiles and budget | Implemented |
 | Shadow Executor: one GPT agent, quotes only, `NO_SIGNAL`/`WAIT`/`LONG`/`SHORT`, manual schedule, no positions | Implemented ([SHADOW_EXECUTOR.md](operations/SHADOW_EXECUTOR.md)) |
 | Replay archive and snapshot, point-in-time market, news, macro and calendar context, decision plan with cutoff and holdout guards | Implemented ([REPLAY.md](operations/REPLAY.md)) |
-| Scout, GPT/Claude analysts, Jev validation, watchlist | Target |
-| Shadow positions and position review (`HOLD`/`CLOSE`/`ADJUST`) | Target |
-| Claude and Jev adapters | Target |
+| GPT and Claude analysts through replay, with free-rule baselines | Measured, 2025-09 to 2026-03: no edge over 23-hour momentum ([findings](research/2026-10-analyst-replay-findings.md)) |
+| Scout, Jev validation, watchlist | Target |
+| Shadow positions and position review (`HOLD`/`CLOSE`/`ADJUST`), weekend-close limit check | Implemented in replay ([REPLAY.md](operations/REPLAY.md)) |
+| Claude adapter (Anthropic Messages, Opus 4.6 profile) | Implemented |
+| Jev adapter | Target |
 | User settings, Risk Engine, execution cBot, demo/live execution | Target |
 | News and macro capture: GDELT GKG, Fed, ECB and BoE feeds, FRED/ALFRED | Running ([NEWS.md](operations/NEWS.md)) |
 | Policy-meeting calendar and release times, scoring, research runs | Target |
